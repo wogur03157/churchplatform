@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1771488580094,
+      "tag": "0000_chunky_blindfold",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1771488752300,
+      "tag": "0001_married_layla_miller",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1771490766696,
+      "tag": "0002_wooden_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1771490847808,
+      "tag": "0003_overrated_adam_destine",
+      "breakpoints": true
+    }
+  ]
+}

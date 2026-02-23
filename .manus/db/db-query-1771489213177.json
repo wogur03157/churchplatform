@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO layoutSettings (sectionType, isVisible, displayOrder, title, subtitle) VALUES\n('hero', 1, 0, '환영합니다', '우아하고 완벽한 정보 관리 시스템'),\n('announcements', 1, 1, '공지사항', '최신 소식과 중요한 공지를 확인하세요'),\n('images', 1, 2, '갤러리', '아름다운 순간들을 담은 이미지 갤러리'),\n('videos', 1, 3, '영상', '다양한 영상 콘텐츠를 만나보세요')\nON DUPLICATE KEY UPDATE\n  isVisible = VALUES(isVisible),\n  displayOrder = VALUES(displayOrder),\n  title = VALUES(title),\n  subtitle = VALUES(subtitle);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wBdjrpEsCcmBcs.root --database mvXuoAqP4ZY2vsv5Lgpkwr --execute INSERT INTO layoutSettings (sectionType, isVisible, displayOrder, title, subtitle) VALUES\n('hero', 1, 0, '환영합니다', '우아하고 완벽한 정보 관리 시스템'),\n('announcements', 1, 1, '공지사항', '최신 소식과 중요한 공지를 확인하세요'),\n('images', 1, 2, '갤러리', '아름다운 순간들을 담은 이미지 갤러리'),\n('videos', 1, 3, '영상', '다양한 영상 콘텐츠를 만나보세요')\nON DUPLICATE KEY UPDATE\n  isVisible = VALUES(isVisible),\n  displayOrder = VALUES(displayOrder),\n  title = VALUES(title),\n  subtitle = VALUES(subtitle);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1575
+}
