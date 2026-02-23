@@ -1,12 +1,13 @@
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Image, Video, MessageSquare } from "lucide-react";
 
 export default function Home() {
-  const { data: announcements } = trpc.announcements.list.useQuery();
-  const { data: images } = trpc.images.list.useQuery();
-  const { data: videos } = trpc.videos.list.useQuery();
-  const { data: floatingMessages } = trpc.floatingMessages.list.useQuery();
+  const { data: announcements } = useQuery({ queryKey: ["announcements"], queryFn: () => api.get<any[]>("/announcements") });
+  const { data: images } = useQuery({ queryKey: ["images"], queryFn: () => api.get<any[]>("/images") });
+  const { data: videos } = useQuery({ queryKey: ["videos"], queryFn: () => api.get<any[]>("/videos") });
+  const { data: floatingMessages } = useQuery({ queryKey: ["floating-messages"], queryFn: () => api.get<any[]>("/floating-messages") });
 
   const stats = [
     {

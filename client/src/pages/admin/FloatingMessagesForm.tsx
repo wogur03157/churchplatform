@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -26,7 +27,7 @@ export default function AdminFloatingMessagesForm() {
   const [isFieldDialogOpen, setIsFieldDialogOpen] = useState(false);
   const [isEditingField, setIsEditingField] = useState(false);
   const [editingFieldIndex, setEditingFieldIndex] = useState<number | null>(null);
-  
+
   const [fieldName, setFieldName] = useState("");
   const [fieldType, setFieldType] = useState<"text" | "email" | "phone" | "select" | "textarea">("text");
   const [fieldLabel, setFieldLabel] = useState("");
@@ -35,19 +36,9 @@ export default function AdminFloatingMessagesForm() {
   const [selectOptions, setSelectOptions] = useState("");
   const [formFields, setFormFields] = useState<FormField[]>([]);
 
-  const { data: messages } = trpc.floatingMessages.list.useQuery();
-  const utils = trpc.useUtils();
-
-  const saveFormFieldsMutation = trpc.floatingMessages.saveFormFields.useMutation({
-    onSuccess: () => {
-      utils.floatingMessages.list.invalidate();
-      toast.success("폼 필드가 저장되었습니다");
-      resetFieldForm();
-      setIsFieldDialogOpen(false);
-    },
-    onError: (error) => {
-      toast.error(`오류: ${error.message}`);
-    },
+  const { data: messages } = useQuery({
+    queryKey: ["floating-messages"],
+    queryFn: () => api.get<any[]>("/floating-messages"),
   });
 
   const resetFieldForm = () => {
@@ -66,7 +57,6 @@ export default function AdminFloatingMessagesForm() {
       toast.error("필드 이름과 라벨을 입력해주세요");
       return;
     }
-
     if (fieldType === "select" && !selectOptions.trim()) {
       toast.error("선택 옵션을 입력해주세요");
       return;
@@ -78,7 +68,7 @@ export default function AdminFloatingMessagesForm() {
       fieldLabel,
       isRequired,
       displayOrder: isEditingField && editingFieldIndex !== null ? editingFieldIndex : formFields.length,
-      selectOptions: fieldType === "select" ? selectOptions.split("\n").filter(o => o.trim()) : undefined,
+      selectOptions: fieldType === "select" ? selectOptions.split("\n").filter((o) => o.trim()) : undefined,
       placeholder,
     };
 
@@ -109,21 +99,16 @@ export default function AdminFloatingMessagesForm() {
     setFormFields(formFields.filter((_, i) => i !== index));
   };
 
-  const handleSaveFormFields = () => {
+  const handleSaveFormFields = async () => {
     if (!selectedMessageId) {
       toast.error("메시지를 선택해주세요");
       return;
     }
-
     if (formFields.length === 0) {
       toast.error("최소 하나의 필드를 추가해주세요");
       return;
     }
-
-    saveFormFieldsMutation.mutate({
-      messageId: selectedMessageId,
-      fields: formFields,
-    });
+    toast.info("폼 필드 저장 기능은 현재 준비 중입니다");
   };
 
   const handleSelectMessage = (messageId: number) => {
@@ -137,22 +122,17 @@ export default function AdminFloatingMessagesForm() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">플로팅 메시지 폼 설정</h1>
-          <p className="text-muted-foreground mt-2">
-            플로팅 메시지에 동적 폼 필드를 추가하세요
-          </p>
+          <p className="text-muted-foreground mt-2">플로팅 메시지에 동적 폼 필드를 추가하세요</p>
         </div>
       </div>
 
-      {/* Message Selection */}
       <Card className="elegant-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             메시지 선택
           </CardTitle>
-          <CardDescription>
-            폼 필드를 추가할 플로팅 메시지를 선택하세요
-          </CardDescription>
+          <CardDescription>폼 필드를 추가할 플로팅 메시지를 선택하세요</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2">
@@ -162,9 +142,7 @@ export default function AdminFloatingMessagesForm() {
                   key={message.id}
                   onClick={() => handleSelectMessage(message.id)}
                   className={`p-3 text-left border rounded-lg transition-colors ${
-                    selectedMessageId === message.id
-                      ? "bg-primary/10 border-primary"
-                      : "hover:bg-muted border-border"
+                    selectedMessageId === message.id ? "bg-primary/10 border-primary" : "hover:bg-muted border-border"
                   }`}
                 >
                   <p className="font-medium">{message.title}</p>
@@ -172,66 +150,42 @@ export default function AdminFloatingMessagesForm() {
                 </button>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-4">
-                먼저 플로팅 메시지를 생성해주세요
-              </p>
+              <p className="text-muted-foreground text-center py-4">먼저 플로팅 메시지를 생성해주세요</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Form Fields */}
       {selectedMessageId && (
         <Card className="elegant-shadow">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>폼 필드 관리</CardTitle>
-                <CardDescription>
-                  방문자가 입력할 필드를 설정하세요
-                </CardDescription>
+                <CardDescription>방문자가 입력할 필드를 설정하세요</CardDescription>
               </div>
               <Dialog open={isFieldDialogOpen} onOpenChange={setIsFieldDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => resetFieldForm()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    필드 추가
-                  </Button>
+                  <Button onClick={() => resetFieldForm()}><Plus className="mr-2 h-4 w-4" />필드 추가</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>
-                      {isEditingField ? "필드 수정" : "새 필드 추가"}
-                    </DialogTitle>
-                    <DialogDescription>
-                      폼에 표시될 필드를 설정하세요
-                    </DialogDescription>
+                    <DialogTitle>{isEditingField ? "필드 수정" : "새 필드 추가"}</DialogTitle>
+                    <DialogDescription>폼에 표시될 필드를 설정하세요</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="fieldName">필드 이름 (영문)</Label>
-                      <Input
-                        id="fieldName"
-                        value={fieldName}
-                        onChange={(e) => setFieldName(e.target.value)}
-                        placeholder="예: name, email, phone"
-                      />
+                      <Input id="fieldName" value={fieldName} onChange={(e) => setFieldName(e.target.value)} placeholder="예: name, email, phone" />
                     </div>
                     <div>
                       <Label htmlFor="fieldLabel">필드 라벨 (표시명)</Label>
-                      <Input
-                        id="fieldLabel"
-                        value={fieldLabel}
-                        onChange={(e) => setFieldLabel(e.target.value)}
-                        placeholder="예: 이름, 이메일, 연락처"
-                      />
+                      <Input id="fieldLabel" value={fieldLabel} onChange={(e) => setFieldLabel(e.target.value)} placeholder="예: 이름, 이메일, 연락처" />
                     </div>
                     <div>
                       <Label htmlFor="fieldType">필드 타입</Label>
                       <Select value={fieldType} onValueChange={(v: any) => setFieldType(v)}>
-                        <SelectTrigger id="fieldType">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger id="fieldType"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="text">텍스트</SelectItem>
                           <SelectItem value="email">이메일</SelectItem>
@@ -244,40 +198,21 @@ export default function AdminFloatingMessagesForm() {
                     {fieldType === "select" && (
                       <div>
                         <Label htmlFor="selectOptions">선택 옵션 (줄 단위)</Label>
-                        <Textarea
-                          id="selectOptions"
-                          value={selectOptions}
-                          onChange={(e) => setSelectOptions(e.target.value)}
-                          placeholder="옵션1&#10;옵션2&#10;옵션3"
-                          rows={4}
-                        />
+                        <Textarea id="selectOptions" value={selectOptions} onChange={(e) => setSelectOptions(e.target.value)} placeholder={"옵션1\n옵션2\n옵션3"} rows={4} />
                       </div>
                     )}
                     <div>
                       <Label htmlFor="placeholder">플레이스홀더</Label>
-                      <Input
-                        id="placeholder"
-                        value={placeholder}
-                        onChange={(e) => setPlaceholder(e.target.value)}
-                        placeholder="입력 예시"
-                      />
+                      <Input id="placeholder" value={placeholder} onChange={(e) => setPlaceholder(e.target.value)} placeholder="입력 예시" />
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Switch
-                        id="required"
-                        checked={isRequired}
-                        onCheckedChange={setIsRequired}
-                      />
+                      <Switch id="required" checked={isRequired} onCheckedChange={setIsRequired} />
                       <Label htmlFor="required">필수 입력</Label>
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsFieldDialogOpen(false)}>
-                      취소
-                    </Button>
-                    <Button onClick={handleAddField}>
-                      {isEditingField ? "수정" : "추가"}
-                    </Button>
+                    <Button variant="outline" onClick={() => setIsFieldDialogOpen(false)}>취소</Button>
+                    <Button onClick={handleAddField}>{isEditingField ? "수정" : "추가"}</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -290,41 +225,21 @@ export default function AdminFloatingMessagesForm() {
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted">
                     <div className="flex-1">
                       <p className="font-medium">{field.fieldLabel}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {field.fieldType} {field.isRequired && "· 필수"}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{field.fieldType} {field.isRequired && "· 필수"}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditField(index)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteField(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleEditField(index)}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteField(index)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-8">
-                필드를 추가해주세요
-              </p>
+              <p className="text-muted-foreground text-center py-8">필드를 추가해주세요</p>
             )}
             {formFields.length > 0 && (
-              <Button
-                onClick={handleSaveFormFields}
-                disabled={saveFormFieldsMutation.isPending}
-                className="w-full mt-4"
-              >
-                {saveFormFieldsMutation.isPending ? "저장 중..." : "폼 필드 저장"}
+              <Button onClick={handleSaveFormFields} className="w-full mt-4">
+                폼 필드 저장
               </Button>
             )}
           </CardContent>

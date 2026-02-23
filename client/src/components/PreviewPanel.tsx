@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { useState } from "react";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, RefreshCw, Maximize2 } from "lucide-react";
@@ -14,11 +15,26 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
   const [fullscreen, setFullscreen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { data: layoutSettings } = trpc.layoutSettings.list.useQuery();
-  const { data: announcements } = trpc.announcements.list.useQuery({ publishedOnly: true });
-  const { data: images } = trpc.images.list.useQuery({ publishedOnly: true });
-  const { data: videos } = trpc.videos.list.useQuery({ publishedOnly: true });
-  const { data: floatingMessages } = trpc.floatingMessages.list.useQuery({ activeOnly: true });
+  const { data: layoutSettings } = useQuery({
+    queryKey: ["layout-settings"],
+    queryFn: () => api.get<any[]>("/layout-settings"),
+  });
+  const { data: announcements } = useQuery({
+    queryKey: ["announcements", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/announcements?publishedOnly=true"),
+  });
+  const { data: images } = useQuery({
+    queryKey: ["images", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/images?publishedOnly=true"),
+  });
+  const { data: videos } = useQuery({
+    queryKey: ["videos", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/videos?publishedOnly=true"),
+  });
+  const { data: floatingMessages } = useQuery({
+    queryKey: ["floating-messages", { activeOnly: true }],
+    queryFn: () => api.get<any[]>("/floating-messages?activeOnly=true"),
+  });
 
   const visibleSections = layoutSettings
     ?.filter((s) => s.isVisible === 1)
@@ -49,28 +65,20 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
           <section key="announcements" className="py-12 bg-muted/30">
             <div className="container">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">
-                  {section.title || "공지사항"}
-                </h2>
-                {section.subtitle && (
-                  <p className="text-muted-foreground text-sm">{section.subtitle}</p>
-                )}
+                <h2 className="text-2xl font-bold mb-2">{section.title || "공지사항"}</h2>
+                {section.subtitle && <p className="text-muted-foreground text-sm">{section.subtitle}</p>}
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {announcements.slice(0, 3).map((announcement) => (
                   <Card key={announcement.id} className="elegant-shadow">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm line-clamp-2">
-                        {announcement.title}
-                      </CardTitle>
+                      <CardTitle className="text-sm line-clamp-2">{announcement.title}</CardTitle>
                       <CardDescription className="text-xs">
                         {new Date(announcement.createdAt).toLocaleDateString("ko-KR")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {announcement.content}
-                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{announcement.content}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -85,18 +93,12 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
           <section key="images" className="py-12">
             <div className="container">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">
-                  {section.title || "갤러리"}
-                </h2>
+                <h2 className="text-2xl font-bold mb-2">{section.title || "갤러리"}</h2>
               </div>
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {images.slice(0, 4).map((image) => (
                   <div key={image.id} className="aspect-square rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
@@ -110,15 +112,13 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
           <section key="videos" className="py-12 bg-muted/30">
             <div className="container">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">
-                  {section.title || "영상"}
-                </h2>
+                <h2 className="text-2xl font-bold mb-2">{section.title || "영상"}</h2>
               </div>
               <div className="grid gap-6 md:grid-cols-2">
                 {videos.slice(0, 2).map((video) => {
                   const getVideoEmbed = () => {
                     if (video.videoType === "youtube") {
-                      const videoId = video.url.includes("youtu.be") 
+                      const videoId = video.url.includes("youtu.be")
                         ? video.url.split("/").pop()
                         : new URL(video.url).searchParams.get("v");
                       return `https://www.youtube.com/embed/${videoId}`;
@@ -132,12 +132,7 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
                   return (
                     <div key={video.id} className="aspect-video rounded-lg overflow-hidden bg-muted">
                       {video.videoType === "youtube" || video.videoType === "vimeo" ? (
-                        <iframe
-                          src={getVideoEmbed()}
-                          className="w-full h-full"
-                          allowFullScreen
-                          title={video.title}
-                        />
+                        <iframe src={getVideoEmbed()} className="w-full h-full" allowFullScreen title={video.title} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-muted-foreground">영상</span>
@@ -158,7 +153,6 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
 
   const previewContent = (
     <div className="bg-background min-h-screen">
-      {/* Navigation */}
       <header className="border-b bg-background/95">
         <div className="container flex h-12 items-center justify-between">
           <h1 className="text-sm font-bold">정보 관리 시스템</h1>
@@ -168,13 +162,7 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
           </nav>
         </div>
       </header>
-
-      {/* Content */}
-      <main>
-        {visibleSections.map((section) => renderSection(section))}
-      </main>
-
-      {/* Footer */}
+      <main>{visibleSections.map((section) => renderSection(section))}</main>
       <footer className="border-t py-6 mt-12 bg-muted/50">
         <div className="container text-center text-xs text-muted-foreground">
           <p>© 2026 정보 관리 시스템. All rights reserved.</p>
@@ -189,11 +177,7 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
         <DialogContent className="max-w-6xl h-[90vh] p-0">
           <DialogHeader className="flex flex-row items-center justify-between p-4 border-b">
             <DialogTitle>공개 페이지 미리보기</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setFullscreen(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setFullscreen(false)}>
               <X className="h-4 w-4" />
             </Button>
           </DialogHeader>
@@ -215,28 +199,13 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-sm">공개 페이지 미리보기</CardTitle>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setRefreshKey(k => k + 1)}
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setRefreshKey((k) => k + 1)} className="h-8 w-8 p-0">
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setFullscreen(true)}
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setFullscreen(true)} className="h-8 w-8 p-0">
               <Maximize2 className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
               <X className="h-4 w-4" />
             </Button>
           </div>

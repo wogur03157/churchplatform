@@ -1,4 +1,5 @@
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useParams } from "wouter";
@@ -7,8 +8,12 @@ import { ArrowLeft } from "lucide-react";
 export default function AnnouncementDetail() {
   const params = useParams();
   const id = parseInt(params.id || "0");
-  
-  const { data: announcement, isLoading } = trpc.announcements.getById.useQuery({ id });
+
+  const { data: announcement, isLoading } = useQuery({
+    queryKey: ["announcements", id],
+    queryFn: () => api.get<any>(`/announcements/${id}`),
+    enabled: id > 0,
+  });
 
   if (isLoading) {
     return (
@@ -35,7 +40,6 @@ export default function AnnouncementDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
@@ -52,7 +56,6 @@ export default function AnnouncementDetail() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="container py-12">
         <div className="max-w-3xl mx-auto">
           <Button variant="ghost" className="mb-6" asChild>
@@ -91,7 +94,6 @@ export default function AnnouncementDetail() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t py-8 mt-16">
         <div className="container text-center text-sm text-muted-foreground">
           <p>© 2026 관리자 대시보드. All rights reserved.</p>

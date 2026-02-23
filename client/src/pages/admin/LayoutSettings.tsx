@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,16 +12,21 @@ import { Save, Layout } from "lucide-react";
 
 export default function AdminLayoutSettings() {
   const [settings, setSettings] = useState<Record<string, any>>({});
-  
-  const utils = trpc.useUtils();
-  const { data: layoutSettings, isLoading } = trpc.layoutSettings.list.useQuery();
-  
-  const updateMutation = trpc.layoutSettings.update.useMutation({
+
+  const queryClientInstance = useQueryClient();
+  const { data: layoutSettings, isLoading } = useQuery({
+    queryKey: ["layout-settings"],
+    queryFn: () => api.get<any[]>("/layout-settings"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...data }: any) =>
+      api.patch<{ success: boolean }>(`/layout-settings/${id}`, data),
     onSuccess: () => {
-      utils.layoutSettings.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["layout-settings"] });
       toast.success("레이아웃 설정이 저장되었습니다");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
@@ -69,15 +75,11 @@ export default function AdminLayoutSettings() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">레이아웃 설정</h1>
-        <p className="text-muted-foreground mt-2">
-          공개 페이지의 레이아웃을 구성하세요
-        </p>
+        <p className="text-muted-foreground mt-2">공개 페이지의 레이아웃을 구성하세요</p>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">로딩 중...</p>
-        </div>
+        <div className="text-center py-12"><p className="text-muted-foreground">로딩 중...</p></div>
       ) : (
         <div className="space-y-4">
           {sections.map((section) => {
@@ -95,13 +97,8 @@ export default function AdminLayoutSettings() {
                       </CardTitle>
                       <CardDescription>{section.description}</CardDescription>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSave(section.type)}
-                      disabled={updateMutation.isPending}
-                    >
-                      <Save className="h-4 w-4 mr-1" />
-                      저장
+                    <Button size="sm" onClick={() => handleSave(section.type)} disabled={updateMutation.isPending}>
+                      <Save className="h-4 w-4 mr-1" />저장
                     </Button>
                   </div>
                 </CardHeader>
@@ -133,9 +130,7 @@ export default function AdminLayoutSettings() {
                     <Input
                       id={`${section.type}-title`}
                       value={setting.title || ""}
-                      onChange={(e) =>
-                        handleUpdate(section.type, "title", e.target.value)
-                      }
+                      onChange={(e) => handleUpdate(section.type, "title", e.target.value)}
                       placeholder={`${section.name} 제목`}
                     />
                   </div>
@@ -144,9 +139,7 @@ export default function AdminLayoutSettings() {
                     <Textarea
                       id={`${section.type}-subtitle`}
                       value={setting.subtitle || ""}
-                      onChange={(e) =>
-                        handleUpdate(section.type, "subtitle", e.target.value)
-                      }
+                      onChange={(e) => handleUpdate(section.type, "subtitle", e.target.value)}
                       placeholder={`${section.name} 부제목`}
                       rows={2}
                     />

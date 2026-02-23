@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -22,39 +23,45 @@ export default function AdminImages() {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const utils = trpc.useUtils();
-  const { data: images, isLoading } = trpc.images.list.useQuery();
-  
-  const uploadMutation = trpc.images.upload.useMutation({
+  const queryClientInstance = useQueryClient();
+  const { data: images, isLoading } = useQuery({
+    queryKey: ["images"],
+    queryFn: () => api.get<any[]>("/images"),
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: (data: any) => api.post<{ success: boolean; id: number; url: string }>("/images", data),
     onSuccess: () => {
-      utils.images.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
       toast.success("이미지가 업로드되었습니다");
       resetForm();
       setIsCreateOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
 
-  const updateMutation = trpc.images.update.useMutation({
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...data }: any) => api.patch<{ success: boolean }>(`/images/${id}`, data),
     onSuccess: () => {
-      utils.images.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
       toast.success("이미지가 수정되었습니다");
       resetForm();
       setIsEditOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
 
-  const deleteMutation = trpc.images.delete.useMutation({
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete<{ success: boolean }>(`/images/${id}`),
     onSuccess: () => {
-      utils.images.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
       toast.success("이미지가 삭제되었습니다");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
@@ -133,18 +140,12 @@ export default function AdminImages() {
       toast.error("제목을 입력해주세요");
       return;
     }
-    updateMutation.mutate({ 
-      id: editingId, 
-      title, 
-      description, 
-      isPublished, 
-      displayOrder 
-    });
+    updateMutation.mutate({ id: editingId, title, description, isPublished, displayOrder });
   };
 
   const handleDelete = (id: number) => {
     if (confirm("정말 삭제하시겠습니까?")) {
-      deleteMutation.mutate({ id });
+      deleteMutation.mutate(id);
     }
   };
 
@@ -167,9 +168,7 @@ export default function AdminImages() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>이미지 업로드</DialogTitle>
-              <DialogDescription>
-                새 이미지를 업로드하세요
-              </DialogDescription>
+              <DialogDescription>새 이미지를 업로드하세요</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -185,56 +184,29 @@ export default function AdminImages() {
                 </div>
                 {previewUrl && (
                   <div className="mt-4">
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="max-w-full h-auto rounded-lg elegant-shadow"
-                    />
+                    <img src={previewUrl} alt="Preview" className="max-w-full h-auto rounded-lg elegant-shadow" />
                   </div>
                 )}
               </div>
               <div>
                 <Label htmlFor="title">제목</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="이미지 제목"
-                />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="이미지 제목" />
               </div>
               <div>
                 <Label htmlFor="description">설명</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="이미지 설명 (선택사항)"
-                  rows={3}
-                />
+                <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="이미지 설명 (선택사항)" rows={3} />
               </div>
               <div>
                 <Label htmlFor="displayOrder">표시 순서</Label>
-                <Input
-                  id="displayOrder"
-                  type="number"
-                  value={displayOrder}
-                  onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
-                  placeholder="0"
-                />
+                <Input id="displayOrder" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} placeholder="0" />
               </div>
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="published"
-                  checked={isPublished}
-                  onCheckedChange={setIsPublished}
-                />
+                <Switch id="published" checked={isPublished} onCheckedChange={setIsPublished} />
                 <Label htmlFor="published">즉시 발행</Label>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                취소
-              </Button>
+              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>취소</Button>
               <Button onClick={handleUpload} disabled={uploadMutation.isPending}>
                 {uploadMutation.isPending ? "업로드 중..." : "업로드"}
               </Button>
@@ -244,19 +216,13 @@ export default function AdminImages() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">로딩 중...</p>
-        </div>
+        <div className="text-center py-12"><p className="text-muted-foreground">로딩 중...</p></div>
       ) : images && images.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {images.map((image) => (
             <Card key={image.id} className="elegant-shadow overflow-hidden">
               <div className="aspect-video relative overflow-hidden bg-muted">
-                <img
-                  src={image.url}
-                  alt={image.title}
-                  className="w-full h-full object-cover"
-                />
+                <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -264,38 +230,22 @@ export default function AdminImages() {
                     <CardTitle className="flex items-center gap-2 text-base">
                       {image.title}
                       {image.isPublished === 1 && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                          발행됨
-                        </span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">발행됨</span>
                       )}
                     </CardTitle>
-                    <CardDescription className="text-xs">
-                      순서: {image.displayOrder}
-                    </CardDescription>
+                    <CardDescription className="text-xs">순서: {image.displayOrder}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 {image.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {image.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{image.description}</p>
                 )}
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(image)}
-                    className="flex-1"
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    수정
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(image)} className="flex-1">
+                    <Edit className="h-4 w-4 mr-1" />수정
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(image.id)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(image.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -307,9 +257,7 @@ export default function AdminImages() {
         <Card className="elegant-shadow">
           <CardContent className="py-12 text-center">
             <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              아직 이미지가 없습니다. 첫 이미지를 업로드해보세요!
-            </p>
+            <p className="text-muted-foreground">아직 이미지가 없습니다. 첫 이미지를 업로드해보세요!</p>
           </CardContent>
         </Card>
       )}
@@ -318,62 +266,29 @@ export default function AdminImages() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>이미지 수정</DialogTitle>
-            <DialogDescription>
-              이미지 정보를 수정하세요
-            </DialogDescription>
+            <DialogDescription>이미지 정보를 수정하세요</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {previewUrl && (
-              <div>
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="max-w-full h-auto rounded-lg elegant-shadow"
-                />
-              </div>
-            )}
+            {previewUrl && <div><img src={previewUrl} alt="Preview" className="max-w-full h-auto rounded-lg elegant-shadow" /></div>}
             <div>
               <Label htmlFor="edit-title">제목</Label>
-              <Input
-                id="edit-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="이미지 제목"
-              />
+              <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="이미지 제목" />
             </div>
             <div>
               <Label htmlFor="edit-description">설명</Label>
-              <Textarea
-                id="edit-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="이미지 설명 (선택사항)"
-                rows={3}
-              />
+              <Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="이미지 설명 (선택사항)" rows={3} />
             </div>
             <div>
               <Label htmlFor="edit-displayOrder">표시 순서</Label>
-              <Input
-                id="edit-displayOrder"
-                type="number"
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
-                placeholder="0"
-              />
+              <Input id="edit-displayOrder" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} placeholder="0" />
             </div>
             <div className="flex items-center space-x-2">
-              <Switch
-                id="edit-published"
-                checked={isPublished}
-                onCheckedChange={setIsPublished}
-              />
+              <Switch id="edit-published" checked={isPublished} onCheckedChange={setIsPublished} />
               <Label htmlFor="edit-published">발행 상태</Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
-              취소
-            </Button>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>취소</Button>
             <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? "수정 중..." : "수정"}
             </Button>

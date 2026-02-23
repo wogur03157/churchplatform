@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
@@ -9,11 +10,26 @@ export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
   const [showFloating, setShowFloating] = useState(false);
 
-  const { data: layoutSettings } = trpc.layoutSettings.list.useQuery();
-  const { data: announcements } = trpc.announcements.list.useQuery({ publishedOnly: true });
-  const { data: images } = trpc.images.list.useQuery({ publishedOnly: true });
-  const { data: videos } = trpc.videos.list.useQuery({ publishedOnly: true });
-  const { data: floatingMessages } = trpc.floatingMessages.list.useQuery({ activeOnly: true });
+  const { data: layoutSettings } = useQuery({
+    queryKey: ["layout-settings"],
+    queryFn: () => api.get<any[]>("/layout-settings"),
+  });
+  const { data: announcements } = useQuery({
+    queryKey: ["announcements", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/announcements?publishedOnly=true"),
+  });
+  const { data: images } = useQuery({
+    queryKey: ["images", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/images?publishedOnly=true"),
+  });
+  const { data: videos } = useQuery({
+    queryKey: ["videos", { publishedOnly: true }],
+    queryFn: () => api.get<any[]>("/videos?publishedOnly=true"),
+  });
+  const { data: floatingMessages } = useQuery({
+    queryKey: ["floating-messages", { activeOnly: true }],
+    queryFn: () => api.get<any[]>("/floating-messages?activeOnly=true"),
+  });
 
   useEffect(() => {
     if (floatingMessages && floatingMessages.length > 0) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { api } from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,52 +24,62 @@ export default function AdminAnnouncements() {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  const utils = trpc.useUtils();
-  const { data: announcements, isLoading } = trpc.announcements.list.useQuery();
-  
-  const createMutation = trpc.announcements.create.useMutation({
+  const queryClientInstance = useQueryClient();
+  const { data: announcements, isLoading } = useQuery({
+    queryKey: ["announcements"],
+    queryFn: () => api.get<any[]>("/announcements"),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: { title: string; content: string; isPublished: boolean }) =>
+      api.post<{ success: boolean; id: number }>("/announcements", data),
     onSuccess: () => {
-      utils.announcements.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["announcements"] });
       toast.success("공지사항이 생성되었습니다");
       resetForm();
       setIsCreateOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
 
-  const updateMutation = trpc.announcements.update.useMutation({
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...data }: { id: number; title: string; content: string; isPublished: boolean }) =>
+      api.patch<{ success: boolean }>(`/announcements/${id}`, data),
     onSuccess: () => {
-      utils.announcements.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["announcements"] });
       toast.success("공지사항이 수정되었습니다");
       resetForm();
       setIsEditOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
 
-  const deleteMutation = trpc.announcements.delete.useMutation({
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete<{ success: boolean }>(`/announcements/${id}`),
     onSuccess: () => {
-      utils.announcements.list.invalidate();
+      queryClientInstance.invalidateQueries({ queryKey: ["announcements"] });
       toast.success("공지사항이 삭제되었습니다");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`오류: ${error.message}`);
     },
   });
 
-  const aiAssistMutation = trpc.aiAssistant.improveText.useMutation({
+  const aiAssistMutation = useMutation({
+    mutationFn: (data: { text: string; action: string }) =>
+      api.post<{ result: string }>("/ai-assistant/improve-text", data),
     onSuccess: (data) => {
-      if (typeof data.result === 'string') {
+      if (typeof data.result === "string") {
         setContent(data.result);
       }
       toast.success("AI 처리가 완료되었습니다");
       setIsAiProcessing(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`AI 오류: ${error.message}`);
       setIsAiProcessing(false);
     },
@@ -202,7 +213,6 @@ export default function AdminAnnouncements() {
         </div>
       </div>
 
-      {/* Announcements List */}
       {isLoading ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">로딩 중...</p>
@@ -215,7 +225,7 @@ export default function AdminAnnouncements() {
                 <div className="flex-1">
                   <CardTitle>{announcement.title}</CardTitle>
                   <CardDescription>
-                    {new Date(announcement.createdAt).toLocaleDateString("ko-KR")} • 
+                    {new Date(announcement.createdAt).toLocaleDateString("ko-KR")} •
                     {announcement.isPublished ? <span className="text-green-600">발행됨</span> : <span className="text-yellow-600">미발행</span>}
                   </CardDescription>
                 </div>
@@ -236,7 +246,7 @@ export default function AdminAnnouncements() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => deleteMutation.mutate({ id: announcement.id })}
+                    onClick={() => deleteMutation.mutate(announcement.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -256,7 +266,6 @@ export default function AdminAnnouncements() {
         </Card>
       )}
 
-      {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -305,7 +314,6 @@ export default function AdminAnnouncements() {
         </DialogContent>
       </Dialog>
 
-      {/* Preview Panel */}
       <PreviewPanel isOpen={showPreview} onClose={() => setShowPreview(false)} />
     </div>
   );
