@@ -126,6 +126,25 @@ export class AuthService {
     return await this.userRepository.findOne({ where: { openId } });
   }
 
+  async devLogin(): Promise<string> {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error("Dev login is only available in development mode");
+    }
+    const devOpenId = "__dev_admin__";
+    await this.userRepository.upsert(
+      {
+        openId: devOpenId,
+        name: "Dev Admin",
+        email: "dev@admin.local",
+        loginMethod: "dev",
+        role: "admin",
+        lastSignedIn: new Date(),
+      },
+      { conflictPaths: ["openId"] }
+    );
+    return this.createSessionToken(devOpenId, "Dev Admin");
+  }
+
   async authenticateRequest(req: Request): Promise<User | null> {
     const cookies = parseCookieHeader(req.headers.cookie ?? "");
     const session = await this.verifySession(cookies[COOKIE_NAME]);
@@ -150,7 +169,7 @@ export class AuthService {
     return {
       httpOnly: true,
       path: "/",
-      sameSite: "none" as const,
+      sameSite: (isSecure ? "none" : "lax") as "none" | "lax",
       secure: isSecure,
     };
   }
