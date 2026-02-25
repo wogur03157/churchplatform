@@ -84,6 +84,67 @@ admin-dashboard/
 
 ---
 
+## 홈화면 섹션 추가하기
+
+공개 페이지(`/`)는 `client/src/pages/PublicView.tsx` 상단의 설정 두 곳만 수정하면 새 섹션을 추가할 수 있습니다.
+
+### 레이아웃 구조
+
+- **모바일**: 섹션이 세로로 쌓이는 스크롤 레이아웃
+- **데스크탑**: 한 화면에 모든 섹션이 그리드로 표시, 각 열은 독립적으로 스크롤
+
+```
+데스크탑 예시 (3열):
+┌─────────────────────────────────────────────────────┐
+│  Hero (컴팩트 스트립)                                │
+├─────────────────┬───────────────┬───────────────────┤
+│   공지사항       │    갤러리      │     영상           │
+│  (독립 스크롤)   │  (독립 스크롤)  │  (독립 스크롤)     │
+└─────────────────┴───────────────┴───────────────────┘
+```
+
+### 섹션 추가 방법
+
+**1단계 — `SECTION_CONFIG`에 배치 등록** (`PublicView.tsx` 상단)
+
+```ts
+const SECTION_CONFIG: Record<string, { colSpan: number }> = {
+  announcements: { colSpan: 1 },
+  images:        { colSpan: 1 },
+  videos:        { colSpan: 1 },
+  events:        { colSpan: 2 }, // ← 새 섹션 추가 (2칸 차지)
+};
+```
+
+**2단계 — `TOTAL_COLS` 조정** (필요 시)
+
+```ts
+const TOTAL_COLS = 4; // colSpan 합산이 늘어나면 조정
+```
+
+**3단계 — `renderSection()`에 렌더 로직 추가**
+
+```ts
+case "events":
+  if (!events || events.length === 0) return null;
+  return (
+    <section key="events" className="py-20 lg:py-4">
+      {/* 섹션 내용 */}
+    </section>
+  );
+```
+
+**4단계 — 백엔드 `layoutSettings` 테이블에 행 추가**
+
+```sql
+INSERT INTO layout_settings (section_type, is_visible, display_order, title)
+VALUES ('events', 1, 5, '이벤트');
+```
+
+> 관리자 페이지 → 레이아웃 설정에서 표시 여부와 순서를 실시간으로 조정할 수 있습니다.
+
+---
+
 ## REST API
 
 모든 API는 `/api` prefix. 인증이 필요한 엔드포인트는 `admin` 역할 필요.
