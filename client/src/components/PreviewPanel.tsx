@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { stripHtml } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ export default function PreviewPanel({ isOpen, onClose }: PreviewPanelProps) {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{announcement.content}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{stripHtml(announcement.content)}</p>
                     </CardContent>
                   </Card>
                 ))}

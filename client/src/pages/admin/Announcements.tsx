@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Sparkles, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreviewPanel from "@/components/PreviewPanel";
+import RichTextEditor from "@/components/RichTextEditor";
+import { stripHtml } from "@/lib/utils";
 
 export default function AdminAnnouncements() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -74,7 +75,15 @@ export default function AdminAnnouncements() {
       api.post<{ result: string }>("/ai-assistant/improve-text", data),
     onSuccess: (data) => {
       if (typeof data.result === "string") {
-        setContent(data.result);
+        const result = data.result.trim();
+        const html = result.startsWith("<")
+          ? result
+          : result
+              .split(/\n{2,}/)
+              .filter(Boolean)
+              .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
+              .join("");
+        setContent(html || `<p>${result}</p>`);
       }
       toast.success("AI 처리가 완료되었습니다");
       setIsAiProcessing(false);
@@ -93,7 +102,7 @@ export default function AdminAnnouncements() {
   };
 
   const handleCreate = () => {
-    if (!title.trim() || !content.trim()) {
+    if (!title.trim() || !stripHtml(content).trim()) {
       toast.error("제목과 내용을 입력하세요");
       return;
     }
@@ -102,7 +111,7 @@ export default function AdminAnnouncements() {
 
   const handleUpdate = () => {
     if (!editingId) return;
-    if (!title.trim() || !content.trim()) {
+    if (!title.trim() || !stripHtml(content).trim()) {
       toast.error("제목과 내용을 입력하세요");
       return;
     }
@@ -110,12 +119,13 @@ export default function AdminAnnouncements() {
   };
 
   const handleAiAssist = () => {
-    if (!content.trim()) {
+    const plainText = stripHtml(content).trim();
+    if (!plainText) {
       toast.error("먼저 내용을 입력하세요");
       return;
     }
     setIsAiProcessing(true);
-    aiAssistMutation.mutate({ text: content, action: aiAction });
+    aiAssistMutation.mutate({ text: plainText, action: aiAction });
   };
 
   return (
@@ -157,13 +167,12 @@ export default function AdminAnnouncements() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="content">내용</Label>
-                  <Textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="공지사항 내용"
-                    rows={8}
+                  <Label>내용</Label>
+                  <RichTextEditor
+                    content={content}
+                    onChange={setContent}
+                    placeholder="공지사항 내용을 입력하세요"
+                    className="mt-1.5"
                   />
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
@@ -253,7 +262,7 @@ export default function AdminAnnouncements() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">{announcement.content}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{stripHtml(announcement.content)}</p>
               </CardContent>
             </Card>
           ))}
@@ -285,13 +294,12 @@ export default function AdminAnnouncements() {
               />
             </div>
             <div>
-              <Label htmlFor="edit-content">내용</Label>
-              <Textarea
-                id="edit-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="공지사항 내용"
-                rows={8}
+              <Label>내용</Label>
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                placeholder="공지사항 내용을 입력하세요"
+                className="mt-1.5"
               />
             </div>
             <div className="flex items-center space-x-2">

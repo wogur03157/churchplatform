@@ -84,11 +84,10 @@ export default function AnnouncementDetail() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-slate max-w-none">
-                <p className="whitespace-pre-wrap text-foreground leading-relaxed">
-                  {announcement.content}
-                </p>
-              </div>
+              <div
+                className="prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: announcement.content }}
+              />
             </CardContent>
           </Card>
         </div>

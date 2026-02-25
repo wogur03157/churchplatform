@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { stripHtml } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
@@ -110,7 +111,7 @@ export default function PublicView() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                          {announcement.content}
+                          {stripHtml(announcement.content)}
                         </p>
                         <div className="flex items-center text-primary text-sm font-medium">
                           자세히 보기 <ArrowRight className="h-4 w-4 ml-2" />
