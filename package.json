@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/main.ts",
+    "dev:no-db": "NODE_ENV=development SKIP_DB=true tsx watch server/main.ts",
     "build": "vite build && esbuild server/main.ts --platform=node --packages=external --bundle --format=esm --outdir=dist/server",
     "start": "NODE_ENV=production node dist/server/main.js",
     "check": "tsc --noEmit",
@@ -64,6 +65,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
     "embla-carousel-react": "^8.6.0",
+    "express": "^4.22.1",
     "framer-motion": "^12.23.22",
     "input-otp": "^1.4.2",
     "jose": "6.1.0",

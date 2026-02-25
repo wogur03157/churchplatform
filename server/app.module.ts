@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { HealthController } from "./modules/health/health.controller";
+import { MockModule } from "./modules/mock/mock.module";
 import { AiAssistantModule } from "./modules/ai-assistant/ai-assistant.module";
 import { AnnouncementsModule } from "./modules/announcements/announcements.module";
 import { Announcement } from "./modules/announcements/entities/announcement.entity";
@@ -18,26 +19,42 @@ import { User } from "./modules/users/entities/user.entity";
 import { Video } from "./modules/videos/entities/video.entity";
 import { VideosModule } from "./modules/videos/videos.module";
 
+// DB가 설정되지 않았거나 SKIP_DB=true 이면 DB 관련 모듈 전체 스킵
+// (AuthModule이 UserRepository에 의존하므로 AuthModule을 쓰는 모든 모듈 함께 제외)
+const dbUrl = process.env.DATABASE_URL ?? "";
+const isDbEnabled =
+  process.env.SKIP_DB !== "true" &&
+  dbUrl.length > 0 &&
+  !dbUrl.includes("user:password@host");
+
+if (!isDbEnabled) {
+  console.warn("[AppModule] DB disabled — running in no-db mode (health endpoint only)");
+}
+
+const dbModules = isDbEnabled
+  ? [
+      TypeOrmModule.forRoot({
+        type: "mysql",
+        url: dbUrl,
+        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting],
+        synchronize: false,
+        logging: process.env.NODE_ENV === "development",
+      }),
+      AuthModule,
+      OAuthModule,
+      AnnouncementsModule,
+      ImagesModule,
+      VideosModule,
+      FloatingMessagesModule,
+      LayoutSettingsModule,
+      AiAssistantModule,
+      StorageModule,
+      NotificationsModule,
+    ]
+  : [];
+
 @Module({
   controllers: [HealthController],
-  imports: [
-    TypeOrmModule.forRoot({
-      type: "mysql",
-      url: process.env.DATABASE_URL,
-      entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting],
-      synchronize: false,
-      logging: process.env.NODE_ENV === "development",
-    }),
-    AuthModule,
-    OAuthModule,
-    AnnouncementsModule,
-    ImagesModule,
-    VideosModule,
-    FloatingMessagesModule,
-    LayoutSettingsModule,
-    AiAssistantModule,
-    StorageModule,
-    NotificationsModule,
-  ],
+  imports: [...dbModules, ...(!isDbEnabled ? [MockModule] : [])],
 })
 export class AppModule {}
