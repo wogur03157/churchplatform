@@ -17,6 +17,9 @@ export class Announcement {
   @Column({ type: "text" })
   content!: string;
 
+  @Column({ type: "int", nullable: true })
+  churchId!: number | null;
+
   @Column({ type: "int" })
   authorId!: number;
 

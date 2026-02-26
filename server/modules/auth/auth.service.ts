@@ -107,7 +107,7 @@ export class AuthService {
     lastSignedIn?: Date;
   }): Promise<void> {
     const ownerOpenId = process.env.OWNER_OPEN_ID ?? "";
-    const role = data.openId === ownerOpenId ? "admin" : undefined;
+    const role = data.openId === ownerOpenId ? "super_admin" : undefined;
 
     await this.userRepository.upsert(
       {
@@ -137,7 +137,7 @@ export class AuthService {
         name: "Dev Admin",
         email: "dev@admin.local",
         loginMethod: "dev",
-        role: "admin",
+        role: "super_admin",
         lastSignedIn: new Date(),
       },
       { conflictPaths: ["openId"] }

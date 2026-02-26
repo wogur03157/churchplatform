@@ -10,7 +10,7 @@ const MOCK_ADMIN_USER = {
   name: "Dev Admin",
   email: "dev@admin.local",
   loginMethod: "dev",
-  role: "admin",
+  role: "super_admin",
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
   lastSignedIn: new Date(),

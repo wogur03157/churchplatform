@@ -40,6 +40,9 @@ export class FloatingMessage {
   })
   displayPosition!: "top" | "bottom" | "center";
 
+  @Column({ type: "int", nullable: true })
+  churchId!: number | null;
+
   @Column({ type: "int" })
   createdBy!: number;
 

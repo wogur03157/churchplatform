@@ -25,10 +25,10 @@ export class User {
 
   @Column({
     type: "enum",
-    enum: ["user", "admin"],
+    enum: ["user", "church_admin", "super_admin"],
     default: "user",
   })
-  role!: "user" | "admin";
+  role!: "user" | "church_admin" | "super_admin";
 
   @CreateDateColumn()
   createdAt!: Date;

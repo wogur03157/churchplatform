@@ -41,6 +41,9 @@ export class Video {
   @Column({ type: "int", nullable: true })
   duration!: number | null;
 
+  @Column({ type: "int", nullable: true })
+  churchId!: number | null;
+
   @Column({ type: "int" })
   uploadedBy!: number;
 

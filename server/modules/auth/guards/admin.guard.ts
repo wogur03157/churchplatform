@@ -24,7 +24,7 @@ export class AdminGuard implements CanActivate {
       throw new UnauthorizedException(UNAUTHED_ERR_MSG);
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "church_admin" && user.role !== "super_admin") {
       throw new ForbiddenException(NOT_ADMIN_ERR_MSG);
     }
 

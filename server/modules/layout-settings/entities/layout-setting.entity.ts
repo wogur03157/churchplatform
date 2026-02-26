@@ -30,6 +30,9 @@ export class LayoutSetting {
   subtitle!: string | null;
 
   @Column({ type: "int", nullable: true })
+  churchId!: number | null;
+
+  @Column({ type: "int", nullable: true })
   updatedBy!: number | null;
 
   @UpdateDateColumn()
