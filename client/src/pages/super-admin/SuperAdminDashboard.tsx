@@ -121,7 +121,6 @@ export default function SuperAdminDashboard() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
           <h1 className="text-xl font-bold">최고관리자</h1>
-          <Button variant="ghost" size="sm" asChild><Link href="/admin">관리자 페이지</Link></Button>
         </div>
       </header>
 

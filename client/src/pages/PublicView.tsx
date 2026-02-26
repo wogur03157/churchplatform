@@ -90,14 +90,6 @@ export default function PublicView() {
           <p className="text-xl md:text-2xl lg:text-sm text-muted-foreground font-light">
             {section.subtitle || "우아하고 완벽한 정보 관리 시스템"}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 lg:hidden">
-            <Button size="lg" asChild className="rounded-full shadow-lg hover:shadow-xl transition-shadow">
-              <Link href="#announcements">공지사항 보기</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="rounded-full">
-              <Link href="/admin">관리자 로그인</Link>
-            </Button>
-          </div>
         </div>
       </div>
     </section>
@@ -283,10 +275,6 @@ export default function PublicView() {
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
             정보 관리 시스템
           </h1>
-          <nav className="flex gap-8">
-            <Link href="#announcements" className="text-sm font-medium hover:text-primary transition-colors">공지사항</Link>
-            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">관리자</Link>
-          </nav>
         </div>
       </header>
 
@@ -328,13 +316,6 @@ export default function PublicView() {
             <div>
               <h3 className="font-semibold mb-3">정보 관리 시스템</h3>
               <p className="text-sm text-muted-foreground">우아하고 완벽한 콘텐츠 관리 플랫폼</p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">빠른 링크</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#announcements" className="text-muted-foreground hover:text-primary transition-colors">공지사항</Link></li>
-                <li><Link href="/admin" className="text-muted-foreground hover:text-primary transition-colors">관리자 로그인</Link></li>
-              </ul>
             </div>
             <div>
               <h3 className="font-semibold mb-3">정보</h3>

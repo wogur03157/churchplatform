@@ -7,6 +7,7 @@ import {
   MockFloatingMessagesController,
   MockLayoutSettingsController,
   MockAiAssistantController,
+  MockChurchesController,
 } from "./mock-data.controller";
 
 @Module({
@@ -18,6 +19,7 @@ import {
     MockFloatingMessagesController,
     MockLayoutSettingsController,
     MockAiAssistantController,
+    MockChurchesController,
   ],
 })
 export class MockModule {}

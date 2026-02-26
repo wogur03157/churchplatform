@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -252,5 +252,173 @@ export class MockAiAssistantController {
   @Post("improve-text")
   improveText() {
     return { result: "[Mock] AI 어시스턴트는 DB 연결 후 사용 가능합니다." };
+  }
+}
+
+// ─── Mock Churches ────────────────────────────────────────────────────────────
+
+type ChurchStatus = "pending" | "active" | "suspended" | "rejected";
+
+interface MockChurch {
+  id: number; name: string; slug: string; status: ChurchStatus;
+  description: string | null; email: string | null; phone: string | null;
+  address: string | null; logoUrl: string | null; customDomain: string | null;
+  appliedBy: number; approvedBy: number | null; approvedAt: Date | null;
+  rejectedReason: string | null; createdAt: Date; updatedAt: Date;
+}
+
+// 메모리 내에서 상태 변경이 반영되도록 let으로 선언
+let CHURCHES: MockChurch[] = [
+  {
+    id: 1, name: "은혜교회", slug: "grace-church", status: "pending",
+    description: "서울 강남에 위치한 은혜교회입니다.", email: "grace@church.kr",
+    phone: "02-1234-5678", address: "서울시 강남구 테헤란로 123", logoUrl: null,
+    customDomain: null, appliedBy: 2, approvedBy: null, approvedAt: null,
+    rejectedReason: null, createdAt: past(3), updatedAt: past(3),
+  },
+  {
+    id: 2, name: "새벽빛교회", slug: "dawn-light", status: "active",
+    description: "새벽빛으로 밝히는 교회", email: "dawn@church.kr",
+    phone: "031-987-6543", address: "경기도 성남시 분당구 판교로 45", logoUrl: null,
+    customDomain: null, appliedBy: 3, approvedBy: 1, approvedAt: past(10),
+    rejectedReason: null, createdAt: past(15), updatedAt: past(10),
+  },
+  {
+    id: 3, name: "테스트교회", slug: "test-church", status: "rejected",
+    description: null, email: null, phone: null, address: null, logoUrl: null,
+    customDomain: null, appliedBy: 4, approvedBy: null, approvedAt: null,
+    rejectedReason: "정보가 불충분합니다. 교회 정보를 보완 후 재신청해 주세요.",
+    createdAt: past(20), updatedAt: past(18),
+  },
+];
+
+const ALL_FEATURE_KEYS = ["announcements", "images", "videos", "floating_messages", "layout_settings", "ai_assistant"] as const;
+
+interface MockFeature { id: number; churchId: number; featureKey: string; isEnabled: number; }
+
+let FEATURES: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
+  id: i + 1, churchId: 2, featureKey: key, isEnabled: key === "ai_assistant" ? 0 : 1,
+}));
+
+const ADMINS = [
+  { id: 3, churchId: 2, name: "박집사", email: "deacon@dawn-light.kr", role: "church_admin" },
+];
+
+@Controller("churches")
+export class MockChurchesController {
+  // slug/:slug 와 my/* 는 반드시 :id 라우트보다 먼저 선언해야 함
+
+  @Get("slug/:slug")
+  findBySlug(@Param("slug") slug: string) {
+    return CHURCHES.find((c) => c.slug === slug) ?? null;
+  }
+
+  @Get("my")
+  myChurches() {
+    // dev 모드에서는 2번 교회를 담당하는 것으로 처리
+    return CHURCHES.filter((c) => c.id === 2);
+  }
+
+  @Get("my/features")
+  myFeatures() {
+    return FEATURES.filter((f) => f.churchId === 2);
+  }
+
+  @Get()
+  findAll() {
+    return CHURCHES;
+  }
+
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return CHURCHES.find((c) => c.id === Number(id)) ?? null;
+  }
+
+  @Post("apply")
+  apply(@Body() body: any) {
+    const newChurch: MockChurch = {
+      id: CHURCHES.length + 10,
+      name: body.name ?? "[Mock] 신규 교회",
+      slug: body.slug ?? "new-church",
+      status: "pending",
+      description: body.description ?? null,
+      email: body.email ?? null,
+      phone: body.phone ?? null,
+      address: body.address ?? null,
+      logoUrl: null, customDomain: null,
+      appliedBy: 1, approvedBy: null, approvedAt: null, rejectedReason: null,
+      createdAt: new Date(), updatedAt: new Date(),
+    };
+    CHURCHES = [...CHURCHES, newChurch];
+    return newChurch;
+  }
+
+  @Post(":id/review")
+  @HttpCode(200)
+  review(@Param("id") id: string, @Body() body: { action: "active" | "rejected"; rejectedReason?: string }) {
+    CHURCHES = CHURCHES.map((c) =>
+      c.id === Number(id)
+        ? { ...c, status: body.action, rejectedReason: body.rejectedReason ?? null,
+            approvedBy: body.action === "active" ? 1 : null,
+            approvedAt: body.action === "active" ? new Date() : null,
+            updatedAt: new Date() }
+        : c,
+    );
+    return CHURCHES.find((c) => c.id === Number(id)) ?? null;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    CHURCHES = CHURCHES.map((c) =>
+      c.id === Number(id) ? { ...c, ...body, updatedAt: new Date() } : c,
+    );
+    return CHURCHES.find((c) => c.id === Number(id)) ?? null;
+  }
+
+  @Get(":id/features")
+  getFeatures(@Param("id") id: string) {
+    const churchId = Number(id);
+    const existing = FEATURES.filter((f) => f.churchId === churchId);
+    if (existing.length === 0) {
+      // 처음 조회 시 기본 피처 세트 생성
+      const newFeatures: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
+        id: FEATURES.length + i + 1, churchId, featureKey: key, isEnabled: 1,
+      }));
+      FEATURES = [...FEATURES, ...newFeatures];
+      return newFeatures;
+    }
+    return existing;
+  }
+
+  @Patch(":id/features/:featureKey")
+  setFeature(
+    @Param("id") id: string,
+    @Param("featureKey") featureKey: string,
+    @Body("isEnabled") isEnabled: boolean,
+  ) {
+    const churchId = Number(id);
+    const exists = FEATURES.some((f) => f.churchId === churchId && f.featureKey === featureKey);
+    if (exists) {
+      FEATURES = FEATURES.map((f) =>
+        f.churchId === churchId && f.featureKey === featureKey
+          ? { ...f, isEnabled: isEnabled ? 1 : 0 }
+          : f,
+      );
+    } else {
+      FEATURES = [...FEATURES, { id: FEATURES.length + 1, churchId, featureKey, isEnabled: isEnabled ? 1 : 0 }];
+    }
+    return FEATURES.find((f) => f.churchId === churchId && f.featureKey === featureKey);
+  }
+
+  @Get(":id/admins")
+  getAdmins(@Param("id") id: string) {
+    return ADMINS.filter((a) => a.churchId === Number(id));
+  }
+
+  @Delete(":id/admins/:userId")
+  removeAdmin(@Param("id") id: string, @Param("userId") userId: string) {
+    const idx = ADMINS.findIndex((a) => a.churchId === Number(id) && a.id === Number(userId));
+    if (idx !== -1) ADMINS.splice(idx, 1);
+    return { success: true };
   }
 }

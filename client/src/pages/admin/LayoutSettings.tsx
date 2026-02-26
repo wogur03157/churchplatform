@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Save, Layout } from "lucide-react";
@@ -88,61 +87,67 @@ export default function AdminLayoutSettings() {
 
             return (
               <Card key={section.type} className="elegant-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Layout className="h-5 w-5" />
-                        {section.name}
-                      </CardTitle>
-                      <CardDescription>{section.description}</CardDescription>
+                <CardContent className="pt-4 pb-4">
+                  {/* 헤더 행: 섹션명 + 컨트롤 */}
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Layout className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{section.name}</p>
+                        <p className="text-xs text-muted-foreground">{section.description}</p>
+                      </div>
                     </div>
-                    <Button size="sm" onClick={() => handleSave(section.type)} disabled={updateMutation.isPending}>
-                      <Save className="h-4 w-4 mr-1" />저장
-                    </Button>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <Switch
+                          id={`${section.type}-visible`}
+                          checked={setting.isVisible === 1}
+                          onCheckedChange={(checked) =>
+                            handleUpdate(section.type, "isVisible", checked ? 1 : 0)
+                          }
+                        />
+                        <Label htmlFor={`${section.type}-visible`} className="text-sm cursor-pointer">표시</Label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Label htmlFor={`${section.type}-order`} className="text-sm whitespace-nowrap">순서</Label>
+                        <Input
+                          id={`${section.type}-order`}
+                          type="number"
+                          min={0}
+                          value={setting.displayOrder}
+                          onChange={(e) =>
+                            handleUpdate(section.type, "displayOrder", Math.max(0, parseInt(e.target.value) || 0))
+                          }
+                          className="w-16 h-8 text-sm"
+                        />
+                      </div>
+                      <Button size="sm" onClick={() => handleSave(section.type)} disabled={updateMutation.isPending}>
+                        <Save className="h-3.5 w-3.5 mr-1" />저장
+                      </Button>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id={`${section.type}-visible`}
-                      checked={setting.isVisible === 1}
-                      onCheckedChange={(checked) =>
-                        handleUpdate(section.type, "isVisible", checked ? 1 : 0)
-                      }
-                    />
-                    <Label htmlFor={`${section.type}-visible`}>표시</Label>
-                  </div>
-                  <div>
-                    <Label htmlFor={`${section.type}-order`}>표시 순서</Label>
-                    <Input
-                      id={`${section.type}-order`}
-                      type="number"
-                      value={setting.displayOrder}
-                      onChange={(e) =>
-                        handleUpdate(section.type, "displayOrder", parseInt(e.target.value) || 0)
-                      }
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`${section.type}-title`}>섹션 제목 (선택사항)</Label>
-                    <Input
-                      id={`${section.type}-title`}
-                      value={setting.title || ""}
-                      onChange={(e) => handleUpdate(section.type, "title", e.target.value)}
-                      placeholder={`${section.name} 제목`}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`${section.type}-subtitle`}>섹션 부제목 (선택사항)</Label>
-                    <Textarea
-                      id={`${section.type}-subtitle`}
-                      value={setting.subtitle || ""}
-                      onChange={(e) => handleUpdate(section.type, "subtitle", e.target.value)}
-                      placeholder={`${section.name} 부제목`}
-                      rows={2}
-                    />
+                  {/* 제목 / 부제목 */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor={`${section.type}-title`} className="text-xs">제목</Label>
+                      <Input
+                        id={`${section.type}-title`}
+                        value={setting.title || ""}
+                        onChange={(e) => handleUpdate(section.type, "title", e.target.value)}
+                        placeholder={`${section.name} 제목`}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor={`${section.type}-subtitle`} className="text-xs">부제목</Label>
+                      <Input
+                        id={`${section.type}-subtitle`}
+                        value={setting.subtitle || ""}
+                        onChange={(e) => handleUpdate(section.type, "subtitle", e.target.value)}
+                        placeholder="부제목 (선택사항)"
+                        className="h-8 text-sm"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
