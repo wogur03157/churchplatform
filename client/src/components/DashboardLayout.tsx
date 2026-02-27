@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -33,6 +33,7 @@ const menuItems = [
   { icon: ImageIcon, label: "이미지", path: "/admin/images" },
   { icon: Video, label: "영상", path: "/admin/videos" },
   { icon: MessageSquare, label: "플로팅 메시지", path: "/admin/floating-messages" },
+  { icon: Layers, label: "팝업", path: "/admin/popups" },
   { icon: Settings, label: "레이아웃 설정", path: "/admin/layout" },
 ];
 

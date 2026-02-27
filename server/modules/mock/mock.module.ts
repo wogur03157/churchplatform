@@ -7,6 +7,7 @@ import {
   MockFloatingMessagesController,
   MockLayoutSettingsController,
   MockAiAssistantController,
+  MockPopupsController,
   MockChurchesController,
 } from "./mock-data.controller";
 
@@ -19,6 +20,7 @@ import {
     MockFloatingMessagesController,
     MockLayoutSettingsController,
     MockAiAssistantController,
+    MockPopupsController,
     MockChurchesController,
   ],
 })

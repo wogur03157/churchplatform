@@ -6,6 +6,8 @@ import { Church } from "./modules/churches/entities/church.entity";
 import { ChurchAdmin } from "./modules/churches/entities/church-admin.entity";
 import { ChurchFeature } from "./modules/churches/entities/church-feature.entity";
 import { ChurchesModule } from "./modules/churches/churches.module";
+import { PopupsModule } from "./modules/popups/popups.module";
+import { Popup } from "./modules/popups/entities/popup.entity";
 import { AiAssistantModule } from "./modules/ai-assistant/ai-assistant.module";
 import { AnnouncementsModule } from "./modules/announcements/announcements.module";
 import { Announcement } from "./modules/announcements/entities/announcement.entity";
@@ -40,7 +42,7 @@ const dbModules = isDbEnabled
       TypeOrmModule.forRoot({
         type: "mysql",
         url: dbUrl,
-        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature],
+        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup],
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
@@ -52,6 +54,7 @@ const dbModules = isDbEnabled
       FloatingMessagesModule,
       LayoutSettingsModule,
       ChurchesModule,
+      PopupsModule,
       AiAssistantModule,
       StorageModule,
       NotificationsModule,

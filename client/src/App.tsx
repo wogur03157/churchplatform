@@ -11,6 +11,7 @@ import AdminImages from "./pages/admin/Images";
 import AdminVideos from "./pages/admin/Videos";
 import AdminFloatingMessages from "./pages/admin/FloatingMessages";
 import AdminLayoutSettings from "./pages/admin/LayoutSettings";
+import AdminPopups from "./pages/admin/Popups";
 import PublicView from "./pages/PublicView";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import AdminLogin from "./pages/AdminLogin";
@@ -44,6 +45,9 @@ function Router() {
       </Route>
       <Route path={"/admin/floating-messages"}>
         <DashboardLayout><AdminFloatingMessages /></DashboardLayout>
+      </Route>
+      <Route path={"/admin/popups"}>
+        <DashboardLayout><AdminPopups /></DashboardLayout>
       </Route>
       <Route path={"/admin/layout"}>
         <DashboardLayout><AdminLayoutSettings /></DashboardLayout>

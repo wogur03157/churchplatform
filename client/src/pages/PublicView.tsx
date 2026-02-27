@@ -5,7 +5,7 @@ import { stripHtml } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { FileText, Video as VideoIcon, X, ArrowRight, Calendar } from "lucide-react";
+import { FileText, Video as VideoIcon, X, ArrowRight, Calendar, ExternalLink } from "lucide-react";
 
 // =============================================================================
 // 데스크탑 그리드 설정
@@ -39,6 +39,8 @@ const TOTAL_COLS = 3;
 export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
   const [showFloating, setShowFloating] = useState(false);
+  const [popup, setPopup] = useState<any>(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   const { data: layoutSettings } = useQuery({
     queryKey: ["layout-settings"],
@@ -60,6 +62,10 @@ export default function PublicView() {
     queryKey: ["floating-messages", { activeOnly: true }],
     queryFn: () => api.get<any[]>("/floating-messages?activeOnly=true"),
   });
+  const { data: popups } = useQuery({
+    queryKey: ["popups", { activeOnly: true }],
+    queryFn: () => api.get<any[]>("/popups?activeOnly=true"),
+  });
 
   useEffect(() => {
     if (floatingMessages && floatingMessages.length > 0) {
@@ -67,6 +73,13 @@ export default function PublicView() {
       setShowFloating(true);
     }
   }, [floatingMessages]);
+
+  useEffect(() => {
+    if (popups && popups.length > 0) {
+      setPopup(popups[0]);
+      setShowPopup(true);
+    }
+  }, [popups]);
 
   const visibleSections = layoutSettings
     ?.filter((s) => s.isVisible === 1)
@@ -327,6 +340,59 @@ export default function PublicView() {
           </div>
         </div>
       </footer>
+
+      {/* ── 팝업 모달 ── */}
+      {showPopup && popup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setShowPopup(false)}
+        >
+          <div
+            className="relative bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-2 z-10 h-7 w-7 p-0 bg-black/30 hover:bg-black/50 text-white rounded-full"
+              onClick={() => setShowPopup(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            {popup.imageUrl ? (
+              popup.linkUrl ? (
+                <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" onClick={() => setShowPopup(false)}>
+                  <img src={popup.imageUrl} alt={popup.title} className="w-full object-contain cursor-pointer" />
+                </a>
+              ) : (
+                <img src={popup.imageUrl} alt={popup.title} className="w-full object-contain" />
+              )
+            ) : null}
+            <div className="p-4 flex items-center justify-between gap-3">
+              <p className="font-medium text-sm">{popup.title}</p>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {popup.linkUrl && (
+                  <a
+                    href={popup.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-primary hover:underline"
+                    onClick={() => setShowPopup(false)}
+                  >
+                    자세히 보기 <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                <button
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowPopup(false)}
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 플로팅 메시지 ── */}
       {showFloating && floatingMessage && (

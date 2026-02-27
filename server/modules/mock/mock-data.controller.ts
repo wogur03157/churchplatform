@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common";
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -252,6 +252,95 @@ export class MockAiAssistantController {
   @Post("improve-text")
   improveText() {
     return { result: "[Mock] AI 어시스턴트는 DB 연결 후 사용 가능합니다." };
+  }
+}
+
+// ─── Mock Popups ──────────────────────────────────────────────────────────────
+
+interface MockPopup {
+  id: number; churchId: number | null; title: string;
+  imageKey: string | null; imageUrl: string | null; linkUrl: string | null;
+  startDate: Date | null; endDate: Date | null; isActive: number;
+  createdBy: number; createdAt: Date; updatedAt: Date;
+}
+
+let POPUPS: MockPopup[] = [
+  {
+    id: 1, churchId: null, title: "성탄절 예배 안내",
+    imageKey: null,
+    imageUrl: "https://picsum.photos/seed/popup1/800/600",
+    linkUrl: null,
+    startDate: past(7), endDate: new Date(Date.now() + 7 * 86400_000),
+    isActive: 1, createdBy: 1, createdAt: past(7), updatedAt: past(7),
+  },
+  {
+    id: 2, churchId: null, title: "[비활성] 신년 행사 팝업",
+    imageKey: null,
+    imageUrl: "https://picsum.photos/seed/popup2/800/600",
+    linkUrl: "https://example.com",
+    startDate: null, endDate: null,
+    isActive: 0, createdBy: 1, createdAt: past(14), updatedAt: past(14),
+  },
+];
+
+@Controller("popups")
+export class MockPopupsController {
+  @Get()
+  findAll(@Query("activeOnly") activeOnly?: string) {
+    if (activeOnly === "true") {
+      const now = new Date();
+      return POPUPS.filter(
+        (p) => p.isActive === 1
+          && (p.startDate === null || p.startDate <= now)
+          && (p.endDate === null || p.endDate >= now),
+      );
+    }
+    return POPUPS;
+  }
+
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return POPUPS.find((p) => p.id === Number(id)) ?? null;
+  }
+
+  @Post()
+  create(@Body() body: any) {
+    const popup: MockPopup = {
+      id: POPUPS.length + 10,
+      churchId: null,
+      title: body.title ?? "[Mock] 새 팝업",
+      imageKey: null,
+      imageUrl: body.imageUrl ?? "https://picsum.photos/seed/new/800/600",
+      linkUrl: body.linkUrl ?? null,
+      startDate: body.startDate ? new Date(body.startDate) : null,
+      endDate: body.endDate ? new Date(body.endDate) : null,
+      isActive: body.isActive ? 1 : 0,
+      createdBy: 1, createdAt: new Date(), updatedAt: new Date(),
+    };
+    POPUPS = [...POPUPS, popup];
+    return { success: true, id: popup.id, imageUrl: popup.imageUrl };
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    POPUPS = POPUPS.map((p) =>
+      p.id === Number(id) ? {
+        ...p,
+        ...(body.title !== undefined && { title: body.title }),
+        ...(body.linkUrl !== undefined && { linkUrl: body.linkUrl || null }),
+        ...(body.startDate !== undefined && { startDate: body.startDate ? new Date(body.startDate) : null }),
+        ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
+        ...(body.isActive !== undefined && { isActive: body.isActive ? 1 : 0 }),
+        updatedAt: new Date(),
+      } : p,
+    );
+    return { success: true };
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    POPUPS = POPUPS.filter((p) => p.id !== Number(id));
+    return { success: true };
   }
 }
 
