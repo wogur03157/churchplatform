@@ -7,34 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "wouter";
 import { FileText, Video as VideoIcon, X, ArrowRight, Calendar, ExternalLink } from "lucide-react";
 
-// =============================================================================
-// 데스크탑 그리드 설정
-// 섹션 추가 시 SECTION_CONFIG에 항목을 추가하고,
-// 필요하면 GRID_COLS_CLASS도 조정하세요.
-// =============================================================================
-
-/** 전체 열 수 → Tailwind 클래스 매핑 */
-const GRID_COLS_CLASS: Record<number, string> = {
-  1: "lg:grid-cols-1",
-  2: "lg:grid-cols-2",
-  3: "lg:grid-cols-3",
-  4: "lg:grid-cols-4",
-  6: "lg:grid-cols-6",
+// colSpan → Tailwind col-span 클래스
+const COL_SPAN_CLASS: Record<number, string> = {
+  1: "lg:col-span-1",
+  2: "lg:col-span-2",
+  3: "lg:col-span-3",
 };
-
-/** 섹션별 설정: colSpan = 차지할 열 수 */
-const SECTION_CONFIG: Record<string, { colSpan: number }> = {
-  announcements: { colSpan: 1 },
-  images:        { colSpan: 1 },
-  videos:        { colSpan: 1 },
-  // 새 섹션 추가 예시:
-  // gallery2:   { colSpan: 2 },
-};
-
-/** 전체 열 수 (SECTION_CONFIG의 colSpan 합산 기준으로 직접 지정) */
-const TOTAL_COLS = 3;
-
-// =============================================================================
 
 export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
@@ -248,6 +226,19 @@ export default function PublicView() {
           </section>
         );
 
+      case "image_a":
+      case "image_b":
+        if (!section.imageUrl) return null;
+        return (
+          <section key={section.sectionType} className="lg:h-full overflow-hidden">
+            <img
+              src={section.imageUrl}
+              alt={section.title || ""}
+              className="w-full h-64 lg:h-full object-cover"
+            />
+          </section>
+        );
+
       default:
         return null;
     }
@@ -271,14 +262,6 @@ export default function PublicView() {
     }
   };
 
-  // colSpan → Tailwind class 매핑 (Tailwind purge 대응)
-  const colSpanClass: Record<number, string> = {
-    1: "lg:col-span-1",
-    2: "lg:col-span-2",
-    3: "lg:col-span-3",
-    4: "lg:col-span-4",
-  };
-
   return (
     <div className="min-h-screen lg:h-screen lg:flex lg:flex-col bg-background">
 
@@ -294,31 +277,18 @@ export default function PublicView() {
       {/* ── 본문 ── */}
       <main className="lg:flex-1 lg:flex lg:flex-col lg:overflow-hidden">
 
-        {/* Hero: 모바일 전체 / 데스크탑 컴팩트 */}
         {heroSection && renderHero(heroSection)}
 
-        {/*
-          데이터 섹션 그리드
-          - 모바일: 세로 스크롤 (기본 block 레이아웃)
-          - 데스크탑: TOTAL_COLS 열 그리드, 각 셀 독립 스크롤
-
-          섹션 추가 시:
-            1. SECTION_CONFIG에 { colSpan: N } 추가
-            2. TOTAL_COLS 값 조정 (필요 시)
-            3. renderSection() 에 case 추가
-        */}
-        <div className={`lg:grid lg:flex-1 lg:overflow-hidden lg:divide-x lg:divide-border ${GRID_COLS_CLASS[TOTAL_COLS] ?? "lg:grid-cols-3"}`}>
-          {dataSections.map((section) => {
-            const span = SECTION_CONFIG[section.sectionType]?.colSpan ?? 1;
-            return (
-              <div
-                key={section.sectionType}
-                className={`lg:overflow-y-auto lg:min-w-0 ${colSpanClass[span] ?? "lg:col-span-1"}`}
-              >
-                {renderSection(section)}
-              </div>
-            );
-          })}
+        {/* 데이터 섹션 그리드 — colSpan은 레이아웃 설정에서 관리 */}
+        <div className="lg:grid lg:grid-cols-3 lg:flex-1 lg:overflow-hidden lg:divide-x lg:divide-border">
+          {dataSections.map((section) => (
+            <div
+              key={section.sectionType}
+              className={`lg:overflow-y-auto lg:min-w-0 ${COL_SPAN_CLASS[section.colSpan ?? 1] ?? "lg:col-span-1"}`}
+            >
+              {renderSection(section)}
+            </div>
+          ))}
         </div>
       </main>
 

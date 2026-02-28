@@ -149,11 +149,13 @@ const FLOATING_MESSAGES = [
   },
 ];
 
-const LAYOUT_SETTINGS = [
-  { id: 1, sectionType: "hero", isVisible: 1, displayOrder: 1, title: "환영합니다", subtitle: "서비스 소개 문구가 여기에 표시됩니다.", updatedBy: 1, updatedAt: now },
-  { id: 2, sectionType: "announcements", isVisible: 1, displayOrder: 2, title: "공지사항", subtitle: null, updatedBy: 1, updatedAt: now },
-  { id: 3, sectionType: "images", isVisible: 1, displayOrder: 3, title: "갤러리", subtitle: null, updatedBy: 1, updatedAt: now },
-  { id: 4, sectionType: "videos", isVisible: 1, displayOrder: 4, title: "영상", subtitle: null, updatedBy: 1, updatedAt: now },
+let LAYOUT_SETTINGS = [
+  { id: 1, sectionType: "hero",          isVisible: 1, displayOrder: 1, colSpan: 3, title: "환영합니다", subtitle: "서비스 소개 문구가 여기에 표시됩니다.", imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 2, sectionType: "announcements", isVisible: 1, displayOrder: 2, colSpan: 1, title: "공지사항",   subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 3, sectionType: "images",        isVisible: 1, displayOrder: 3, colSpan: 1, title: "갤러리",    subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 4, sectionType: "videos",        isVisible: 1, displayOrder: 4, colSpan: 1, title: "영상",      subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 5, sectionType: "image_a",       isVisible: 0, displayOrder: 5, colSpan: 1, title: null,       subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 6, sectionType: "image_b",       isVisible: 0, displayOrder: 6, colSpan: 1, title: null,       subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
 ];
 
 // ─── Controllers ─────────────────────────────────────────────────────────────
@@ -240,11 +242,43 @@ export class MockLayoutSettingsController {
   @Get()
   findAll() { return LAYOUT_SETTINGS; }
 
+  @Post("save-all")
+  saveAll(@Body() body: any[]) {
+    if (Array.isArray(body)) {
+      LAYOUT_SETTINGS = LAYOUT_SETTINGS.map((s) => {
+        const incoming = body.find((b) => b.sectionType === s.sectionType);
+        if (!incoming) return s;
+        return {
+          ...s,
+          isVisible: incoming.isVisible ? 1 : 0,
+          displayOrder: incoming.displayOrder ?? s.displayOrder,
+          colSpan: incoming.colSpan ?? s.colSpan,
+          title: incoming.title ?? s.title,
+          subtitle: incoming.subtitle ?? s.subtitle,
+          imageKey: incoming.imageKey !== undefined ? incoming.imageKey : s.imageKey,
+          imageUrl: incoming.imageUrl !== undefined ? incoming.imageUrl : s.imageUrl,
+          updatedAt: new Date(),
+        };
+      });
+    }
+    return { success: true };
+  }
+
   @Post("upsert")
-  upsert() { return LAYOUT_SETTINGS[0]; }
+  upsert(@Body() body: any) {
+    const idx = LAYOUT_SETTINGS.findIndex((s) => s.sectionType === body.sectionType);
+    if (idx !== -1) {
+      LAYOUT_SETTINGS[idx] = { ...LAYOUT_SETTINGS[idx], ...body, updatedAt: new Date() };
+    }
+    return LAYOUT_SETTINGS[idx] ?? null;
+  }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return LAYOUT_SETTINGS.find((s) => s.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = LAYOUT_SETTINGS.findIndex((s) => s.id === Number(id));
+    if (idx !== -1) LAYOUT_SETTINGS[idx] = { ...LAYOUT_SETTINGS[idx], ...body, updatedAt: new Date() };
+    return LAYOUT_SETTINGS[idx] ?? null;
+  }
 }
 
 @Controller("ai-assistant")
