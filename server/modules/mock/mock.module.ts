@@ -9,6 +9,11 @@ import {
   MockAiAssistantController,
   MockPopupsController,
   MockChurchesController,
+  MockVideoCategoriesController,
+  MockPageGroupsController,
+  MockFormFieldsController,
+  MockFormSubmissionsController,
+  MockSiteConfigController,
 } from "./mock-data.controller";
 
 @Module({
@@ -22,6 +27,11 @@ import {
     MockAiAssistantController,
     MockPopupsController,
     MockChurchesController,
+    MockVideoCategoriesController,
+    MockPageGroupsController,
+    MockFormFieldsController,
+    MockFormSubmissionsController,
+    MockSiteConfigController,
   ],
 })
 export class MockModule {}
