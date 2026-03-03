@@ -21,20 +21,24 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers, Tag, Users, FormInput, ClipboardList } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "대시보드", path: "/admin" },
-  { icon: FileText, label: "공지사항", path: "/admin/announcements" },
-  { icon: ImageIcon, label: "이미지", path: "/admin/images" },
-  { icon: Video, label: "영상", path: "/admin/videos" },
-  { icon: MessageSquare, label: "플로팅 메시지", path: "/admin/floating-messages" },
-  { icon: Layers, label: "팝업", path: "/admin/popups" },
-  { icon: Settings, label: "레이아웃 설정", path: "/admin/layout" },
+  { icon: LayoutDashboard, label: "대시보드",      path: "/admin" },
+  { icon: FileText,        label: "공지사항",      path: "/admin/announcements" },
+  { icon: ImageIcon,       label: "이미지",        path: "/admin/images" },
+  { icon: Video,           label: "영상",          path: "/admin/videos" },
+  { icon: Tag,             label: "영상 카테고리", path: "/admin/video-categories" },
+  { icon: MessageSquare,   label: "플로팅 메시지", path: "/admin/floating-messages" },
+  { icon: Layers,          label: "팝업",          path: "/admin/popups" },
+  { icon: Settings,        label: "레이아웃 설정", path: "/admin/layout" },
+  { icon: Users,           label: "소그룹 관리",   path: "/admin/page-groups" },
+  { icon: FormInput,       label: "폼 필드 설정",  path: "/admin/form-config" },
+  { icon: ClipboardList,   label: "신청 내역",     path: "/admin/form-submissions" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
