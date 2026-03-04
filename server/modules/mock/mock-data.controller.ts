@@ -455,7 +455,12 @@ let CHURCHES: MockChurch[] = [
   },
 ];
 
-const ALL_FEATURE_KEYS = ["announcements", "images", "videos", "floating_messages", "layout_settings", "ai_assistant"] as const;
+const ALL_FEATURE_KEYS = [
+  "announcements", "images", "videos", "video_categories",
+  "floating_messages", "popups", "layout_settings",
+  "page_groups", "form_config", "form_submissions",
+  "ai_assistant",
+] as const;
 
 interface MockFeature { id: number; churchId: number; featureKey: string; isEnabled: number; }
 
@@ -466,6 +471,10 @@ let FEATURES: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
 const ADMINS = [
   { id: 3, churchId: 2, name: "박집사", email: "deacon@dawn-light.kr", role: "church_admin" },
 ];
+
+export function getEnabledFeatures(churchId: number): string[] {
+  return FEATURES.filter((f) => f.churchId === churchId && f.isEnabled).map((f) => f.featureKey);
+}
 
 @Controller("churches")
 export class MockChurchesController {
@@ -727,6 +736,56 @@ export class MockFormSubmissionsController {
     const item = { id: FORM_SUBMISSIONS.length + 10, fieldData: body.fieldData ?? {}, submittedAt: new Date(), churchId: body.churchId ?? null };
     FORM_SUBMISSIONS = [...FORM_SUBMISSIONS, item];
     return { success: true, id: item.id };
+  }
+}
+
+// ─── Admin Permissions ────────────────────────────────────────────────────────
+
+const ALL_PERM_KEYS = [
+  "announcements", "images", "videos", "video_categories",
+  "floating_messages", "popups", "layout_settings",
+  "page_groups", "form_config", "form_submissions",
+];
+
+let ADMIN_PERMISSIONS: { adminId: number; permKey: string; isAllowed: number }[] = [
+  // 박집사(id:3) — 기본값: 전체 허용
+  ...ALL_PERM_KEYS.map((k) => ({ adminId: 3, permKey: k, isAllowed: 1 })),
+];
+
+@Controller("admins")
+export class MockAdminPermissionsController {
+  @Get()
+  findAll(@Query("churchId") churchId?: string) {
+    if (churchId) return ADMINS.filter((a) => a.churchId === Number(churchId));
+    return ADMINS;
+  }
+
+  @Get(":id/permissions")
+  getPermissions(@Param("id") id: string) {
+    const adminId = Number(id);
+    const permissions = ADMIN_PERMISSIONS
+      .filter((p) => p.adminId === adminId && p.isAllowed)
+      .map((p) => p.permKey);
+    return { permissions };
+  }
+
+  @Patch(":id/permissions")
+  updatePermission(
+    @Param("id") id: string,
+    @Body() body: { permKey: string; isAllowed: boolean },
+  ) {
+    const adminId = Number(id);
+    const exists = ADMIN_PERMISSIONS.some((p) => p.adminId === adminId && p.permKey === body.permKey);
+    if (exists) {
+      ADMIN_PERMISSIONS = ADMIN_PERMISSIONS.map((p) =>
+        p.adminId === adminId && p.permKey === body.permKey
+          ? { ...p, isAllowed: body.isAllowed ? 1 : 0 }
+          : p,
+      );
+    } else {
+      ADMIN_PERMISSIONS = [...ADMIN_PERMISSIONS, { adminId, permKey: body.permKey, isAllowed: body.isAllowed ? 1 : 0 }];
+    }
+    return { success: true };
   }
 }
 

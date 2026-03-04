@@ -21,24 +21,25 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers, Tag, Users, FormInput, ClipboardList } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers, Tag, Users, FormInput, ClipboardList, Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "대시보드",      path: "/admin" },
-  { icon: FileText,        label: "공지사항",      path: "/admin/announcements" },
-  { icon: ImageIcon,       label: "이미지",        path: "/admin/images" },
-  { icon: Video,           label: "영상",          path: "/admin/videos" },
-  { icon: Tag,             label: "영상 카테고리", path: "/admin/video-categories" },
-  { icon: MessageSquare,   label: "플로팅 메시지", path: "/admin/floating-messages" },
-  { icon: Layers,          label: "팝업",          path: "/admin/popups" },
-  { icon: Settings,        label: "레이아웃 설정", path: "/admin/layout" },
-  { icon: Users,           label: "소그룹 관리",   path: "/admin/page-groups" },
-  { icon: FormInput,       label: "폼 필드 설정",  path: "/admin/form-config" },
-  { icon: ClipboardList,   label: "신청 내역",     path: "/admin/form-submissions" },
+const NAV_ITEMS = [
+  { icon: LayoutDashboard, label: "대시보드",      path: "/admin",                   permKey: null },
+  { icon: FileText,        label: "공지사항",      path: "/admin/announcements",     permKey: "announcements" },
+  { icon: ImageIcon,       label: "이미지",        path: "/admin/images",            permKey: "images" },
+  { icon: Video,           label: "영상",          path: "/admin/videos",            permKey: "videos" },
+  { icon: Tag,             label: "영상 카테고리", path: "/admin/video-categories",  permKey: "video_categories" },
+  { icon: MessageSquare,   label: "플로팅 메시지", path: "/admin/floating-messages", permKey: "floating_messages" },
+  { icon: Layers,          label: "팝업",          path: "/admin/popups",            permKey: "popups" },
+  { icon: Settings,        label: "레이아웃 설정", path: "/admin/layout",            permKey: "layout_settings" },
+  { icon: Users,           label: "소그룹 관리",   path: "/admin/page-groups",       permKey: "page_groups" },
+  { icon: FormInput,       label: "폼 필드 설정",  path: "/admin/form-config",       permKey: "form_config" },
+  { icon: ClipboardList,   label: "신청 내역",     path: "/admin/form-submissions",  permKey: "form_submissions" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -121,7 +122,20 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  type NavState = "visible" | "locked" | "hidden";
+  const getNavState = (permKey: string | null): NavState => {
+    if (!permKey || user?.role === "super_admin") return "visible";
+    const featureOn = !user?.enabledFeatures || (user.enabledFeatures as string[]).includes(permKey);
+    if (!featureOn) return "locked";
+    const permOk = ((user?.permissions ?? []) as string[]).includes(permKey);
+    return permOk ? "visible" : "hidden";
+  };
+
+  const navItems = NAV_ITEMS
+    .map((item) => ({ ...item, state: getNavState(item.permKey) }))
+    .filter((item) => item.state !== "hidden");
+
+  const activeMenuItem = navItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -189,21 +203,38 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {navItems.map(item => {
                 const isActive = location === item.path;
+                const isLocked = item.state === "locked";
+
+                const button = (
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    onClick={() => !isLocked && setLocation(item.path)}
+                    tooltip={isLocked ? "비활성 기능" : item.label}
+                    className={`h-10 transition-all font-normal ${isLocked ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    {isLocked
+                      ? <Lock className="h-4 w-4" />
+                      : <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                    }
+                    <span>{item.label}</span>
+                    {isLocked && !isCollapsed && (
+                      <span className="ml-auto text-[10px] text-muted-foreground/60 font-medium">비활성</span>
+                    )}
+                  </SidebarMenuButton>
+                );
+
                 return (
                   <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
+                    {isLocked ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{button}</TooltipTrigger>
+                        <TooltipContent side="right">
+                          비활성 기능입니다. 슈퍼어드민에 문의하세요.
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : button}
                   </SidebarMenuItem>
                 );
               })}
