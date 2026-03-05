@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Video as VideoIcon } from "lucide-react";
 
@@ -23,8 +24,14 @@ export default function AdminVideos() {
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [displayOrder, setDisplayOrder] = useState(0);
+  const [category, setCategory] = useState<string>("");
 
   const queryClientInstance = useQueryClient();
+
+  const { data: videoCategories } = useQuery({
+    queryKey: ["video-categories"],
+    queryFn: () => api.get<any[]>("/video-categories"),
+  });
   const { data: videos, isLoading } = useQuery({
     queryKey: ["videos"],
     queryFn: () => api.get<any[]>("/videos"),
@@ -75,6 +82,7 @@ export default function AdminVideos() {
     setThumbnailUrl("");
     setIsPublished(false);
     setDisplayOrder(0);
+    setCategory("");
     setEditingId(null);
   };
 
@@ -83,7 +91,7 @@ export default function AdminVideos() {
       toast.error("제목과 URL을 입력해주세요");
       return;
     }
-    createMutation.mutate({ title, description, videoType, url, thumbnailUrl: thumbnailUrl || undefined, isPublished, displayOrder });
+    createMutation.mutate({ title, description, videoType, url, thumbnailUrl: thumbnailUrl || undefined, isPublished, displayOrder, category: category || null });
   };
 
   const handleEdit = (video: any) => {
@@ -95,6 +103,7 @@ export default function AdminVideos() {
     setThumbnailUrl(video.thumbnailUrl || "");
     setIsPublished(video.isPublished === 1);
     setDisplayOrder(video.displayOrder);
+    setCategory(video.category ?? "");
     setIsEditOpen(true);
   };
 
@@ -103,7 +112,7 @@ export default function AdminVideos() {
       toast.error("제목과 URL을 입력해주세요");
       return;
     }
-    updateMutation.mutate({ id: editingId, title, description, url, thumbnailUrl: thumbnailUrl || undefined, isPublished, displayOrder });
+    updateMutation.mutate({ id: editingId, title, description, url, thumbnailUrl: thumbnailUrl || undefined, isPublished, displayOrder, category: category || null });
   };
 
   const handleDelete = (id: number) => {
@@ -172,6 +181,18 @@ export default function AdminVideos() {
                 <Input id="thumbnailUrl" value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://..." />
               </div>
               <div>
+                <Label htmlFor="category">카테고리</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger id="category"><SelectValue placeholder="카테고리 선택 (선택사항)" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">없음</SelectItem>
+                    {(videoCategories ?? []).map((c: any) => (
+                      <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label htmlFor="displayOrder">표시 순서</Label>
                 <Input id="displayOrder" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} placeholder="0" />
               </div>
@@ -216,7 +237,10 @@ export default function AdminVideos() {
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">발행됨</span>
                       )}
                     </CardTitle>
-                    <CardDescription className="text-xs">{video.videoType.toUpperCase()} · 순서: {video.displayOrder}</CardDescription>
+                    <CardDescription className="text-xs flex items-center gap-2">
+                      {video.videoType.toUpperCase()} · 순서: {video.displayOrder}
+                      {video.category && <Badge variant="outline" className="text-xs">{video.category}</Badge>}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -267,6 +291,18 @@ export default function AdminVideos() {
             <div>
               <Label htmlFor="edit-thumbnailUrl">썸네일 URL (선택사항)</Label>
               <Input id="edit-thumbnailUrl" value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://..." />
+            </div>
+            <div>
+              <Label htmlFor="edit-category">카테고리</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger id="edit-category"><SelectValue placeholder="카테고리 선택 (선택사항)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">없음</SelectItem>
+                  {(videoCategories ?? []).map((c: any) => (
+                    <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="edit-displayOrder">표시 순서</Label>

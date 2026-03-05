@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { FileText, Video as VideoIcon, X, ArrowRight, Calendar, ExternalLink } from "lucide-react";
+import PublicHeader from "@/components/PublicHeader";
 
 // colSpan → Tailwind col-span 클래스
 const COL_SPAN_CLASS: Record<number, string> = {
@@ -266,13 +267,9 @@ export default function PublicView() {
     <div className="min-h-screen lg:h-screen lg:flex lg:flex-col bg-background">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-none">
-        <div className="container flex h-16 items-center justify-between">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-            정보 관리 시스템
-          </h1>
-        </div>
-      </header>
+      <div className="flex-none">
+        <PublicHeader />
+      </div>
 
       {/* ── 본문 ── */}
       <main className="lg:flex-1 lg:flex lg:flex-col lg:overflow-hidden">

@@ -3,6 +3,7 @@ import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response } from "express";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { getEnabledFeatures } from "./mock-data.controller";
 
 const MOCK_ADMIN_USER = {
   id: 1,
@@ -59,7 +60,12 @@ export class MockAuthController {
 
     try {
       await jwtVerify(cookieValue, getSecretKey(), { algorithms: ["HS256"] });
-      return { ...MOCK_ADMIN_USER, lastSignedIn: new Date() };
+      const user = { ...MOCK_ADMIN_USER, lastSignedIn: new Date() };
+      // super_admin: null = 전체 허용, church_admin: 허용 목록 배열
+      const permissions = user.role === "super_admin" ? null : [];
+      // super_admin: null = 전체 활성, church_admin: 활성된 기능 목록
+      const enabledFeatures = user.role === "super_admin" ? null : getEnabledFeatures(2);
+      return { ...user, permissions, enabledFeatures };
     } catch {
       return null;
     }

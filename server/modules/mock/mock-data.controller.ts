@@ -83,40 +83,50 @@ const IMAGES = [
   },
 ];
 
-const VIDEOS = [
+let VIDEOS: any[] = [
   {
-    id: 1,
-    title: "서비스 소개 영상",
-    description: "서비스를 소개하는 유튜브 영상입니다.",
-    videoType: "youtube",
-    fileKey: null,
+    id: 1, title: "주일예배 설교 — 은혜의 강", description: "주님의 은혜를 나누는 주일예배입니다.",
+    videoType: "youtube", fileKey: null,
     url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    mimeType: null,
-    fileSize: null,
-    duration: 212,
-    uploadedBy: 1,
-    isPublished: 1,
-    displayOrder: 1,
-    createdAt: past(14),
-    updatedAt: past(14),
+    mimeType: null, fileSize: null, duration: 2820,
+    churchId: null, uploadedBy: 1, isPublished: 1, displayOrder: 1,
+    category: "sunday", createdAt: past(7), updatedAt: past(7),
   },
   {
-    id: 2,
-    title: "[초안] 튜토리얼 영상",
-    description: "사용 방법을 안내하는 튜토리얼입니다.",
-    videoType: "youtube",
-    fileKey: null,
+    id: 2, title: "수요예배 설교 — 믿음의 길", description: "수요예배 말씀 나눔입니다.",
+    videoType: "youtube", fileKey: null,
     url: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
-    thumbnailUrl: null,
-    mimeType: null,
-    fileSize: null,
-    duration: null,
-    uploadedBy: 1,
-    isPublished: 0,
-    displayOrder: 2,
-    createdAt: past(2),
-    updatedAt: past(2),
+    thumbnailUrl: "https://img.youtube.com/vi/ysz5S6PUM-U/hqdefault.jpg",
+    mimeType: null, fileSize: null, duration: 1800,
+    churchId: null, uploadedBy: 1, isPublished: 1, displayOrder: 2,
+    category: "wednesday", createdAt: past(5), updatedAt: past(5),
+  },
+  {
+    id: 3, title: "금요기도회 말씀", description: "금요기도회 설교입니다.",
+    videoType: "youtube", fileKey: null,
+    url: "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    thumbnailUrl: "https://img.youtube.com/vi/9bZkp7q19f0/hqdefault.jpg",
+    mimeType: null, fileSize: null, duration: 2100,
+    churchId: null, uploadedBy: 1, isPublished: 1, displayOrder: 3,
+    category: "friday", createdAt: past(3), updatedAt: past(3),
+  },
+  {
+    id: 4, title: "성탄절 특별예배", description: "성탄절을 기념하는 특별예배입니다.",
+    videoType: "youtube", fileKey: null,
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+    mimeType: null, fileSize: null, duration: 3600,
+    churchId: null, uploadedBy: 1, isPublished: 1, displayOrder: 4,
+    category: "christmas", createdAt: past(90), updatedAt: past(90),
+  },
+  {
+    id: 5, title: "[초안] 주일설교 준비중", description: "준비 중인 설교입니다.",
+    videoType: "youtube", fileKey: null,
+    url: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
+    thumbnailUrl: null, mimeType: null, fileSize: null, duration: null,
+    churchId: null, uploadedBy: 1, isPublished: 0, displayOrder: 5,
+    category: "sunday", createdAt: past(1), updatedAt: past(1),
   },
 ];
 
@@ -201,22 +211,52 @@ export class MockImagesController {
 @Controller("videos")
 export class MockVideosController {
   @Get()
-  findAll() { return VIDEOS; }
+  findAll(
+    @Query("category") category?: string,
+    @Query("publishedOnly") publishedOnly?: string,
+  ) {
+    let result = [...VIDEOS];
+    if (publishedOnly === "true") result = result.filter((v) => v.isPublished === 1);
+    if (category) {
+      if (category === "special") {
+        result = result.filter((v) => !["sunday", "wednesday", "friday"].includes(v.category));
+      } else {
+        result = result.filter((v) => v.category === category);
+      }
+    }
+    return result;
+  }
 
   @Get(":id")
   findOne(@Param("id") id: string) { return VIDEOS.find((v) => v.id === Number(id)) ?? null; }
 
   @Post()
-  create() { return { ...VIDEOS[0], id: 99, title: "[Mock] 새 영상", createdAt: new Date(), updatedAt: new Date() }; }
+  create(@Body() body: any) {
+    const newVideo = {
+      ...VIDEOS[0], id: VIDEOS.length + 10,
+      title: body.title ?? "[Mock] 새 영상",
+      category: body.category ?? null,
+      isPublished: body.isPublished ? 1 : 0,
+      createdAt: new Date(), updatedAt: new Date(),
+    };
+    VIDEOS = [...VIDEOS, newVideo];
+    return { success: true, id: newVideo.id };
+  }
 
   @Post("upload-file")
   uploadFile() { return { success: true, message: "Mock mode: file upload skipped" }; }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return VIDEOS.find((v) => v.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    VIDEOS = VIDEOS.map((v) => v.id === Number(id) ? { ...v, ...body, updatedAt: new Date() } : v);
+    return VIDEOS.find((v) => v.id === Number(id)) ?? null;
+  }
 
   @Delete(":id")
-  remove() { return { success: true }; }
+  remove(@Param("id") id: string) {
+    VIDEOS = VIDEOS.filter((v) => v.id !== Number(id));
+    return { success: true };
+  }
 }
 
 @Controller("floating-messages")
@@ -415,7 +455,12 @@ let CHURCHES: MockChurch[] = [
   },
 ];
 
-const ALL_FEATURE_KEYS = ["announcements", "images", "videos", "floating_messages", "layout_settings", "ai_assistant"] as const;
+const ALL_FEATURE_KEYS = [
+  "announcements", "images", "videos", "video_categories",
+  "floating_messages", "popups", "layout_settings",
+  "page_groups", "form_config", "form_submissions",
+  "ai_assistant",
+] as const;
 
 interface MockFeature { id: number; churchId: number; featureKey: string; isEnabled: number; }
 
@@ -426,6 +471,10 @@ let FEATURES: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
 const ADMINS = [
   { id: 3, churchId: 2, name: "박집사", email: "deacon@dawn-light.kr", role: "church_admin" },
 ];
+
+export function getEnabledFeatures(churchId: number): string[] {
+  return FEATURES.filter((f) => f.churchId === churchId && f.isEnabled).map((f) => f.featureKey);
+}
 
 @Controller("churches")
 export class MockChurchesController {
@@ -543,5 +592,219 @@ export class MockChurchesController {
     const idx = ADMINS.findIndex((a) => a.churchId === Number(id) && a.id === Number(userId));
     if (idx !== -1) ADMINS.splice(idx, 1);
     return { success: true };
+  }
+}
+
+// ─── Video Categories ─────────────────────────────────────────────────────────
+
+let VIDEO_CATEGORIES: any[] = [
+  { id: 1, name: "주일예배", slug: "sunday",    isBuiltIn: true,  displayOrder: 1 },
+  { id: 2, name: "수요예배", slug: "wednesday", isBuiltIn: true,  displayOrder: 2 },
+  { id: 3, name: "금요예배", slug: "friday",    isBuiltIn: true,  displayOrder: 3 },
+  { id: 4, name: "부활절",   slug: "easter",    isBuiltIn: false, displayOrder: 4 },
+  { id: 5, name: "성탄절",   slug: "christmas", isBuiltIn: false, displayOrder: 5 },
+];
+
+@Controller("video-categories")
+export class MockVideoCategoriesController {
+  @Get()
+  findAll() { return VIDEO_CATEGORIES; }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: VIDEO_CATEGORIES.length + 10, name: body.name, slug: body.slug, isBuiltIn: false, displayOrder: body.displayOrder ?? 99 };
+    VIDEO_CATEGORIES = [...VIDEO_CATEGORIES, item];
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    VIDEO_CATEGORIES = VIDEO_CATEGORIES.map((c) => c.id === Number(id) ? { ...c, ...body } : c);
+    return VIDEO_CATEGORIES.find((c) => c.id === Number(id)) ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    const item = VIDEO_CATEGORIES.find((c) => c.id === Number(id));
+    if (item?.isBuiltIn) return { success: false, message: "기본 카테고리는 삭제할 수 없습니다." };
+    VIDEO_CATEGORIES = VIDEO_CATEGORIES.filter((c) => c.id !== Number(id));
+    return { success: true };
+  }
+}
+
+// ─── Page Groups ──────────────────────────────────────────────────────────────
+
+let PAGE_GROUPS: any[] = [
+  { id: 1, groupKey: "departments", name: "유아부",   slug: "infant",         description: "0~36개월 영아 및 유아를 위한 부서입니다.", content: null, imageUrl: "https://picsum.photos/seed/dept1/400/300", displayOrder: 1, isVisible: 1, churchId: null },
+  { id: 2, groupKey: "departments", name: "아동부",   slug: "children",       description: "초등학생을 위한 부서입니다.", content: null, imageUrl: "https://picsum.photos/seed/dept2/400/300", displayOrder: 2, isVisible: 1, churchId: null },
+  { id: 3, groupKey: "departments", name: "청소년부", slug: "youth",          description: "중고등학생을 위한 부서입니다.", content: null, imageUrl: "https://picsum.photos/seed/dept3/400/300", displayOrder: 3, isVisible: 1, churchId: null },
+  { id: 4, groupKey: "departments", name: "청년부",   slug: "young-adult",    description: "청년들이 함께 모이는 부서입니다.", content: null, imageUrl: "https://picsum.photos/seed/dept4/400/300", displayOrder: 4, isVisible: 1, churchId: null },
+  { id: 5, groupKey: "god-love",    name: "새벽기도회", slug: "dawn-prayer",  description: "매일 새벽 5시 30분 예배당에서 진행됩니다.", content: null, imageUrl: "https://picsum.photos/seed/gl1/400/300", displayOrder: 1, isVisible: 1, churchId: null },
+  { id: 6, groupKey: "god-love",    name: "성경공부",  slug: "bible-study",   description: "화요일 오전 10시, 깊은 말씀 공부.", content: null, imageUrl: "https://picsum.photos/seed/gl2/400/300", displayOrder: 2, isVisible: 1, churchId: null },
+  { id: 7, groupKey: "god-love",    name: "구역예배",  slug: "cell-group",    description: "각 구역별로 모여 드리는 예배입니다.", content: null, imageUrl: "https://picsum.photos/seed/gl3/400/300", displayOrder: 3, isVisible: 1, churchId: null },
+  { id: 8, groupKey: "neighbor-love", name: "지역사회봉사", slug: "community-service", description: "우리 지역사회를 섬기는 봉사활동.", content: null, imageUrl: "https://picsum.photos/seed/nl1/400/300", displayOrder: 1, isVisible: 1, churchId: null },
+  { id: 9, groupKey: "neighbor-love", name: "푸드뱅크",    slug: "food-bank",        description: "어려운 이웃에게 식품을 나눕니다.", content: null, imageUrl: "https://picsum.photos/seed/nl2/400/300", displayOrder: 2, isVisible: 1, churchId: null },
+];
+
+@Controller("page-groups")
+export class MockPageGroupsController {
+  @Get()
+  findAll(@Query("groupKey") groupKey?: string) {
+    let result = [...PAGE_GROUPS];
+    if (groupKey) result = result.filter((g) => g.groupKey === groupKey);
+    return result.sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  @Get(":id")
+  findOne(@Param("id") id: string) { return PAGE_GROUPS.find((g) => g.id === Number(id)) ?? null; }
+
+  @Get("by-slug/:groupKey/:slug")
+  findBySlug(@Param("groupKey") groupKey: string, @Param("slug") slug: string) {
+    return PAGE_GROUPS.find((g) => g.groupKey === groupKey && g.slug === slug) ?? null;
+  }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: PAGE_GROUPS.length + 10, ...body, createdAt: new Date(), updatedAt: new Date() };
+    PAGE_GROUPS = [...PAGE_GROUPS, item];
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    PAGE_GROUPS = PAGE_GROUPS.map((g) => g.id === Number(id) ? { ...g, ...body, updatedAt: new Date() } : g);
+    return PAGE_GROUPS.find((g) => g.id === Number(id)) ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    PAGE_GROUPS = PAGE_GROUPS.filter((g) => g.id !== Number(id));
+    return { success: true };
+  }
+}
+
+// ─── Form Fields ──────────────────────────────────────────────────────────────
+
+let FORM_FIELDS: any[] = [
+  { id: 1, fieldType: "text",     label: "이름",     placeholder: "성함을 입력하세요",   required: true,  options: null,                                    allowOther: false, displayOrder: 1, isActive: true },
+  { id: 2, fieldType: "number",   label: "연락처",   placeholder: "010-0000-0000",     required: true,  options: null,                                    allowOther: false, displayOrder: 2, isActive: true },
+  { id: 3, fieldType: "dropdown", label: "방문목적", placeholder: "선택해주세요",       required: true,  options: ["예배 참석", "상담 요청", "친구 소개"], allowOther: true,  displayOrder: 3, isActive: true },
+  { id: 4, fieldType: "textarea", label: "메시지",   placeholder: "전달하실 내용 입력", required: false, options: null,                                    allowOther: false, displayOrder: 4, isActive: false },
+];
+
+@Controller("form-fields")
+export class MockFormFieldsController {
+  @Get()
+  findAll(@Query("activeOnly") activeOnly?: string) {
+    return activeOnly === "true" ? FORM_FIELDS.filter((f) => f.isActive) : FORM_FIELDS;
+  }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: FORM_FIELDS.length + 10, ...body };
+    FORM_FIELDS = [...FORM_FIELDS, item];
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    FORM_FIELDS = FORM_FIELDS.map((f) => f.id === Number(id) ? { ...f, ...body } : f);
+    return FORM_FIELDS.find((f) => f.id === Number(id)) ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    FORM_FIELDS = FORM_FIELDS.filter((f) => f.id !== Number(id));
+    return { success: true };
+  }
+}
+
+// ─── Form Submissions ─────────────────────────────────────────────────────────
+
+let FORM_SUBMISSIONS: any[] = [
+  { id: 1, fieldData: { "이름": "홍길동", "연락처": "010-1234-5678", "방문목적": "예배 참석" }, submittedAt: past(3), churchId: null },
+  { id: 2, fieldData: { "이름": "김영희", "연락처": "010-9876-5432", "방문목적": "상담 요청" }, submittedAt: past(1), churchId: null },
+];
+
+@Controller("form-submissions")
+export class MockFormSubmissionsController {
+  @Get()
+  findAll() { return [...FORM_SUBMISSIONS].reverse(); }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: FORM_SUBMISSIONS.length + 10, fieldData: body.fieldData ?? {}, submittedAt: new Date(), churchId: body.churchId ?? null };
+    FORM_SUBMISSIONS = [...FORM_SUBMISSIONS, item];
+    return { success: true, id: item.id };
+  }
+}
+
+// ─── Admin Permissions ────────────────────────────────────────────────────────
+
+const ALL_PERM_KEYS = [
+  "announcements", "images", "videos", "video_categories",
+  "floating_messages", "popups", "layout_settings",
+  "page_groups", "form_config", "form_submissions",
+];
+
+let ADMIN_PERMISSIONS: { adminId: number; permKey: string; isAllowed: number }[] = [
+  // 박집사(id:3) — 기본값: 전체 허용
+  ...ALL_PERM_KEYS.map((k) => ({ adminId: 3, permKey: k, isAllowed: 1 })),
+];
+
+@Controller("admins")
+export class MockAdminPermissionsController {
+  @Get()
+  findAll(@Query("churchId") churchId?: string) {
+    if (churchId) return ADMINS.filter((a) => a.churchId === Number(churchId));
+    return ADMINS;
+  }
+
+  @Get(":id/permissions")
+  getPermissions(@Param("id") id: string) {
+    const adminId = Number(id);
+    const permissions = ADMIN_PERMISSIONS
+      .filter((p) => p.adminId === adminId && p.isAllowed)
+      .map((p) => p.permKey);
+    return { permissions };
+  }
+
+  @Patch(":id/permissions")
+  updatePermission(
+    @Param("id") id: string,
+    @Body() body: { permKey: string; isAllowed: boolean },
+  ) {
+    const adminId = Number(id);
+    const exists = ADMIN_PERMISSIONS.some((p) => p.adminId === adminId && p.permKey === body.permKey);
+    if (exists) {
+      ADMIN_PERMISSIONS = ADMIN_PERMISSIONS.map((p) =>
+        p.adminId === adminId && p.permKey === body.permKey
+          ? { ...p, isAllowed: body.isAllowed ? 1 : 0 }
+          : p,
+      );
+    } else {
+      ADMIN_PERMISSIONS = [...ADMIN_PERMISSIONS, { adminId, permKey: body.permKey, isAllowed: body.isAllowed ? 1 : 0 }];
+    }
+    return { success: true };
+  }
+}
+
+// ─── Site Config ──────────────────────────────────────────────────────────────
+
+let SITE_CONFIG: any[] = [
+  { id: 1, key: "church_name",  value: "영신교회",                    description: "교회 이름" },
+  { id: 2, key: "map_address",  value: "서울특별시 양천구 목동로 19길 28", description: "교회 주소" },
+  { id: 3, key: "map_embed_url", value: "",                           description: "카카오맵 임베드 URL (비어있으면 링크로 대체)" },
+];
+
+@Controller("site-config")
+export class MockSiteConfigController {
+  @Get()
+  findAll() { return SITE_CONFIG; }
+
+  @Patch(":key")
+  update(@Param("key") key: string, @Body("value") value: string) {
+    SITE_CONFIG = SITE_CONFIG.map((c) => c.key === key ? { ...c, value } : c);
+    return SITE_CONFIG.find((c) => c.key === key) ?? null;
   }
 }
