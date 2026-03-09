@@ -4,8 +4,19 @@ import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../vite.config";
+
+// crypto.hash was added in Node 20.12.0 / 21.7.0 — polyfill for Node 18
+{
+  const _require = createRequire(import.meta.url);
+  const _crypto = _require("node:crypto") as typeof import("node:crypto") & { hash?: unknown };
+  if (!_crypto.hash) {
+    (_crypto as any).hash = (algorithm: string, data: any, outputEncoding: "hex" | "base64" | "base64url" = "hex") =>
+      _crypto.createHash(algorithm).update(data).digest(outputEncoding);
+  }
+}
 
 // import.meta.dirname is available in Node 20+; fallback for Node 18
 const __moduleDir =
