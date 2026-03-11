@@ -115,14 +115,14 @@ export default function ChurchDetail() {
   });
 
   const updatePerm = useMutation({
-    mutationFn: ({ permKey, isAllowed }: { permKey: string; isAllowed: boolean }) =>
-      api.patch(`/admins/${permAdminId}/permissions`, { permKey, isAllowed }),
+    mutationFn: ({ permKey, status }: { permKey: string; status: "allowed" | "denied" }) =>
+      api.patch(`/admins/${permAdminId}/permissions`, { permKey, status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-permissions", permAdminId] }),
     onError: (e: any) => toast.error(e.message),
   });
 
-  const handleBulkPerm = (isAllowed: boolean) => {
-    ALL_PERM_KEYS.forEach((permKey) => updatePerm.mutate({ permKey, isAllowed }));
+  const handleBulkPerm = (status: "allowed" | "denied") => {
+    ALL_PERM_KEYS.forEach((permKey) => updatePerm.mutate({ permKey, status }));
   };
 
   if (loading) return null;
@@ -248,14 +248,14 @@ export default function ChurchDetail() {
             <Button
               size="sm" variant="outline" className="flex-1"
               disabled={allAllowed || !permsData}
-              onClick={() => handleBulkPerm(true)}
+              onClick={() => handleBulkPerm("allowed")}
             >
               전체 허용
             </Button>
             <Button
               size="sm" variant="outline" className="flex-1"
               disabled={noneAllowed || !permsData}
-              onClick={() => handleBulkPerm(false)}
+              onClick={() => handleBulkPerm("denied")}
             >
               전체 해제
             </Button>
@@ -285,7 +285,7 @@ export default function ChurchDetail() {
                           id={`perm-${permKey}`}
                           checked={allowed}
                           disabled={!permsData}
-                          onCheckedChange={(checked) => updatePerm.mutate({ permKey, isAllowed: checked })}
+                          onCheckedChange={(checked) => updatePerm.mutate({ permKey, status: checked ? "allowed" : "denied" })}
                         />
                       </div>
                     );

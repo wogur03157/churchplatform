@@ -510,7 +510,7 @@ export class MockAdminPermissionsController {
   @Get(":id/permissions")
   getPermissions(@Param("id") id: string) {
     const permissions = ADMIN_PERMISSIONS
-      .filter((p) => p.adminId === Number(id) && p.isAllowed)
+      .filter((p) => p.adminId === Number(id) && p.status === "allowed")
       .map((p) => p.permKey);
     return { permissions };
   }
@@ -518,14 +518,14 @@ export class MockAdminPermissionsController {
   @Patch(":id/permissions")
   updatePermission(
     @Param("id") id: string,
-    @Body() body: { permKey: string; isAllowed: boolean },
+    @Body() body: { permKey: string; status: "allowed" | "denied" },
   ) {
     const adminId = Number(id);
     const idx = ADMIN_PERMISSIONS.findIndex((p) => p.adminId === adminId && p.permKey === body.permKey);
     if (idx !== -1) {
-      ADMIN_PERMISSIONS[idx] = { ...ADMIN_PERMISSIONS[idx], isAllowed: body.isAllowed ? 1 : 0 };
+      ADMIN_PERMISSIONS[idx] = { ...ADMIN_PERMISSIONS[idx], status: body.status };
     } else {
-      ADMIN_PERMISSIONS.push({ adminId, permKey: body.permKey, isAllowed: body.isAllowed ? 1 : 0 });
+      ADMIN_PERMISSIONS.push({ adminId, permKey: body.permKey, status: body.status });
     }
     return { success: true };
   }

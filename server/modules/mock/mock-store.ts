@@ -243,8 +243,8 @@ export const ALL_PERM_KEYS = [
   "page_groups", "form_config", "form_submissions",
 ] as const;
 
-export let ADMIN_PERMISSIONS: { adminId: number; permKey: string; isAllowed: number }[] = [
-  ...ALL_PERM_KEYS.map((k) => ({ adminId: 3, permKey: k, isAllowed: 1 })),
+export let ADMIN_PERMISSIONS: { adminId: number; permKey: string; status: "allowed" | "denied" }[] = [
+  ...ALL_PERM_KEYS.map((k) => ({ adminId: 3, permKey: k, status: "allowed" as const })),
 ];
 
 // ─── Site Config ──────────────────────────────────────────────────────────────

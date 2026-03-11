@@ -57,7 +57,7 @@
 - `MockAdminPermissionsController` 추가
   - `GET /admins?churchId=` — 어드민 목록
   - `GET /admins/:id/permissions` — `{ permissions: string[] }` 반환
-  - `PATCH /admins/:id/permissions` — `{ permKey, isAllowed }` 업데이트
+  - `PATCH /admins/:id/permissions` — `{ permKey, status: "allowed" | "denied" }` 업데이트
 - `ALL_FEATURE_KEYS`에 신규 기능 키 추가 (`video_categories`, `popups`, `page_groups`, `form_config`, `form_submissions`, `ai_assistant`)
 
 #### `server/modules/mock/mock-auth.controller.ts`
