@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useCRUD } from "@/hooks/useCRUD";
+import type { PageGroup } from "@shared/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,45 +30,24 @@ export default function AdminPageGroups() {
   const [isOpen, setIsOpen]       = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm]           = useState(emptyForm());
-  const qc = useQueryClient();
-
-  const { data: groups, isLoading } = useQuery({
-    queryKey: ["page-groups", tab],
-    queryFn: () => api.get<any[]>(`/page-groups?groupKey=${tab}`),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: any) => api.post("/page-groups", { ...data, groupKey: tab }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["page-groups"] });
-      toast.success("추가되었습니다"); close();
-    },
-    onError: () => toast.error("오류가 발생했습니다"),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) => api.patch(`/page-groups/${id}`, data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["page-groups"] });
-      toast.success("수정되었습니다"); close();
-    },
-    onError: () => toast.error("오류가 발생했습니다"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/page-groups/${id}`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["page-groups"] });
-      toast.success("삭제되었습니다");
-    },
-    onError: () => toast.error("오류가 발생했습니다"),
-  });
 
   const close = () => { setIsOpen(false); setEditingId(null); setForm(emptyForm()); };
 
-  const openEdit = (g: any) => {
+  const { createMutation, updateMutation, confirmDelete } = useCRUD({
+    queryKey: "page-groups",
+    path: "page-groups",
+    entityName: "소그룹",
+    onSuccess: close,
+  });
+
+  const { data: groups, isLoading } = useQuery({
+    queryKey: ["page-groups", tab],
+    queryFn: () => api.get<PageGroup[]>(`/page-groups?groupKey=${tab}`),
+  });
+
+  const openEdit = (g: PageGroup) => {
     setEditingId(g.id);
-    setForm({ name: g.name, slug: g.slug ?? "", description: g.description ?? "", imageUrl: g.imageUrl ?? "", displayOrder: g.displayOrder, isVisible: g.isVisible === 1 || g.isVisible === true });
+    setForm({ name: g.name, slug: g.slug ?? "", description: g.description ?? "", imageUrl: g.imageUrl ?? "", displayOrder: g.displayOrder, isVisible: g.isVisible === 1 });
     setIsOpen(true);
   };
 
@@ -75,7 +56,7 @@ export default function AdminPageGroups() {
     if (editingId) {
       updateMutation.mutate({ id: editingId, ...form, isVisible: form.isVisible ? 1 : 0 });
     } else {
-      createMutation.mutate({ ...form, isVisible: form.isVisible ? 1 : 0 });
+      createMutation.mutate({ ...form, isVisible: form.isVisible ? 1 : 0, groupKey: tab });
     }
   };
 
@@ -119,7 +100,7 @@ export default function AdminPageGroups() {
               {(groups ?? []).length === 0 && (
                 <p className="py-10 text-center text-muted-foreground text-sm">항목이 없습니다. 추가 버튼을 눌러주세요.</p>
               )}
-              {(groups ?? []).map((g: any) => (
+              {(groups ?? []).map((g) => (
                 <div key={g.id} className="flex items-center gap-4 px-5 py-3.5">
                   {g.imageUrl && (
                     <img src={g.imageUrl} alt={g.name} className="h-12 w-16 object-cover rounded shrink-0" />
@@ -137,7 +118,7 @@ export default function AdminPageGroups() {
                     </Button>
                     <Button
                       variant="ghost" size="sm"
-                      onClick={() => { if (confirm("삭제하시겠습니까?")) deleteMutation.mutate(g.id); }}
+                      onClick={() => confirmDelete(g.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>

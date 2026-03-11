@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useCRUD } from "@/hooks/useCRUD";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -23,11 +24,19 @@ const EMPTY_FORM = {
 };
 
 export default function AdminPopups() {
-  const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Popup | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+
+  const closeAll = () => { setIsCreateOpen(false); setEditTarget(null); setForm(EMPTY_FORM); };
+
+  const { createMutation, updateMutation, confirmDelete } = useCRUD({
+    queryKey: "popups",
+    path: "popups",
+    entityName: "팝업",
+    onSuccess: closeAll,
+  });
 
   const { data: popups = [], isLoading } = useQuery({
     queryKey: ["popups"],
@@ -57,37 +66,6 @@ export default function AdminPopups() {
     endDate: form.endDate || undefined,
     isActive: form.isActive,
     ...(form.fileData ? { fileData: form.fileData, mimeType: form.mimeType } : {}),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: () => api.post("/popups", buildPayload()),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["popups"] });
-      toast.success("팝업이 생성되었습니다");
-      setIsCreateOpen(false);
-      setForm(EMPTY_FORM);
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: () => api.patch(`/popups/${editTarget!.id}`, buildPayload()),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["popups"] });
-      toast.success("팝업이 수정되었습니다");
-      setEditTarget(null);
-      setForm(EMPTY_FORM);
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/popups/${id}`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["popups"] });
-      toast.success("팝업이 삭제되었습니다");
-    },
-    onError: (e: any) => toast.error(e.message),
   });
 
   const openEdit = (p: Popup) => {
@@ -190,7 +168,7 @@ export default function AdminPopups() {
           <h1 className="text-3xl font-bold">팝업 관리</h1>
           <p className="text-muted-foreground mt-2">홈페이지에 표시할 이미지 팝업을 관리하세요</p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={(o) => { setIsCreateOpen(o); if (!o) setForm(EMPTY_FORM); }}>
+        <Dialog open={isCreateOpen} onOpenChange={(o) => { if (!o) closeAll(); else setIsCreateOpen(true); }}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2 h-4 w-4" />새 팝업</Button>
           </DialogTrigger>
@@ -198,8 +176,8 @@ export default function AdminPopups() {
             <DialogHeader><DialogTitle>새 팝업</DialogTitle></DialogHeader>
             <FormBody />
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>취소</Button>
-              <Button onClick={() => createMutation.mutate()} disabled={!form.title || createMutation.isPending}>
+              <Button variant="outline" onClick={closeAll}>취소</Button>
+              <Button onClick={() => createMutation.mutate(buildPayload())} disabled={!form.title || createMutation.isPending}>
                 {createMutation.isPending ? "생성 중..." : "생성"}
               </Button>
             </DialogFooter>
@@ -259,7 +237,7 @@ export default function AdminPopups() {
                     <Button
                       variant="outline" size="sm"
                       className="text-destructive hover:text-destructive"
-                      onClick={() => { if (confirm("삭제하시겠습니까?")) deleteMutation.mutate(p.id); }}
+                      onClick={() => confirmDelete(p.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -272,13 +250,13 @@ export default function AdminPopups() {
       )}
 
       {/* 수정 다이얼로그 */}
-      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) { setEditTarget(null); setForm(EMPTY_FORM); } }}>
+      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) closeAll(); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>팝업 수정</DialogTitle></DialogHeader>
           <FormBody isEdit />
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setEditTarget(null); setForm(EMPTY_FORM); }}>취소</Button>
-            <Button onClick={() => updateMutation.mutate()} disabled={!form.title || updateMutation.isPending}>
+            <Button variant="outline" onClick={closeAll}>취소</Button>
+            <Button onClick={() => updateMutation.mutate({ id: editTarget!.id, ...buildPayload() })} disabled={!form.title || updateMutation.isPending}>
               {updateMutation.isPending ? "수정 중..." : "저장"}
             </Button>
           </DialogFooter>
