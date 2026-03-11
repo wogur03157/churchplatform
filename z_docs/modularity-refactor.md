@@ -42,6 +42,9 @@ import type { Video, Announcement, PageGroup } from "@shared/entities";
 `Video`, `VideoCategory`, `Announcement`, `Image`, `Popup`, `FloatingMessage`,
 `LayoutSetting`, `PageGroup`, `Church`, `ChurchFeature`, `FormField`, `FormSubmission`, `SiteConfig`
 
+> **주의**: boolean 상태 필드(`isPublished`, `isActive` 등)는 이후 작업에서 string enum으로 전환됨.
+> 현재는 `status: "published" | "draft"` 형태를 사용합니다. → `z_docs/status-enum-refactor.md` 참고
+
 ### 새 엔티티 추가 방법
 `shared/entities.ts`에 인터페이스를 추가하면 클라이언트·서버 양쪽에서 즉시 사용 가능합니다.
 
@@ -108,9 +111,9 @@ updateMutation.mutate({ id, title, url, ... });
 confirmDelete(video.id); // confirm() 포함
 ```
 
-### 현재 적용 범위
-- `Videos.tsx` ← 적용 완료 (참고 패턴)
-- 나머지 어드민 페이지 적용 여부는 별도 결정 예정
+### 적용 범위 (전체 완료)
+- `Videos.tsx`, `Announcements.tsx`, `Images.tsx`
+- `FloatingMessages.tsx`, `Popups.tsx`, `PageGroups.tsx`
 
 ---
 
@@ -157,9 +160,10 @@ server/modules/mock/
 ### 새 어드민 CRUD 페이지 추가 시
 
 1. **타입**: `shared/entities.ts`에 인터페이스 추가
-2. **API**: `api.get<MyEntity[]>("/my-resource")` 형태로 타입 명시
-3. **뮤테이션**: `useCRUD({ queryKey, path, entityName, onSuccess })` 사용
-4. **폼 상태**: 개별 `useState` 남발 대신 객체로 묶기 (`Videos.tsx`의 `VideoForm` 참고)
+2. **상태 필드**: `isPublished` 같은 boolean 대신 `status: "published" | "draft"` 패턴 사용
+3. **API**: `api.get<MyEntity[]>("/my-resource")` 형태로 타입 명시
+4. **뮤테이션**: `useCRUD({ queryKey, path, entityName, onSuccess })` 사용
+5. **폼 상태**: 개별 `useState` 남발 대신 객체로 묶기 (`Videos.tsx`의 `VideoForm` 참고)
 
 ### 영상 관련 기능 추가 시
 
