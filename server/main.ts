@@ -16,7 +16,7 @@ function isPortAvailable(port: number): Promise<boolean> {
   });
 }
 
-async function findAvailablePort(startPort = 3000): Promise<number> {
+async function findAvailablePort(startPort = 4000): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
     if (await isPortAvailable(port)) return port;
   }
@@ -47,7 +47,7 @@ async function bootstrap() {
     const { setupVite } = await import("./vite");
     await setupVite(expressApp, httpServer);
 
-    const preferredPort = parseInt(process.env.PORT || "3000");
+    const preferredPort = parseInt(process.env.PORT || "4000");
     const port = await findAvailablePort(preferredPort);
     if (port !== preferredPort) {
       console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
@@ -64,7 +64,7 @@ async function bootstrap() {
     const expressApp = httpAdapter.getInstance();
     serveStatic(expressApp);
 
-    const preferredPort = parseInt(process.env.PORT || "3000");
+    const preferredPort = parseInt(process.env.PORT || "4000");
     const port = await findAvailablePort(preferredPort);
 
     await app.listen(port, () => {

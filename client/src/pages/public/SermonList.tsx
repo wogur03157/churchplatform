@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video as VideoIcon } from "lucide-react";
+import { getVideoEmbedUrl } from "@/lib/video-utils";
+import type { Video } from "@shared/entities";
 
 interface SermonListProps {
   /** "sunday" | "wednesday" | "friday" | "special" (special = 주일/수/금 외) */
@@ -9,23 +11,10 @@ interface SermonListProps {
   title: string;
 }
 
-function getEmbedUrl(video: any): string | null {
-  if (video.videoType === "youtube") {
-    const id = video.url.includes("youtu.be")
-      ? video.url.split("/").pop()
-      : (() => { try { return new URL(video.url).searchParams.get("v"); } catch { return null; } })();
-    return id ? `https://www.youtube.com/embed/${id}` : null;
-  }
-  if (video.videoType === "vimeo") {
-    return `https://player.vimeo.com/video/${video.url.split("/").pop()}`;
-  }
-  return null;
-}
-
 export default function SermonList({ category, title }: SermonListProps) {
   const { data: videos, isLoading } = useQuery({
     queryKey: ["videos", category],
-    queryFn: () => api.get<any[]>(`/videos?publishedOnly=true&category=${category}`),
+    queryFn: () => api.get<Video[]>(`/videos?publishedOnly=true&category=${category}`),
   });
 
   const sorted = [...(videos ?? [])].sort((a, b) => a.displayOrder - b.displayOrder);
@@ -54,7 +43,7 @@ export default function SermonList({ category, title }: SermonListProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {sorted.map((video) => {
-        const embedUrl = getEmbedUrl(video);
+        const embedUrl = getVideoEmbedUrl(video);
         return (
           <Card key={video.id} className="overflow-hidden">
             <div className="aspect-video relative overflow-hidden bg-muted">
