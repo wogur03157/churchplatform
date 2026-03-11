@@ -3,26 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video as VideoIcon } from "lucide-react";
-
-function getEmbedUrl(video: any): string | null {
-  if (video.videoType === "youtube") {
-    const id = video.url.includes("youtu.be")
-      ? video.url.split("/").pop()
-      : (() => { try { return new URL(video.url).searchParams.get("v"); } catch { return null; } })();
-    return id ? `https://www.youtube.com/embed/${id}` : null;
-  }
-  if (video.videoType === "vimeo") return `https://player.vimeo.com/video/${video.url.split("/").pop()}`;
-  return null;
-}
+import { getVideoEmbedUrl } from "@/lib/video-utils";
+import type { Video } from "@shared/entities";
 
 export default function MidweekSermons() {
   const { data: wed } = useQuery({
     queryKey: ["videos", "wednesday"],
-    queryFn: () => api.get<any[]>("/videos?publishedOnly=true&category=wednesday"),
+    queryFn: () => api.get<Video[]>("/videos?publishedOnly=true&category=wednesday"),
   });
   const { data: fri } = useQuery({
     queryKey: ["videos", "friday"],
-    queryFn: () => api.get<any[]>("/videos?publishedOnly=true&category=friday"),
+    queryFn: () => api.get<Video[]>("/videos?publishedOnly=true&category=friday"),
   });
 
   const videos = [...(wed ?? []), ...(fri ?? [])].sort((a, b) => {
@@ -47,7 +38,7 @@ export default function MidweekSermons() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {videos.map((video) => {
-              const embedUrl = getEmbedUrl(video);
+              const embedUrl = getVideoEmbedUrl(video);
               return (
                 <Card key={video.id} className="overflow-hidden">
                   <div className="aspect-video relative overflow-hidden bg-muted">
