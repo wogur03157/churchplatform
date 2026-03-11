@@ -16,7 +16,7 @@ export interface Video {
   duration: number | null;
   churchId: number | null;
   uploadedBy: number;
-  isPublished: 0 | 1;
+  status: "published" | "draft";
   displayOrder: number;
   category: string | null;
   createdAt: string | Date;
@@ -29,6 +29,7 @@ export interface VideoCategory {
   slug: string;
   isBuiltIn: boolean;
   displayOrder: number;
+  churchId: number | null;
 }
 
 export interface Announcement {
@@ -36,7 +37,8 @@ export interface Announcement {
   title: string;
   content: string;
   authorId: number;
-  isPublished: 0 | 1;
+  churchId: number | null;
+  status: "published" | "draft";
   publishedAt: string | Date | null;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -51,7 +53,8 @@ export interface Image {
   mimeType: string;
   fileSize: number;
   uploadedBy: number;
-  isPublished: 0 | 1;
+  churchId: number | null;
+  status: "published" | "draft";
   displayOrder: number;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -66,7 +69,7 @@ export interface Popup {
   linkUrl: string | null;
   startDate: string | Date | null;
   endDate: string | Date | null;
-  isActive: 0 | 1;
+  status: "active" | "inactive";
   createdBy: number;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -76,8 +79,9 @@ export interface FloatingMessage {
   id: number;
   title: string;
   content: string;
-  messageType: "announcement" | "warning" | "info";
-  isActive: 0 | 1;
+  messageType: "announcement" | "warning" | "info" | "success";
+  churchId: number | null;
+  status: "active" | "inactive";
   startDate: string | Date | null;
   endDate: string | Date | null;
   displayPosition: "top" | "center" | "bottom";
@@ -89,7 +93,8 @@ export interface FloatingMessage {
 export interface LayoutSetting {
   id: number;
   sectionType: string;
-  isVisible: 0 | 1;
+  churchId: number | null;
+  status: "visible" | "hidden";
   displayOrder: number;
   colSpan: number;
   title: string | null;
@@ -109,8 +114,10 @@ export interface PageGroup {
   content: string | null;
   imageUrl: string | null;
   displayOrder: number;
-  isVisible: 0 | 1;
+  status: "visible" | "hidden";
   churchId: number | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export type ChurchStatus = "pending" | "active" | "suspended" | "rejected";
@@ -138,21 +145,24 @@ export interface ChurchFeature {
   id: number;
   churchId: number;
   featureKey: string;
-  isEnabled: 0 | 1;
+  status: "enabled" | "disabled";
+  updatedBy: number | null;
+  updatedAt: string | Date;
 }
 
-export type FormFieldType = "text" | "number" | "dropdown" | "textarea" | "checkbox";
+export type FormFieldType = "text" | "number" | "dropdown" | "textarea" | "checkbox" | "radio";
 
 export interface FormField {
   id: number;
+  churchId: number | null;
   fieldType: FormFieldType;
   label: string;
   placeholder: string | null;
   required: boolean;
   options: string[] | null;
-  allowOther: boolean;
+  allowOther: "text" | "none";
   displayOrder: number;
-  isActive: boolean;
+  status: "active" | "inactive";
 }
 
 export interface FormSubmission {
@@ -164,7 +174,8 @@ export interface FormSubmission {
 
 export interface SiteConfig {
   id: number;
+  churchId: number | null;
   key: string;
   value: string;
-  description: string;
+  description: string | null;
 }

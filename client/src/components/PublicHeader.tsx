@@ -69,7 +69,7 @@ export default function PublicHeader() {
   useEffect(() => () => cancelClose(), []);
 
   const getGroupItems = (groupKey: string) =>
-    (pageGroups ?? []).filter((g: any) => g.groupKey === groupKey && g.isVisible !== 0);
+    (pageGroups ?? []).filter((g: any) => g.groupKey === groupKey && g.status === "visible");
 
   /* ── 드롭다운 컨텐츠 (두 스타일 공통) ────────────────────── */
   const megaContent = (

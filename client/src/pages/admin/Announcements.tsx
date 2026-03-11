@@ -22,7 +22,7 @@ export default function AdminAnnouncements() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+  const [status, setStatus] = useState<"published" | "draft">("draft");
   const [aiAction, setAiAction] = useState<"improve" | "summarize" | "translate_en" | "translate_ko">("improve");
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -30,7 +30,7 @@ export default function AdminAnnouncements() {
   const resetForm = () => {
     setTitle("");
     setContent("");
-    setIsPublished(false);
+    setStatus("draft");
     setEditingId(null);
     setIsCreateOpen(false);
     setIsEditOpen(false);
@@ -77,7 +77,7 @@ export default function AdminAnnouncements() {
       toast.error("제목과 내용을 입력하세요");
       return;
     }
-    createMutation.mutate({ title, content, isPublished });
+    createMutation.mutate({ title, content, status });
   };
 
   const handleUpdate = () => {
@@ -86,7 +86,7 @@ export default function AdminAnnouncements() {
       toast.error("제목과 내용을 입력하세요");
       return;
     }
-    updateMutation.mutate({ id: editingId, title, content, isPublished });
+    updateMutation.mutate({ id: editingId, title, content, status });
   };
 
   const handleAiAssist = () => {
@@ -128,7 +128,7 @@ export default function AdminAnnouncements() {
         </Button>
       </div>
       <div className="flex items-center space-x-2">
-        <Switch id="published" checked={isPublished} onCheckedChange={setIsPublished} />
+        <Switch id="published" checked={status === "published"} onCheckedChange={(v) => setStatus(v ? "published" : "draft")} />
         <Label htmlFor="published">즉시 발행</Label>
       </div>
     </div>
@@ -147,7 +147,7 @@ export default function AdminAnnouncements() {
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={(open) => { if (!open) resetForm(); else setIsCreateOpen(true); }}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setTitle(""); setContent(""); setIsPublished(false); setIsCreateOpen(true); }}>
+              <Button onClick={() => { setTitle(""); setContent(""); setStatus("draft"); setIsCreateOpen(true); }}>
                 <Plus className="mr-2 h-4 w-4" />새 공지사항
               </Button>
             </DialogTrigger>
@@ -179,7 +179,7 @@ export default function AdminAnnouncements() {
                   <CardTitle>{announcement.title}</CardTitle>
                   <CardDescription>
                     {new Date(announcement.createdAt).toLocaleDateString("ko-KR")} •
-                    {announcement.isPublished ? <span className="text-green-600">발행됨</span> : <span className="text-yellow-600">미발행</span>}
+                    {announcement.status === "published" ? <span className="text-green-600">발행됨</span> : <span className="text-yellow-600">미발행</span>}
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -189,7 +189,7 @@ export default function AdminAnnouncements() {
                       setEditingId(announcement.id);
                       setTitle(announcement.title);
                       setContent(announcement.content);
-                      setIsPublished(announcement.isPublished === 1);
+                      setStatus(announcement.status);
                       setIsEditOpen(true);
                     }}
                   >

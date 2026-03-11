@@ -61,7 +61,7 @@ export default function PublicView() {
   }, [popups]);
 
   const visibleSections = layoutSettings
-    ?.filter((s) => s.isVisible === 1)
+    ?.filter((s) => s.status === "visible")
     .sort((a, b) => a.displayOrder - b.displayOrder) || [];
 
   const heroSection = visibleSections.find((s) => s.sectionType === "hero");

@@ -33,7 +33,7 @@ export default function AdminFormConfig() {
   });
 
   const toggleActive = (field: any) => {
-    updateMutation.mutate({ id: field.id, isActive: !field.isActive });
+    updateMutation.mutate({ id: field.id, status: field.status === "active" ? "inactive" : "active" });
   };
 
   const updateOrder = (field: any, delta: number) => {
@@ -57,14 +57,14 @@ export default function AdminFormConfig() {
         <CardContent className="p-0">
           <div className="divide-y">
             {sorted.map((field: any, idx) => (
-              <div key={field.id} className={`flex items-center gap-4 px-5 py-3.5 ${!field.isActive ? "opacity-50" : ""}`}>
+              <div key={field.id} className={`flex items-center gap-4 px-5 py-3.5 ${field.status !== "active" ? "opacity-50" : ""}`}>
                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{field.label}</span>
                     <Badge variant="outline" className="text-xs">{FIELD_TYPE_LABEL[field.fieldType] ?? field.fieldType}</Badge>
                     {field.required && <Badge variant="destructive" className="text-xs">필수</Badge>}
-                    {field.allowOther && <Badge variant="secondary" className="text-xs">기타 허용</Badge>}
+                    {field.allowOther === "text" && <Badge variant="secondary" className="text-xs">기타 허용</Badge>}
                   </div>
                   {field.placeholder && (
                     <p className="text-xs text-muted-foreground mt-0.5">{field.placeholder}</p>
@@ -87,8 +87,8 @@ export default function AdminFormConfig() {
                     >▼</button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Switch checked={!!field.isActive} onCheckedChange={() => toggleActive(field)} />
-                    <span className="text-xs text-muted-foreground w-8">{field.isActive ? "활성" : "비활성"}</span>
+                    <Switch checked={field.status === "active"} onCheckedChange={() => toggleActive(field)} />
+                    <span className="text-xs text-muted-foreground w-8">{field.status === "active" ? "활성" : "비활성"}</span>
                   </div>
                 </div>
               </div>

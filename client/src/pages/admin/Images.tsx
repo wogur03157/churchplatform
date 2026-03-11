@@ -19,7 +19,7 @@ export default function AdminImages() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+  const [status, setStatus] = useState<"published" | "draft">("draft");
   const [displayOrder, setDisplayOrder] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -28,7 +28,7 @@ export default function AdminImages() {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setIsPublished(false);
+    setStatus("draft");
     setDisplayOrder(0);
     setSelectedFile(null);
     setPreviewUrl("");
@@ -91,7 +91,7 @@ export default function AdminImages() {
         fileData: base64,
         mimeType: selectedFile.type,
         fileSize: selectedFile.size,
-        isPublished,
+        status,
         displayOrder,
       });
     };
@@ -102,7 +102,7 @@ export default function AdminImages() {
     setEditingId(image.id);
     setTitle(image.title);
     setDescription(image.description || "");
-    setIsPublished(image.isPublished === 1);
+    setStatus(image.status);
     setDisplayOrder(image.displayOrder);
     setPreviewUrl(image.url);
     setIsEditOpen(true);
@@ -113,7 +113,7 @@ export default function AdminImages() {
       toast.error("제목을 입력해주세요");
       return;
     }
-    updateMutation.mutate({ id: editingId, title, description, isPublished, displayOrder });
+    updateMutation.mutate({ id: editingId, title, description, status, displayOrder });
   };
 
   return (
@@ -168,7 +168,7 @@ export default function AdminImages() {
                 <Input id="displayOrder" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} placeholder="0" />
               </div>
               <div className="flex items-center space-x-2">
-                <Switch id="published" checked={isPublished} onCheckedChange={setIsPublished} />
+                <Switch id="published" checked={status === "published"} onCheckedChange={(v) => setStatus(v ? "published" : "draft")} />
                 <Label htmlFor="published">즉시 발행</Label>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function AdminImages() {
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2 text-base">
                       {image.title}
-                      {image.isPublished === 1 && (
+                      {image.status === "published" && (
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">발행됨</span>
                       )}
                     </CardTitle>
@@ -250,7 +250,7 @@ export default function AdminImages() {
               <Input id="edit-displayOrder" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} placeholder="0" />
             </div>
             <div className="flex items-center space-x-2">
-              <Switch id="edit-published" checked={isPublished} onCheckedChange={setIsPublished} />
+              <Switch id="edit-published" checked={status === "published"} onCheckedChange={(v) => setStatus(v ? "published" : "draft")} />
               <Label htmlFor="edit-published">발행 상태</Label>
             </div>
           </div>

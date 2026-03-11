@@ -24,7 +24,7 @@ interface VideoForm {
   videoType: VideoType;
   url: string;
   thumbnailUrl: string;
-  isPublished: boolean;
+  status: "published" | "draft";
   displayOrder: number;
   category: string;
 }
@@ -35,7 +35,7 @@ const DEFAULT_FORM: VideoForm = {
   videoType: "youtube",
   url: "",
   thumbnailUrl: "",
-  isPublished: false,
+  status: "draft" as "published" | "draft",
   displayOrder: 0,
   category: "",
 };
@@ -93,7 +93,7 @@ export default function AdminVideos() {
       videoType: video.videoType as VideoType,
       url: video.url,
       thumbnailUrl: video.thumbnailUrl ?? "",
-      isPublished: video.isPublished === 1,
+      status: video.status,
       displayOrder: video.displayOrder,
       category: video.category ?? "",
     });
@@ -159,7 +159,7 @@ export default function AdminVideos() {
         <Input id="displayOrder" type="number" value={form.displayOrder} onChange={(e) => setField("displayOrder", parseInt(e.target.value) || 0)} />
       </div>
       <div className="flex items-center space-x-2">
-        <Switch id="published" checked={form.isPublished} onCheckedChange={(v) => setField("isPublished", v)} />
+        <Switch id="published" checked={form.status === "published"} onCheckedChange={(v) => setField("status", v ? "published" : "draft")} />
         <Label htmlFor="published">발행 상태</Label>
       </div>
     </div>
@@ -218,7 +218,7 @@ export default function AdminVideos() {
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-2 text-base">
                         {video.title}
-                        {video.isPublished === 1 && (
+                        {video.status === "published" && (
                           <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">발행됨</span>
                         )}
                       </CardTitle>
