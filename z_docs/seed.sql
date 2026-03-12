@@ -1,10 +1,23 @@
 -- ============================================================
 -- 시드 데이터 (개발/테스트용)
--- 실행 전 churchId를 실제 DB의 churches.id 값으로 교체하세요.
 -- INSERT IGNORE 사용 → 이미 존재하는 row는 건너뜀
+--
+-- 실행 순서:
+--   1. 이 파일 전체 실행 (교회 + 기본 데이터 생성)
+--   2. Google 로그인 → users 테이블에 자동 생성됨
+--   3. 로그인 후 아래 쿼리로 어드민 연결:
+--        INSERT INTO church_admins (churchId, userId)
+--        SELECT 1, id FROM users WHERE openId = '본인_구글_openId';
+--      그리고 슈퍼어드민으로 지정:
+--        UPDATE users SET role = 'super_admin' WHERE openId = '본인_구글_openId';
 -- ============================================================
 
-SET @churchId = 1; -- ← 실제 교회 id로 변경
+-- ─── churches ────────────────────────────────────────────────────────────────
+
+INSERT IGNORE INTO churches (id, name, slug, status, email, phone, address, appliedBy, approvedBy, approvedAt)
+VALUES (1, '영신교회', 'youngshin', 'active', NULL, NULL, NULL, NULL, NULL, NOW());
+
+SET @churchId = 1;
 
 -- ─── layout_settings ─────────────────────────────────────────────────────────
 
