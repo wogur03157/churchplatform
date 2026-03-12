@@ -1,10 +1,13 @@
 import "reflect-metadata";
 import "dotenv/config";
+import { webcrypto } from "crypto";
+if (!globalThis.crypto) (globalThis as any).crypto = webcrypto;
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
 import cookieParser from "cookie-parser";
 import net from "net";
+import { join } from "path";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -33,6 +36,9 @@ async function bootstrap() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.use(cookieParser());
+
+  // Serve local uploads (fallback before S3 integration)
+  app.use("/uploads", express.static(join(process.cwd(), "uploads")));
 
   // Set global prefix for all routes
   app.setGlobalPrefix("api");

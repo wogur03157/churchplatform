@@ -1,9 +1,26 @@
 import { Injectable } from "@nestjs/common";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 type StorageConfig = { baseUrl: string; apiKey: string };
 
 @Injectable()
 export class StorageService {
+  private isLocalMode(): boolean {
+    return !process.env.BUILT_IN_FORGE_API_URL || !process.env.BUILT_IN_FORGE_API_KEY;
+  }
+
+  private async putLocal(
+    relKey: string,
+    data: Buffer | Uint8Array | string
+  ): Promise<{ key: string; url: string }> {
+    const key = relKey.replace(/^\/+/, "");
+    const filePath = join(process.cwd(), "uploads", key);
+    await mkdir(join(filePath, ".."), { recursive: true });
+    await writeFile(filePath, data);
+    return { key, url: `/uploads/${key}` };
+  }
+
   private getConfig(): StorageConfig {
     const baseUrl = process.env.BUILT_IN_FORGE_API_URL ?? "";
     const apiKey = process.env.BUILT_IN_FORGE_API_KEY ?? "";
@@ -48,6 +65,10 @@ export class StorageService {
     data: Buffer | Uint8Array | string,
     contentType = "application/octet-stream"
   ): Promise<{ key: string; url: string }> {
+    if (this.isLocalMode()) {
+      return this.putLocal(relKey, data);
+    }
+
     const { baseUrl, apiKey } = this.getConfig();
     const key = this.normalizeKey(relKey);
 
