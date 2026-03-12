@@ -7,6 +7,11 @@ import { LogIn, Lock, FlaskConical } from "lucide-react";
 
 async function handleDevLogin() {
   await api.post("/auth/dev-login");
+  window.location.href = "/super-admin";
+}
+
+async function handleDevChurchLogin() {
+  await api.post("/auth/dev-church-login");
   window.location.href = "/admin";
 }
 
@@ -70,7 +75,15 @@ export default function AdminLogin() {
                   className="w-full h-10 rounded-lg border-dashed border-orange-400 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
                 >
                   <FlaskConical className="mr-2 h-4 w-4" />
-                  Dev Admin으로 로그인 (테스트용)
+                  Dev Super Admin (테스트용)
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDevChurchLogin}
+                  className="w-full h-10 rounded-lg border-dashed border-blue-400 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                >
+                  <FlaskConical className="mr-2 h-4 w-4" />
+                  Dev Church Admin (테스트용)
                 </Button>
               </div>
             )}
