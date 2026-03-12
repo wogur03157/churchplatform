@@ -23,8 +23,8 @@ export class Announcement {
   @Column({ type: "int" })
   authorId!: number;
 
-  @Column({ type: "int", default: 0 })
-  isPublished!: number;
+  @Column({ type: "enum", enum: ["published", "draft"], default: "draft" })
+  status!: "published" | "draft";
 
   @Column({ type: "timestamp", nullable: true })
   publishedAt!: Date | null;

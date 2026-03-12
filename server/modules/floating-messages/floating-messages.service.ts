@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { And, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { FloatingMessage } from "./entities/floating-message.entity";
 
 @Injectable()
@@ -15,7 +15,7 @@ export class FloatingMessagesService {
       const now = new Date();
       return this.repo.find({
         where: {
-          isActive: 1,
+          status: "active" as const,
           startDate: LessThanOrEqual(now),
           endDate: MoreThanOrEqual(now),
         },
@@ -33,7 +33,7 @@ export class FloatingMessagesService {
     title: string;
     content: string;
     messageType: "info" | "warning" | "success" | "announcement";
-    isActive: number;
+    status: "active" | "inactive";
     startDate?: Date;
     endDate?: Date;
     displayPosition: "top" | "bottom" | "center";

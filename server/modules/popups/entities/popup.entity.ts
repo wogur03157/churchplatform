@@ -32,8 +32,8 @@ export class Popup {
   @Column({ type: "timestamp", nullable: true })
   endDate!: Date | null;
 
-  @Column({ type: "int", default: 0 })
-  isActive!: number;
+  @Column({ type: "enum", enum: ["active", "inactive"], default: "inactive" })
+  status!: "active" | "inactive";
 
   @Column({ type: "int" })
   createdBy!: number;

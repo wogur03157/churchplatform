@@ -16,7 +16,7 @@ export class LayoutSettingsService {
 
   async upsert(data: {
     sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
-    isVisible: number;
+    status: "visible" | "hidden";
     displayOrder: number;
     colSpan?: number;
     title?: string;
@@ -31,7 +31,7 @@ export class LayoutSettingsService {
   async saveAll(
     items: Array<{
       sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
-      isVisible: number;
+      status: "visible" | "hidden";
       displayOrder: number;
       colSpan: number;
       title?: string;

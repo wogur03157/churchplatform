@@ -13,7 +13,7 @@ export class PopupsService {
   findAll(activeOnly = false): Promise<Popup[]> {
     const q = this.repo.createQueryBuilder("p");
     if (activeOnly) {
-      q.where("p.isActive = 1")
+      q.where("p.status = 'active'")
         .andWhere("(p.startDate IS NULL OR p.startDate <= NOW())")
         .andWhere("(p.endDate IS NULL OR p.endDate >= NOW())");
     }

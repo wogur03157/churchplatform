@@ -35,8 +35,8 @@ export class Image {
   @Column({ type: "int" })
   uploadedBy!: number;
 
-  @Column({ type: "int", default: 0 })
-  isPublished!: number;
+  @Column({ type: "enum", enum: ["published", "draft"], default: "draft" })
+  status!: "published" | "draft";
 
   @Column({ type: "int", default: 0 })
   displayOrder!: number;

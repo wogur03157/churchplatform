@@ -54,7 +54,7 @@ export class ImagesController {
       fileData: string;
       mimeType: string;
       fileSize: number;
-      isPublished?: boolean;
+      status?: "published" | "draft";
       displayOrder?: number;
     },
     @CurrentUser() user: User
@@ -76,7 +76,7 @@ export class ImagesController {
       mimeType: body.mimeType,
       fileSize: body.fileSize,
       uploadedBy: user.id,
-      isPublished: body.isPublished ? 1 : 0,
+      status: body.status ?? "draft",
       displayOrder: body.displayOrder ?? 0,
     });
 
@@ -91,15 +91,14 @@ export class ImagesController {
     body: {
       title?: string;
       description?: string;
-      isPublished?: boolean;
+      status?: "published" | "draft";
       displayOrder?: number;
     }
   ) {
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.description !== undefined) updateData.description = body.description;
-    if (body.isPublished !== undefined)
-      updateData.isPublished = body.isPublished ? 1 : 0;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined)
       updateData.displayOrder = body.displayOrder;
 

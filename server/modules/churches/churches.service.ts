@@ -91,7 +91,7 @@ export class ChurchesService {
 
   private async initFeatures(churchId: number, updatedBy: number): Promise<void> {
     const entries = ALL_FEATURES.map((featureKey) =>
-      this.churchFeatureRepo.create({ churchId, featureKey, isEnabled: 1, updatedBy }),
+      this.churchFeatureRepo.create({ churchId, featureKey, status: "enabled" as const, updatedBy }),
     );
     await this.churchFeatureRepo.upsert(entries, { conflictPaths: ["churchId", "featureKey"] });
   }
@@ -137,7 +137,7 @@ export class ChurchesService {
     updatedBy: number,
   ): Promise<ChurchFeature> {
     await this.churchFeatureRepo.upsert(
-      { churchId, featureKey: featureKey as any, isEnabled: isEnabled ? 1 : 0, updatedBy },
+      { churchId, featureKey: featureKey as any, status: isEnabled ? "enabled" : "disabled", updatedBy },
       { conflictPaths: ["churchId", "featureKey"] },
     );
     return this.churchFeatureRepo.findOneOrFail({ where: { churchId, featureKey: featureKey as any } });
@@ -148,6 +148,6 @@ export class ChurchesService {
     const feature = await this.churchFeatureRepo.findOne({
       where: { churchId, featureKey: featureKey as any },
     });
-    return feature ? feature.isEnabled === 1 : true; // 기록 없으면 기본 활성
+    return feature ? feature.status === "enabled" : true; // 기록 없으면 기본 활성
   }
 }
