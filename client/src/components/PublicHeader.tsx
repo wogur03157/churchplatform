@@ -122,38 +122,45 @@ export default function PublicHeader() {
 
           {/* 로고 */}
           <Link href="/">
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 cursor-pointer">
-              영신교회
-            </span>
+            <div className="flex flex-col cursor-pointer group">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                영광교회
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium tracking-tighter group-hover:text-primary transition-colors">
+                하나님사랑 이웃사랑
+              </span>
+            </div>
           </Link>
 
           {/* ── 데스크탑 내비게이션 ──────────────────────────── */}
           {DROPDOWN_STYLE === "nav" ? (
             /* NAV 스타일: nav 컨테이너가 포지셔닝 기준 */
             <div
-              className="relative hidden md:flex items-center gap-0.5"
+              className="relative hidden md:flex items-center gap-1"
               onMouseLeave={scheduleClose}
             >
               {NAV_MENU.map((item, idx) => (
                 <button
                   key={idx}
-                  className={`flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    openMenu === idx ? "bg-accent text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
+                  className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
+                    openMenu === idx 
+                      ? "bg-primary text-primary-foreground shadow-md" 
+                      : "hover:bg-accent hover:text-accent-foreground"
                   }`}
                   onMouseEnter={() => { cancelClose(); setOpenMenu(idx); }}
                 >
                   {item.label}
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${openMenu !== null ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === idx ? "rotate-180" : ""}`} />
                 </button>
               ))}
 
               {/* 드롭다운: nav 오른쪽 끝 기준 정렬, 너비는 컨텐츠에 맞게 */}
               {openMenu !== null && (
                 <div
-                  className="absolute top-full right-0 z-50 pt-1"
+                  className="absolute top-full right-0 z-50 pt-2 animate-in fade-in slide-in-from-top-2 duration-200"
                   onMouseEnter={cancelClose}
                 >
-                  <div className="bg-background border rounded-xl shadow-lg w-max">
+                  <div className="bg-white/95 backdrop-blur-md border border-border/50 rounded-2xl shadow-xl overflow-hidden w-[640px]">
                     {megaContent}
                   </div>
                 </div>

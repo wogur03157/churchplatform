@@ -5,7 +5,7 @@ import { stripHtml } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { FileText, Video as VideoIcon, X, ArrowRight, Calendar, ExternalLink } from "lucide-react";
+import { FileText, Video as VideoIcon, X, ArrowRight, Calendar, ExternalLink, MapPin, Clock, UserPlus, Youtube } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 
 // colSpan → Tailwind col-span 클래스
@@ -70,18 +70,39 @@ export default function PublicView() {
   // ── 렌더러 ──────────────────────────────────────────────────────────────────
 
   const renderHero = (section: any) => (
-    <section key="hero" className="relative py-32 lg:py-6 overflow-hidden lg:border-b lg:flex-none">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-background" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -mr-48 -mt-48 lg:hidden" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -ml-48 -mb-48 lg:hidden" />
+    <section key="hero" className="relative py-24 lg:py-32 overflow-hidden bg-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_25%)] opacity-[0.03]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--accent-gold)_0%,transparent_25%)] opacity-[0.05]" />
       <div className="container relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-6xl md:text-7xl lg:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60 mb-4 lg:mb-1">
-            {section.title || "환영합니다"}
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase animate-in fade-in slide-in-from-bottom-2 duration-700">
+            Love God, Love Neighbors
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+            {section.title || "영광교회에 오신 것을\n환영합니다"}
           </h1>
-          <p className="text-xl md:text-2xl lg:text-sm text-muted-foreground font-light">
-            {section.subtitle || "우아하고 완벽한 정보 관리 시스템"}
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+            {section.subtitle || "하나님을 사랑하고 이웃을 사랑하는 행복한 공동체"}
           </p>
+          
+          {/* 퀵 메뉴 (왕버튼) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+            {[
+              { icon: Clock, label: "예배 안내", color: "bg-primary", href: "/church/worship" },
+              { icon: MapPin, label: "오시는 길", color: "bg-accent-gold", href: "/church/directions" },
+              { icon: UserPlus, label: "새가족 안내", color: "bg-primary/80", href: "/community/new-member" },
+              { icon: Youtube, label: "온라인 예배", color: "bg-red-500", href: "/sermons/sunday" },
+            ].map((item, idx) => (
+              <Link key={idx} href={item.href}>
+                <div className="group cursor-pointer flex flex-col items-center gap-4 p-6 rounded-3xl bg-white border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className={`p-4 rounded-2xl ${item.color} text-white group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-current/10`}>
+                    <item.icon className="h-8 w-8" />
+                  </div>
+                  <span className="font-bold text-lg">{item.label}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -92,40 +113,40 @@ export default function PublicView() {
       case "announcements":
         if (!announcements || announcements.length === 0) return null;
         return (
-          <section key="announcements" id="announcements" className="py-20 lg:py-4 bg-muted/30 lg:bg-transparent">
-            <div className="container lg:px-4">
-              <div className="text-center mb-16 lg:mb-4">
-                <h2 className="text-4xl md:text-5xl lg:text-base font-bold mb-4 lg:mb-0">
-                  {section.title || "공지사항"}
-                </h2>
-                {section.subtitle && (
-                  <p className="text-lg lg:text-xs text-muted-foreground">{section.subtitle}</p>
-                )}
+          <section key="announcements" id="announcements" className="py-20 bg-secondary/30">
+            <div className="container">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div className="space-y-2">
+                  <h2 className="text-3xl md:text-4xl font-bold">
+                    {section.title || "교회 소식"}
+                  </h2>
+                  {section.subtitle && (
+                    <p className="text-lg text-muted-foreground">{section.subtitle}</p>
+                  )}
+                </div>
+                <Link href="/news/announcements">
+                  <Button variant="ghost" className="group text-primary font-bold">
+                    전체보기 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
               </div>
-              <div className="grid gap-6 lg:gap-3 md:grid-cols-2 lg:grid-cols-1 max-w-6xl lg:max-w-none mx-auto">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {announcements.slice(0, 6).map((item) => (
                   <Link key={item.id} href={`/announcements/${item.id}`}>
-                    <Card className="elegant-shadow hover:elegant-shadow-lg transition-all duration-300 h-full hover:translate-y-[-2px] cursor-pointer">
-                      <CardHeader className="lg:p-3">
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 lg:p-1.5 bg-primary/10 rounded-lg flex-shrink-0">
-                            <FileText className="h-5 w-5 lg:h-3.5 lg:w-3.5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg lg:text-sm line-clamp-1">{item.title}</CardTitle>
-                            <CardDescription className="flex items-center gap-1 mt-1 lg:mt-0.5 text-xs">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(item.createdAt).toLocaleDateString("ko-KR")}
-                            </CardDescription>
-                          </div>
+                    <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer overflow-hidden rounded-2xl">
+                      <CardHeader className="bg-white pb-4">
+                        <div className="flex items-center gap-2 text-xs font-bold text-primary mb-3">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {new Date(item.createdAt).toLocaleDateString("ko-KR")}
                         </div>
+                        <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-1">{item.title}</CardTitle>
                       </CardHeader>
-                      <CardContent className="lg:px-3 lg:pb-3 lg:pt-0">
-                        <p className="text-sm lg:text-xs text-muted-foreground line-clamp-2 lg:line-clamp-1 mb-3 lg:mb-1.5">
+                      <CardContent className="bg-white">
+                        <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed mb-4">
                           {stripHtml(item.content)}
                         </p>
-                        <div className="flex items-center text-primary text-sm lg:text-xs font-medium">
-                          자세히 보기 <ArrowRight className="h-4 w-4 lg:h-3 lg:w-3 ml-1.5" />
+                        <div className="flex items-center text-primary text-xs font-bold uppercase tracking-wider">
+                          자세히 보기 <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </CardContent>
                     </Card>
@@ -139,34 +160,28 @@ export default function PublicView() {
       case "images":
         if (!images || images.length === 0) return null;
         return (
-          <section key="images" className="py-20 lg:py-4">
-            <div className="container lg:px-4">
-              <div className="text-center mb-16 lg:mb-4">
-                <h2 className="text-4xl md:text-5xl lg:text-base font-bold mb-4 lg:mb-0">
-                  {section.title || "갤러리"}
+          <section key="images" className="py-20">
+            <div className="container">
+              <div className="text-center space-y-4 mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  {section.title || "교회 갤러리"}
                 </h2>
                 {section.subtitle && (
-                  <p className="text-lg lg:text-xs text-muted-foreground">{section.subtitle}</p>
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{section.subtitle}</p>
                 )}
               </div>
-              <div className="grid gap-6 lg:gap-3 md:grid-cols-3 lg:grid-cols-2 max-w-6xl lg:max-w-none mx-auto">
+              <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
                 {images.map((item) => (
-                  <Card key={item.id} className="elegant-shadow overflow-hidden group cursor-pointer">
-                    <div className="aspect-square relative overflow-hidden bg-muted">
-                      <img
-                        src={item.url}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                  <div key={item.id} className="aspect-square relative overflow-hidden rounded-2xl group cursor-pointer border border-border/50 elegant-shadow">
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                      <p className="text-white font-bold text-sm line-clamp-1">{item.title}</p>
                     </div>
-                    <CardHeader className="p-4 lg:p-2">
-                      <CardTitle className="text-sm lg:text-xs line-clamp-1">{item.title}</CardTitle>
-                      {item.description && (
-                        <CardDescription className="text-xs line-clamp-1">{item.description}</CardDescription>
-                      )}
-                    </CardHeader>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
@@ -176,18 +191,18 @@ export default function PublicView() {
       case "videos":
         if (!videos || videos.length === 0) return null;
         return (
-          <section key="videos" className="py-20 lg:py-4 bg-muted/30 lg:bg-transparent">
-            <div className="container lg:px-4">
-              <div className="text-center mb-16 lg:mb-4">
-                <h2 className="text-4xl md:text-5xl lg:text-base font-bold mb-4 lg:mb-0">
-                  {section.title || "영상"}
+          <section key="videos" className="py-20 bg-primary text-primary-foreground">
+            <div className="container">
+              <div className="text-center space-y-4 mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  {section.title || "최신 설교"}
                 </h2>
                 {section.subtitle && (
-                  <p className="text-lg lg:text-xs text-muted-foreground">{section.subtitle}</p>
+                  <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto">{section.subtitle}</p>
                 )}
               </div>
-              <div className="grid gap-8 lg:gap-3 md:grid-cols-2 lg:grid-cols-1 max-w-5xl lg:max-w-none mx-auto">
-                {videos.map((item) => {
+              <div className="grid gap-8 lg:grid-cols-2 max-w-6xl mx-auto">
+                {videos.slice(0, 2).map((item) => {
                   const getEmbed = () => {
                     if (item.videoType === "youtube") {
                       const id = item.url.includes("youtu.be")
@@ -195,31 +210,20 @@ export default function PublicView() {
                         : new URL(item.url).searchParams.get("v");
                       return `https://www.youtube.com/embed/${id}`;
                     }
-                    if (item.videoType === "vimeo") {
-                      return `https://player.vimeo.com/video/${item.url.split("/").pop()}`;
-                    }
                     return item.url;
                   };
                   return (
-                    <Card key={item.id} className="elegant-shadow overflow-hidden group">
-                      <div className="aspect-video relative overflow-hidden bg-muted">
-                        {item.videoType === "youtube" || item.videoType === "vimeo" ? (
-                          <iframe src={getEmbed()} className="w-full h-full" allowFullScreen title={item.title} />
-                        ) : item.thumbnailUrl ? (
-                          <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <VideoIcon className="h-16 w-16 lg:h-10 lg:w-10 text-muted-foreground" />
-                          </div>
+                    <div key={item.id} className="space-y-6">
+                      <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
+                        <iframe src={getEmbed()} className="w-full h-full" allowFullScreen title={item.title} />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-2xl font-bold">{item.title}</h3>
+                        {item.description && (
+                          <p className="text-primary-foreground/70 line-clamp-2">{item.description}</p>
                         )}
                       </div>
-                      <CardHeader className="lg:p-3">
-                        <CardTitle className="lg:text-sm">{item.title}</CardTitle>
-                        {item.description && (
-                          <CardDescription className="lg:text-xs line-clamp-1">{item.description}</CardDescription>
-                        )}
-                      </CardHeader>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
@@ -231,12 +235,14 @@ export default function PublicView() {
       case "image_b":
         if (!section.imageUrl) return null;
         return (
-          <section key={section.sectionType} className="lg:h-full overflow-hidden">
-            <img
-              src={section.imageUrl}
-              alt={section.title || ""}
-              className="w-full h-64 lg:h-full object-cover"
-            />
+          <section key={section.sectionType} className="py-12">
+            <div className="container">
+              <img
+                src={section.imageUrl}
+                alt={section.title || ""}
+                className="w-full h-[400px] object-cover rounded-[2rem] shadow-xl"
+              />
+            </div>
           </section>
         );
 
@@ -264,69 +270,64 @@ export default function PublicView() {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen lg:flex lg:flex-col bg-background">
+    <div className="min-h-screen bg-background">
+      <PublicHeader />
 
-      {/* ── 헤더 ── */}
-      <div className="flex-none">
-        <PublicHeader />
-      </div>
-
-      {/* ── 본문 ── */}
-      <main className="lg:flex-1 lg:flex lg:flex-col lg:overflow-hidden">
-
+      <main>
         {heroSection && renderHero(heroSection)}
 
-        {/* 데이터 섹션 그리드 — colSpan은 레이아웃 설정에서 관리 */}
-        <div className="lg:grid lg:grid-cols-3 lg:flex-1 lg:overflow-hidden lg:divide-x lg:divide-border">
-          {dataSections.map((section) => (
-            <div
-              key={section.sectionType}
-              className={`lg:overflow-y-auto lg:min-w-0 ${COL_SPAN_CLASS[section.colSpan ?? 1] ?? "lg:col-span-1"}`}
-            >
-              {renderSection(section)}
-            </div>
-          ))}
+        {/* 데이터 섹션 그리드 - 세로 배치를 기본으로 트렌디하게 변경 */}
+        <div className="flex flex-col">
+          {dataSections.map((section) => renderSection(section))}
         </div>
       </main>
 
-      {/* ── 푸터: 모바일만 ── */}
-      <footer className="border-t py-12 mt-20 bg-muted/50 lg:hidden">
+      <footer className="bg-white border-t py-20">
         <div className="container">
-          <div className="grid gap-8 md:grid-cols-3 mb-8">
-            <div>
-              <h3 className="font-semibold mb-3">정보 관리 시스템</h3>
-              <p className="text-sm text-muted-foreground">우아하고 완벽한 콘텐츠 관리 플랫폼</p>
+          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-6 col-span-1 lg:col-span-2">
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold text-primary">영광교회</span>
+                <span className="text-sm font-medium text-muted-foreground tracking-tighter">하나님사랑 이웃사랑</span>
+              </div>
+              <p className="text-muted-foreground max-w-sm">
+                영광교회는 하나님을 향한 뜨거운 예배와 이웃을 향한 따뜻한 섬김이 있는 행복한 공동체입니다.
+              </p>
             </div>
-            <div>
-              <h3 className="font-semibold mb-3">정보</h3>
-              <p className="text-sm text-muted-foreground">최신 콘텐츠를 확인하세요</p>
+            <div className="space-y-6">
+              <h3 className="font-bold text-lg">교회 안내</h3>
+              <ul className="space-y-4 text-muted-foreground">
+                <li><Link href="/church/about">교회 소개</Link></li>
+                <li><Link href="/church/worship">예배 안내</Link></li>
+                <li><Link href="/church/directions">오시는 길</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-6">
+              <h3 className="font-bold text-lg">연락처</h3>
+              <ul className="space-y-4 text-muted-foreground">
+                <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> 주소: 경기도 어디시 무엇동 123</li>
+                <li className="flex items-center gap-2"><Clock className="h-4 w-4" /> 전화: 02-123-4567</li>
+              </ul>
             </div>
           </div>
-          <div className="border-t pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2026 정보 관리 시스템. All rights reserved.</p>
+          <div className="border-t mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground font-medium">
+            <p>© 2026 영광교회. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <Link href="/privacy">개인정보처리방침</Link>
+              <Link href="/admin">관리자 로그인</Link>
+            </div>
           </div>
         </div>
       </footer>
 
-      {/* ── 팝업 모달 ── */}
+      {/* 팝업 모달 */}
       {showPopup && popup && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          onClick={() => setShowPopup(false)}
-        >
-          <div
-            className="relative bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-2 z-10 h-7 w-7 p-0 bg-black/30 hover:bg-black/50 text-white rounded-full"
-              onClick={() => setShowPopup(false)}
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPopup(false)}>
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="sm" className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-black/10 hover:bg-black/20 rounded-full" onClick={() => setShowPopup(false)}>
               <X className="h-4 w-4" />
             </Button>
-            {popup.imageUrl ? (
+            {popup.imageUrl && (
               popup.linkUrl ? (
                 <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" onClick={() => setShowPopup(false)}>
                   <img src={popup.imageUrl} alt={popup.title} className="w-full object-contain cursor-pointer" />
@@ -334,46 +335,35 @@ export default function PublicView() {
               ) : (
                 <img src={popup.imageUrl} alt={popup.title} className="w-full object-contain" />
               )
-            ) : null}
-            <div className="p-4 flex items-center justify-between gap-3">
-              <p className="font-medium text-sm">{popup.title}</p>
-              <div className="flex items-center gap-2 flex-shrink-0">
+            )}
+            <div className="p-6 flex items-center justify-between gap-4 bg-white border-t">
+              <p className="font-bold">{popup.title}</p>
+              <div className="flex items-center gap-4">
                 {popup.linkUrl && (
-                  <a
-                    href={popup.linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-primary hover:underline"
-                    onClick={() => setShowPopup(false)}
-                  >
+                  <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:underline flex items-center gap-1" onClick={() => setShowPopup(false)}>
                     자세히 보기 <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                <button
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPopup(false)}
-                >
-                  닫기
-                </button>
+                <button className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowPopup(false)}>닫기</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── 플로팅 메시지 ── */}
+      {/* 플로팅 메시지 */}
       {showFloating && floatingMessage && (
-        <div className={`fixed ${getFloatingPosition()} right-4 z-50 max-w-md w-full mx-auto`}>
-          <Card className={`elegant-shadow-lg ${getFloatingColor()} border-2`}>
-            <CardHeader className="relative pb-3">
-              <Button variant="ghost" size="sm" className="absolute right-2 top-2 h-6 w-6 p-0" onClick={() => setShowFloating(false)}>
+        <div className={`fixed ${getFloatingPosition()} right-4 z-50 max-w-sm w-full animate-in slide-in-from-right duration-500`}>
+          <Card className={`shadow-2xl border-none rounded-2xl overflow-hidden ${getFloatingColor()}`}>
+            <div className="p-5 relative">
+              <Button variant="ghost" size="sm" className="absolute right-2 top-2 h-6 w-6 p-0 hover:bg-black/5" onClick={() => setShowFloating(false)}>
                 <X className="h-4 w-4" />
               </Button>
-              <CardTitle className="pr-8">{floatingMessage.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">{floatingMessage.content}</p>
-            </CardContent>
+              <div className="space-y-2">
+                <h4 className="font-bold pr-6">{floatingMessage.title}</h4>
+                <p className="text-sm leading-relaxed">{floatingMessage.content}</p>
+              </div>
+            </div>
           </Card>
         </div>
       )}
