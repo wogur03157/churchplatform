@@ -111,3 +111,6 @@ temp/
 
 # Local file uploads (S3 연동 전 로컬 스토리지)
 uploads/
+
+# package-lock.json (pnpm 프로젝트, pnpm-lock.yaml 사용)
+package-lock.json
