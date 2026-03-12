@@ -24,6 +24,16 @@ import { StorageModule } from "./modules/storage/storage.module";
 import { User } from "./modules/users/entities/user.entity";
 import { Video } from "./modules/videos/entities/video.entity";
 import { VideosModule } from "./modules/videos/videos.module";
+import { PageGroup } from "./modules/page-groups/entities/page-group.entity";
+import { PageGroupsModule } from "./modules/page-groups/page-groups.module";
+import { VideoCategory } from "./modules/video-categories/entities/video-category.entity";
+import { VideoCategoriesModule } from "./modules/video-categories/video-categories.module";
+import { FormField } from "./modules/form-fields/entities/form-field.entity";
+import { FormFieldsModule } from "./modules/form-fields/form-fields.module";
+import { FormSubmission } from "./modules/form-submissions/entities/form-submission.entity";
+import { FormSubmissionsModule } from "./modules/form-submissions/form-submissions.module";
+import { SiteConfig } from "./modules/site-config/entities/site-config.entity";
+import { SiteConfigModule } from "./modules/site-config/site-config.module";
 
 // DB가 설정되지 않았거나 SKIP_DB=true 이면 DB 관련 모듈 전체 스킵
 // (AuthModule이 UserRepository에 의존하므로 AuthModule을 쓰는 모든 모듈 함께 제외)
@@ -42,7 +52,7 @@ const dbModules = isDbEnabled
       TypeOrmModule.forRoot({
         type: "mysql",
         url: dbUrl,
-        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup],
+        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup, PageGroup, VideoCategory, FormField, FormSubmission, SiteConfig],
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
@@ -58,6 +68,11 @@ const dbModules = isDbEnabled
       AiAssistantModule,
       StorageModule,
       NotificationsModule,
+      PageGroupsModule,
+      VideoCategoriesModule,
+      FormFieldsModule,
+      FormSubmissionsModule,
+      SiteConfigModule,
     ]
   : [];
 
