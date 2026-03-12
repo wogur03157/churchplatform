@@ -12,10 +12,10 @@ export class LayoutSetting {
 
   @Column({
     type: "enum",
-    enum: ["announcements", "images", "videos", "hero"],
+    enum: ["announcements", "images", "videos", "hero", "image_a", "image_b"],
     unique: true,
   })
-  sectionType!: "announcements" | "images" | "videos" | "hero";
+  sectionType!: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
 
   @Column({ type: "int", default: 1 })
   isVisible!: number;
@@ -23,11 +23,20 @@ export class LayoutSetting {
   @Column({ type: "int" })
   displayOrder!: number;
 
+  @Column({ type: "int", default: 1 })
+  colSpan!: number;
+
   @Column({ type: "varchar", length: 255, nullable: true })
   title!: string | null;
 
   @Column({ type: "text", nullable: true })
   subtitle!: string | null;
+
+  @Column({ type: "varchar", length: 512, nullable: true })
+  imageKey!: string | null;
+
+  @Column({ type: "varchar", length: 1024, nullable: true })
+  imageUrl!: string | null;
 
   @Column({ type: "int", nullable: true })
   churchId!: number | null;

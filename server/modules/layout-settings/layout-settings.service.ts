@@ -15,14 +15,37 @@ export class LayoutSettingsService {
   }
 
   async upsert(data: {
-    sectionType: "announcements" | "images" | "videos" | "hero";
+    sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
     isVisible: number;
     displayOrder: number;
+    colSpan?: number;
     title?: string;
     subtitle?: string;
+    imageKey?: string;
+    imageUrl?: string;
     updatedBy: number;
   }): Promise<void> {
     await this.repo.upsert(data, { conflictPaths: ["sectionType"] });
+  }
+
+  async saveAll(
+    items: Array<{
+      sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
+      isVisible: number;
+      displayOrder: number;
+      colSpan: number;
+      title?: string;
+      subtitle?: string;
+      imageKey?: string;
+      imageUrl?: string;
+    }>,
+    updatedBy: number,
+  ): Promise<void> {
+    await Promise.all(
+      items.map((item) =>
+        this.repo.upsert({ ...item, updatedBy }, { conflictPaths: ["sectionType"] }),
+      ),
+    );
   }
 
   async update(id: number, data: Record<string, unknown>): Promise<void> {

@@ -1,172 +1,508 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, Layout } from "lucide-react";
+import { Plus, X, Save, GripVertical, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// ─── 섹션 정의 ────────────────────────────────────────────────────────────────
+
+type SectionType = "hero" | "announcements" | "images" | "videos" | "image_a" | "image_b";
+
+const SECTION_META: Record<SectionType, { label: string; description: string }> = {
+  hero:          { label: "히어로 배너",   description: "상단 타이틀·부제목 영역" },
+  announcements: { label: "공지사항",      description: "공지사항 카드 목록" },
+  images:        { label: "이미지 갤러리", description: "이미지 그리드" },
+  videos:        { label: "영상",          description: "유튜브·영상 목록" },
+  image_a:       { label: "이미지 A",      description: "빈 공간을 채우는 배경 이미지" },
+  image_b:       { label: "이미지 B",      description: "빈 공간을 채우는 배경 이미지" },
+};
+
+const ALL_SECTIONS = Object.keys(SECTION_META) as SectionType[];
+
+// ─── 타입 ─────────────────────────────────────────────────────────────────────
+
+type LayoutItem = {
+  id?: number;
+  sectionType: SectionType;
+  isVisible: boolean;
+  displayOrder: number;
+  colSpan: 1 | 2 | 3;
+  title: string;
+  subtitle: string;
+  imageKey: string | null;
+  imageUrl: string | null;
+};
+
+// ─── 섹션 색상 ────────────────────────────────────────────────────────────────
+
+const SECTION_COLORS: Record<SectionType, { bg: string; border: string; text: string; selectedRing: string }> = {
+  hero:          { bg: "bg-primary/10",  border: "border-primary/30",  text: "text-primary",      selectedRing: "ring-primary" },
+  announcements: { bg: "bg-blue-50",     border: "border-blue-200",    text: "text-blue-700",     selectedRing: "ring-blue-400" },
+  images:        { bg: "bg-green-50",    border: "border-green-200",   text: "text-green-700",    selectedRing: "ring-green-400" },
+  videos:        { bg: "bg-purple-50",   border: "border-purple-200",  text: "text-purple-700",   selectedRing: "ring-purple-400" },
+  image_a:       { bg: "bg-orange-50",   border: "border-orange-200",  text: "text-orange-700",   selectedRing: "ring-orange-400" },
+  image_b:       { bg: "bg-pink-50",     border: "border-pink-200",    text: "text-pink-700",     selectedRing: "ring-pink-400" },
+};
+
+// ─── 열 너비 토글 ─────────────────────────────────────────────────────────────
+
+function ColSpanToggle({ value, onChange }: { value: 1 | 2 | 3; onChange: (v: 1 | 2 | 3) => void }) {
+  return (
+    <div className="flex gap-0.5">
+      {([1, 2, 3] as const).map((n) => (
+        <button
+          key={n}
+          onClick={(e) => { e.stopPropagation(); onChange(n); }}
+          title={`${n}열`}
+          className={`flex gap-0.5 p-1 rounded border transition-colors ${
+            value === n ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 bg-background/80"
+          }`}
+        >
+          {Array.from({ length: 3 }).map((_, i) => (
+            <span key={i} className={`w-1.5 h-2.5 rounded-sm ${i < n ? "bg-primary" : "bg-muted-foreground/20"}`} />
+          ))}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── 캔버스 블록 (드래그 가능) ────────────────────────────────────────────────
+
+function CanvasBlock({
+  item,
+  isSelected,
+  onClick,
+  onRemove,
+  onUpdate,
+}: {
+  item: LayoutItem;
+  isSelected: boolean;
+  onClick: () => void;
+  onRemove: () => void;
+  onUpdate: (patch: Partial<LayoutItem>) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileDragOver, setFileDragOver] = useState(false);
+  const c = SECTION_COLORS[item.sectionType];
+  const isImageWidget = item.sectionType === "image_a" || item.sectionType === "image_b";
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.sectionType });
+
+  const style = {
+    gridColumn: `span ${item.colSpan}`,
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 0 : undefined,
+  };
+
+  const loadFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => onUpdate({ imageUrl: reader.result as string, imageKey: file.name });
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`rounded-lg border-2 overflow-hidden transition-shadow cursor-pointer ${c.border} ${
+        isSelected ? `ring-2 ring-offset-1 ${c.selectedRing}` : "hover:shadow-md"
+      }`}
+      onClick={onClick}
+    >
+      {/* 블록 헤더 */}
+      <div className={`flex items-center gap-1.5 px-2 py-1.5 ${c.bg}`}>
+        {/* 드래그 핸들 */}
+        <button
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none select-none flex-shrink-0"
+          title="드래그하여 순서 변경"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+
+        <span className={`flex-1 text-xs font-semibold truncate ${c.text}`}>
+          {item.title || SECTION_META[item.sectionType].label}
+        </span>
+
+        <ColSpanToggle value={item.colSpan} onChange={(v) => onUpdate({ colSpan: v })} />
+
+        <button
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          className="p-0.5 rounded hover:bg-destructive/15 hover:text-destructive text-muted-foreground flex-shrink-0"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {/* 블록 본문 */}
+      <div className={`min-h-[56px] flex items-center justify-center ${c.bg} border-t ${c.border}`}>
+        {isImageWidget ? (
+          item.imageUrl ? (
+            <img src={item.imageUrl} alt="" className="w-full h-20 object-cover" />
+          ) : (
+            <>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = ""; }} />
+              <div
+                onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setFileDragOver(true); }}
+                onDragLeave={() => setFileDragOver(false)}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setFileDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) loadFile(f); }}
+                className={`w-full h-20 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${fileDragOver ? "bg-primary/10" : ""}`}
+              >
+                <ImageIcon className={`h-5 w-5 ${fileDragOver ? c.text : "text-muted-foreground"}`} />
+                <span className="text-[10px] text-muted-foreground">{fileDragOver ? "놓기" : "이미지 드롭 또는 클릭"}</span>
+              </div>
+            </>
+          )
+        ) : (
+          <span className={`text-[10px] ${c.text} opacity-50`}>
+            {SECTION_META[item.sectionType].description}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── 섹션 설정 패널 ───────────────────────────────────────────────────────────
+
+function SectionSettings({
+  item,
+  onUpdate,
+}: {
+  item: LayoutItem;
+  onUpdate: (patch: Partial<LayoutItem>) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const c = SECTION_COLORS[item.sectionType];
+  const isImageWidget = item.sectionType === "image_a" || item.sectionType === "image_b";
+
+  const loadFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => onUpdate({ imageUrl: reader.result as string, imageKey: file.name });
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <Card className={`border-2 ${c.border}`}>
+      <CardContent className="p-3">
+        <p className={`text-xs font-semibold mb-2 ${c.text}`}>
+          {SECTION_META[item.sectionType].label} 설정
+        </p>
+
+        {isImageWidget ? (
+          <div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = ""; }} />
+            {item.imageUrl ? (
+              <div className="relative group rounded border overflow-hidden">
+                <img src={item.imageUrl} alt="" className="w-full h-28 object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                  <Button size="sm" variant="secondary" className="h-7 text-xs" onClick={() => fileRef.current?.click()}>변경</Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => onUpdate({ imageUrl: null, imageKey: null })}>삭제</Button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => fileRef.current?.click()}
+                className="w-full h-20 border-2 border-dashed border-border rounded flex flex-col items-center justify-center gap-1 hover:border-primary/50 hover:bg-muted/50 transition-colors">
+                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">클릭하여 이미지 업로드</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">제목</Label>
+              <Input value={item.title} onChange={(e) => onUpdate({ title: e.target.value })}
+                placeholder={`${SECTION_META[item.sectionType].label} 제목`} className="h-7 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">부제목</Label>
+              <Input value={item.subtitle} onChange={(e) => onUpdate({ subtitle: e.target.value })}
+                placeholder="부제목 (선택사항)" className="h-7 text-xs" />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export default function AdminLayoutSettings() {
-  const [settings, setSettings] = useState<Record<string, any>>({});
+  const qc = useQueryClient();
+  const [items, setItems] = useState<LayoutItem[]>([]);
+  const [selected, setSelected] = useState<SectionType | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  const queryClientInstance = useQueryClient();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
   const { data: layoutSettings, isLoading } = useQuery({
     queryKey: ["layout-settings"],
     queryFn: () => api.get<any[]>("/layout-settings"),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) =>
-      api.patch<{ success: boolean }>(`/layout-settings/${id}`, data),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["layout-settings"] });
-      toast.success("레이아웃 설정이 저장되었습니다");
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
   useEffect(() => {
-    if (layoutSettings) {
-      const settingsMap: Record<string, any> = {};
-      layoutSettings.forEach((setting) => {
-        settingsMap[setting.sectionType] = setting;
-      });
-      setSettings(settingsMap);
-    }
+    if (!layoutSettings) return;
+    const loaded: LayoutItem[] = layoutSettings.map((s) => ({
+      id: s.id,
+      sectionType: s.sectionType as SectionType,
+      isVisible: s.isVisible === 1,
+      displayOrder: s.displayOrder,
+      colSpan: (s.colSpan ?? 1) as 1 | 2 | 3,
+      title: s.title ?? "",
+      subtitle: s.subtitle ?? "",
+      imageKey: s.imageKey ?? null,
+      imageUrl: s.imageUrl ?? null,
+    }));
+    ALL_SECTIONS.forEach((type) => {
+      if (!loaded.find((i) => i.sectionType === type)) {
+        loaded.push({ sectionType: type, isVisible: false, displayOrder: 99, colSpan: 1, title: "", subtitle: "", imageKey: null, imageUrl: null });
+      }
+    });
+    setItems(loaded.sort((a, b) => a.displayOrder - b.displayOrder));
   }, [layoutSettings]);
 
-  const handleUpdate = (sectionType: string, field: string, value: any) => {
-    setSettings((prev) => ({
-      ...prev,
-      [sectionType]: {
-        ...prev[sectionType],
-        [field]: value,
-      },
-    }));
-  };
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      api.post("/layout-settings/save-all",
+        items.map((item, i) => ({
+          sectionType: item.sectionType,
+          isVisible: item.isVisible,
+          displayOrder: i + 1,
+          colSpan: item.colSpan,
+          title: item.title || undefined,
+          subtitle: item.subtitle || undefined,
+          imageKey: item.imageKey || undefined,
+          imageUrl: item.imageUrl || undefined,
+        })),
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["layout-settings"] });
+      toast.success("레이아웃이 저장되었습니다");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
-  const handleSave = (sectionType: string) => {
-    const setting = settings[sectionType];
-    if (!setting) return;
+  const active   = items.filter((i) => i.isVisible);
+  const inactive = items.filter((i) => !i.isVisible);
 
-    updateMutation.mutate({
-      id: setting.id,
-      isVisible: setting.isVisible === 1,
-      displayOrder: setting.displayOrder,
-      title: setting.title || undefined,
-      subtitle: setting.subtitle || undefined,
+  const update = (type: SectionType, patch: Partial<LayoutItem>) =>
+    setItems((prev) => prev.map((i) => i.sectionType === type ? { ...i, ...patch } : i));
+
+  const addSection    = (type: SectionType) => { update(type, { isVisible: true }); setSelected(type); };
+  const removeSection = (type: SectionType) => { update(type, { isVisible: false }); if (selected === type) setSelected(null); };
+
+  const handleDragStart = ({ active: a }: DragStartEvent) => setDraggingId(String(a.id));
+
+  const handleDragEnd = ({ active: a, over }: DragEndEvent) => {
+    setDraggingId(null);
+    if (!over || a.id === over.id) return;
+    const fromId = String(a.id);
+    const toId   = String(over.id);
+    setItems((prev) => {
+      const oldIdx = prev.findIndex((i) => i.sectionType === fromId);
+      const newIdx = prev.findIndex((i) => i.sectionType === toId);
+      if (oldIdx === -1 || newIdx === -1) return prev;
+      return arrayMove(prev, oldIdx, newIdx);
     });
   };
 
-  const sections = [
-    { type: "hero", name: "히어로 섹션", description: "메인 배너 영역" },
-    { type: "announcements", name: "공지사항", description: "공지사항 목록 표시" },
-    { type: "images", name: "이미지 갤러리", description: "이미지 갤러리 표시" },
-    { type: "videos", name: "영상", description: "영상 목록 표시" },
-  ];
+  const heroSection  = active.find((i) => i.sectionType === "hero");
+  const dataSections = active.filter((i) => i.sectionType !== "hero");
+  const selectedItem = selected ? items.find((i) => i.sectionType === selected) ?? null : null;
+  const draggingItem = draggingId ? items.find((i) => i.sectionType === draggingId) ?? null : null;
+
+  if (isLoading) return <div className="text-center py-12 text-muted-foreground">로딩 중...</div>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">레이아웃 설정</h1>
-        <p className="text-muted-foreground mt-2">공개 페이지의 레이아웃을 구성하세요</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">레이아웃 설정</h1>
+          <p className="text-muted-foreground mt-1">블록을 드래그해서 순서와 너비를 조정하세요</p>
+        </div>
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+          <Save className="h-4 w-4 mr-1.5" />
+          {saveMutation.isPending ? "저장 중..." : "저장"}
+        </Button>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-12"><p className="text-muted-foreground">로딩 중...</p></div>
-      ) : (
-        <div className="space-y-4">
-          {sections.map((section) => {
-            const setting = settings[section.type];
-            if (!setting) return null;
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-            return (
-              <Card key={section.type} className="elegant-shadow">
-                <CardContent className="pt-4 pb-4">
-                  {/* 헤더 행: 섹션명 + 컨트롤 */}
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <Layout className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">{section.name}</p>
-                        <p className="text-xs text-muted-foreground">{section.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-1.5">
-                        <Switch
-                          id={`${section.type}-visible`}
-                          checked={setting.isVisible === 1}
-                          onCheckedChange={(checked) =>
-                            handleUpdate(section.type, "isVisible", checked ? 1 : 0)
-                          }
-                        />
-                        <Label htmlFor={`${section.type}-visible`} className="text-sm cursor-pointer">표시</Label>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Label htmlFor={`${section.type}-order`} className="text-sm whitespace-nowrap">순서</Label>
-                        <Input
-                          id={`${section.type}-order`}
-                          type="number"
-                          min={0}
-                          value={setting.displayOrder}
-                          onChange={(e) =>
-                            handleUpdate(section.type, "displayOrder", Math.max(0, parseInt(e.target.value) || 0))
-                          }
-                          className="w-16 h-8 text-sm"
-                        />
-                      </div>
-                      <Button size="sm" onClick={() => handleSave(section.type)} disabled={updateMutation.isPending}>
-                        <Save className="h-3.5 w-3.5 mr-1" />저장
-                      </Button>
-                    </div>
+        {/* ── 레이아웃 캔버스 (메인 편집 영역) ── */}
+        <div className="lg:col-span-2 space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            레이아웃 캔버스 ({active.length}개 배치됨)
+          </p>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            {/* 편집 캔버스 */}
+            <div className="border-2 border-dashed border-border rounded-xl p-3 min-h-[140px] bg-muted/20 space-y-2">
+
+              {/* 히어로 섹션 (항상 전체 너비, DnD 대상에서 제외) */}
+              {heroSection && (
+                <div
+                  className={`rounded-lg border-2 overflow-hidden cursor-pointer transition-shadow ${SECTION_COLORS.hero.border} ${
+                    selected === "hero" ? `ring-2 ring-offset-1 ${SECTION_COLORS.hero.selectedRing}` : "hover:shadow-md"
+                  }`}
+                  onClick={() => setSelected(selected === "hero" ? null : "hero")}
+                >
+                  <div className={`flex items-center gap-2 px-3 py-2 ${SECTION_COLORS.hero.bg}`}>
+                    <span className={`flex-1 text-xs font-semibold ${SECTION_COLORS.hero.text}`}>
+                      {heroSection.title || "히어로 배너"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">전체 너비 고정</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeSection("hero"); }}
+                      className="p-0.5 rounded hover:bg-destructive/15 hover:text-destructive text-muted-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  {/* 제목 / 부제목 */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label htmlFor={`${section.type}-title`} className="text-xs">제목</Label>
-                      <Input
-                        id={`${section.type}-title`}
-                        value={setting.title || ""}
-                        onChange={(e) => handleUpdate(section.type, "title", e.target.value)}
-                        placeholder={`${section.name} 제목`}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${section.type}-subtitle`} className="text-xs">부제목</Label>
-                      <Input
-                        id={`${section.type}-subtitle`}
-                        value={setting.subtitle || ""}
-                        onChange={(e) => handleUpdate(section.type, "subtitle", e.target.value)}
-                        placeholder="부제목 (선택사항)"
-                        className="h-8 text-sm"
-                      />
-                    </div>
+                  <div className={`h-8 ${SECTION_COLORS.hero.bg} border-t ${SECTION_COLORS.hero.border} flex items-center justify-center`}>
+                    <span className={`text-[10px] opacity-40 ${SECTION_COLORS.hero.text}`}>{SECTION_META.hero.description}</span>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              )}
+
+              {/* 데이터 섹션 그리드 (드래그 가능) */}
+              {dataSections.length > 0 && (
+                <SortableContext
+                  items={dataSections.map((i) => i.sectionType)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {dataSections.map((item) => (
+                      <CanvasBlock
+                        key={item.sectionType}
+                        item={item}
+                        isSelected={selected === item.sectionType}
+                        onClick={() => setSelected(selected === item.sectionType ? null : item.sectionType)}
+                        onRemove={() => removeSection(item.sectionType)}
+                        onUpdate={(patch) => update(item.sectionType, patch)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              )}
+
+              {/* 비어있을 때 */}
+              {active.length === 0 && (
+                <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">
+                  오른쪽에서 섹션을 추가하세요
+                </div>
+              )}
+            </div>
+
+            {/* 드래그 중 오버레이 */}
+            <DragOverlay>
+              {draggingItem && (
+                <div
+                  className={`rounded-lg border-2 shadow-xl overflow-hidden ${SECTION_COLORS[draggingItem.sectionType].border}`}
+                  style={{ width: "120px" }}
+                >
+                  <div className={`px-2 py-1.5 ${SECTION_COLORS[draggingItem.sectionType].bg}`}>
+                    <span className={`text-xs font-semibold ${SECTION_COLORS[draggingItem.sectionType].text}`}>
+                      {SECTION_META[draggingItem.sectionType].label}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
+
+          {/* ── 선택된 섹션 설정 ── */}
+          {selectedItem && selectedItem.isVisible && (
+            <SectionSettings
+              item={selectedItem}
+              onUpdate={(patch) => update(selectedItem.sectionType, patch)}
+            />
+          )}
+
+          {/* 안내 */}
+          <p className="text-[11px] text-muted-foreground">
+            열 너비 합이 3이 되면 같은 행에 나란히 배치됩니다 (예: 1+2열, 1+1+1열)
+          </p>
         </div>
-      )}
 
-      <Card className="elegant-shadow bg-muted/50">
-        <CardHeader>
-          <CardTitle>레이아웃 설정 안내</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• <strong>표시</strong>: 해당 섹션을 공개 페이지에 표시할지 여부를 설정합니다</p>
-          <p>• <strong>표시 순서</strong>: 숫자가 작을수록 위쪽에 표시됩니다 (0이 가장 위)</p>
-          <p>• <strong>섹션 제목/부제목</strong>: 각 섹션의 제목과 설명을 커스터마이징할 수 있습니다</p>
-          <p>• 변경사항은 각 섹션의 <strong>저장</strong> 버튼을 눌러야 적용됩니다</p>
-        </CardContent>
-      </Card>
+        {/* ── 추가 가능한 섹션 팔레트 ── */}
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">추가 가능한 섹션 ({inactive.length})</p>
+
+          {inactive.length === 0 && (
+            <Card>
+              <CardContent className="py-6 text-center text-muted-foreground text-xs">
+                모든 섹션이 배치되어 있습니다
+              </CardContent>
+            </Card>
+          )}
+
+          {inactive.map((item) => (
+            <Card key={item.sectionType} className="border-dashed">
+              <CardContent className="p-3 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{SECTION_META[item.sectionType].label}</p>
+                  <p className="text-xs text-muted-foreground">{SECTION_META[item.sectionType].description}</p>
+                </div>
+                <Button size="sm" variant="outline" className="flex-shrink-0" onClick={() => addSection(item.sectionType)}>
+                  <Plus className="h-3.5 w-3.5 mr-1" />추가
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* 안내 */}
+          <Card className="bg-muted/40 border-dashed">
+            <CardContent className="py-3 px-3 text-xs text-muted-foreground space-y-1">
+              <p>• <strong>이미지 A / B</strong>: 빈 열을 채우는 배경 이미지</p>
+              <p>• 블록 클릭 시 상세 설정 열림</p>
+              <p>• 변경 후 반드시 <strong>저장</strong></p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

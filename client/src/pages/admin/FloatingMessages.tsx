@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useCRUD } from "@/hooks/useCRUD";
+import type { FloatingMessage } from "@shared/entities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,49 +26,6 @@ export default function AdminFloatingMessages() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const queryClientInstance = useQueryClient();
-  const { data: messages, isLoading } = useQuery({
-    queryKey: ["floating-messages"],
-    queryFn: () => api.get<any[]>("/floating-messages"),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: any) => api.post<{ success: boolean; id: number }>("/floating-messages", data),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["floating-messages"] });
-      toast.success("플로팅 메시지가 생성되었습니다");
-      resetForm();
-      setIsCreateOpen(false);
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) => api.patch<{ success: boolean }>(`/floating-messages/${id}`, data),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["floating-messages"] });
-      toast.success("플로팅 메시지가 수정되었습니다");
-      resetForm();
-      setIsEditOpen(false);
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete<{ success: boolean }>(`/floating-messages/${id}`),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["floating-messages"] });
-      toast.success("플로팅 메시지가 삭제되었습니다");
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
   const resetForm = () => {
     setTitle("");
     setContent("");
@@ -76,7 +35,21 @@ export default function AdminFloatingMessages() {
     setStartDate("");
     setEndDate("");
     setEditingId(null);
+    setIsCreateOpen(false);
+    setIsEditOpen(false);
   };
+
+  const { createMutation, updateMutation, confirmDelete } = useCRUD({
+    queryKey: "floating-messages",
+    path: "floating-messages",
+    entityName: "플로팅 메시지",
+    onSuccess: resetForm,
+  });
+
+  const { data: messages, isLoading } = useQuery({
+    queryKey: ["floating-messages"],
+    queryFn: () => api.get<FloatingMessage[]>("/floating-messages"),
+  });
 
   const handleCreate = () => {
     if (!title.trim() || !content.trim()) {
@@ -112,12 +85,6 @@ export default function AdminFloatingMessages() {
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      deleteMutation.mutate(id);
-    }
   };
 
   const getTypeColor = (type: string) => {
@@ -231,7 +198,7 @@ export default function AdminFloatingMessages() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(message)}><Edit className="h-4 w-4" /></Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(message.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="sm" onClick={() => confirmDelete(message.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
               </CardHeader>

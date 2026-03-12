@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { api } from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useCRUD } from "@/hooks/useCRUD";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Upload } from "lucide-react";
+import type { Image } from "@shared/entities";
 
 export default function AdminImages() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -23,49 +25,6 @@ export default function AdminImages() {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const queryClientInstance = useQueryClient();
-  const { data: images, isLoading } = useQuery({
-    queryKey: ["images"],
-    queryFn: () => api.get<any[]>("/images"),
-  });
-
-  const uploadMutation = useMutation({
-    mutationFn: (data: any) => api.post<{ success: boolean; id: number; url: string }>("/images", data),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
-      toast.success("이미지가 업로드되었습니다");
-      resetForm();
-      setIsCreateOpen(false);
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, ...data }: any) => api.patch<{ success: boolean }>(`/images/${id}`, data),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
-      toast.success("이미지가 수정되었습니다");
-      resetForm();
-      setIsEditOpen(false);
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete<{ success: boolean }>(`/images/${id}`),
-    onSuccess: () => {
-      queryClientInstance.invalidateQueries({ queryKey: ["images"] });
-      toast.success("이미지가 삭제되었습니다");
-    },
-    onError: (error: any) => {
-      toast.error(`오류: ${error.message}`);
-    },
-  });
-
   const resetForm = () => {
     setTitle("");
     setDescription("");
@@ -74,10 +33,24 @@ export default function AdminImages() {
     setSelectedFile(null);
     setPreviewUrl("");
     setEditingId(null);
+    setIsCreateOpen(false);
+    setIsEditOpen(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
+
+  const { createMutation, updateMutation, confirmDelete } = useCRUD({
+    queryKey: "images",
+    path: "images",
+    entityName: "이미지",
+    onSuccess: resetForm,
+  });
+
+  const { data: images, isLoading } = useQuery({
+    queryKey: ["images"],
+    queryFn: () => api.get<Image[]>("/images"),
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,7 +85,7 @@ export default function AdminImages() {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = (reader.result as string).split(",")[1];
-      uploadMutation.mutate({
+      createMutation.mutate({
         title,
         description,
         fileData: base64,
@@ -125,7 +98,7 @@ export default function AdminImages() {
     reader.readAsDataURL(selectedFile);
   };
 
-  const handleEdit = (image: any) => {
+  const handleEdit = (image: Image) => {
     setEditingId(image.id);
     setTitle(image.title);
     setDescription(image.description || "");
@@ -141,12 +114,6 @@ export default function AdminImages() {
       return;
     }
     updateMutation.mutate({ id: editingId, title, description, isPublished, displayOrder });
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      deleteMutation.mutate(id);
-    }
   };
 
   return (
@@ -207,8 +174,8 @@ export default function AdminImages() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>취소</Button>
-              <Button onClick={handleUpload} disabled={uploadMutation.isPending}>
-                {uploadMutation.isPending ? "업로드 중..." : "업로드"}
+              <Button onClick={handleUpload} disabled={createMutation.isPending}>
+                {createMutation.isPending ? "업로드 중..." : "업로드"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -219,7 +186,7 @@ export default function AdminImages() {
         <div className="text-center py-12"><p className="text-muted-foreground">로딩 중...</p></div>
       ) : images && images.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {images.map((image) => (
+          {(images as Image[]).map((image) => (
             <Card key={image.id} className="elegant-shadow overflow-hidden">
               <div className="aspect-video relative overflow-hidden bg-muted">
                 <img src={image.url} alt={image.title} className="w-full h-full object-cover" />
@@ -245,7 +212,7 @@ export default function AdminImages() {
                   <Button variant="outline" size="sm" onClick={() => handleEdit(image)} className="flex-1">
                     <Edit className="h-4 w-4 mr-1" />수정
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(image.id)}>
+                  <Button variant="outline" size="sm" onClick={() => confirmDelete(image.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

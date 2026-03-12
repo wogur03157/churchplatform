@@ -15,7 +15,7 @@
 | AI 어시스턴트 | OpenAI 호환 API |
 | 상태 관리 | TanStack Query v5 |
 | 라우터 | Wouter |
-| 패키지 매니저 | pnpm |
+| 패키지 매니저 | pnpm 10.4.1 |
 
 ---
 
@@ -184,15 +184,48 @@ VALUES ('events', 1, 5, '이벤트');
 
 ### 사전 요구사항
 
-- Node.js 18+
-- pnpm
-- MySQL 8.0+
+- Node.js **20.18 이상** (Vite 7 요구사항)
+- pnpm **10.4.1** (정확한 버전 필요)
+- MySQL 8.0+ (Mock 모드로 실행 시 불필요)
+
+### 0. Node / pnpm 버전 맞추기
+
+```bash
+# Node 버전 확인
+node --version   # v20.x 이상이어야 함
+
+# nvm 사용 시 (프로젝트 루트의 .node-version 자동 적용)
+nvm install 20
+nvm use 20
+
+# pnpm은 Corepack으로 설치 (버전 자동 고정)
+corepack enable
+corepack prepare pnpm@10.4.1 --activate
+```
+
+> `packageManager` 필드에 sha512 해시가 고정되어 있어, Corepack을 통하지 않고 다른 버전의 pnpm을 사용하면 설치가 실패할 수 있습니다.
 
 ### 1. 의존성 설치
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 ```
+
+> `--frozen-lockfile` 옵션으로 lock 파일 기반 설치를 권장합니다. lock 파일 없이 설치 시 `wouter` 패치가 미적용될 수 있습니다.
+
+### Mock 모드로 빠르게 실행하기 (DB 없이)
+
+DB 없이 목업 데이터로 개발/테스트 가능합니다.
+
+```bash
+pnpm dev:no-db
+```
+
+- 브라우저: `http://localhost:3000`
+- 관리자: `http://localhost:3000/admin` (별도 로그인 불필요)
+- 실제 DB, Google OAuth, AWS S3 설정 없이 동작
+
+> 아래 2~5단계는 실제 DB와 OAuth를 연결하는 경우에만 필요합니다.
 
 ### 2. 환경변수 설정
 
@@ -238,7 +271,11 @@ CREATE DATABASE admin_dashboard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 ### 4. 개발 서버 실행
 
 ```bash
+# DB 연결 포함 (환경변수 설정 완료 후)
 pnpm dev
+
+# DB 없이 Mock 모드
+pnpm dev:no-db
 ```
 
 - 서버: `http://localhost:3000`

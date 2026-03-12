@@ -1,162 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common";
+import {
+  ANNOUNCEMENTS, IMAGES, VIDEOS, FLOATING_MESSAGES, LAYOUT_SETTINGS,
+  POPUPS, CHURCHES, FEATURES, ALL_FEATURE_KEYS, ADMINS, VIDEO_CATEGORIES,
+  PAGE_GROUPS, FORM_FIELDS, FORM_SUBMISSIONS, ADMIN_PERMISSIONS, ALL_PERM_KEYS,
+  SITE_CONFIG, getEnabledFeatures,
+} from "./mock-store";
 
-// ─── Mock Data ──────────────────────────────────────────────────────────────
+// mock-auth.controller 등 다른 모듈에서 사용할 수 있도록 재export
+export { getEnabledFeatures };
 
-const now = new Date();
-const past = (days: number) => new Date(Date.now() - days * 86400_000);
-
-const ANNOUNCEMENTS = [
-  {
-    id: 1,
-    title: "서비스 오픈 안내",
-    content: "<p>안녕하세요! 저희 서비스가 정식 오픈되었습니다.</p><p>많은 이용 부탁드립니다.</p>",
-    authorId: 1,
-    isPublished: 1,
-    publishedAt: past(5),
-    createdAt: past(6),
-    updatedAt: past(5),
-  },
-  {
-    id: 2,
-    title: "시스템 점검 예정 공지",
-    content: "<p>2024년 2월 28일 새벽 2시~4시 시스템 점검이 예정되어 있습니다.</p><p>이용에 불편을 드려 죄송합니다.</p>",
-    authorId: 1,
-    isPublished: 1,
-    publishedAt: past(2),
-    createdAt: past(3),
-    updatedAt: past(2),
-  },
-  {
-    id: 3,
-    title: "[초안] 신규 기능 출시 예정",
-    content: "<p>곧 새로운 기능이 출시될 예정입니다.</p>",
-    authorId: 1,
-    isPublished: 0,
-    publishedAt: null,
-    createdAt: past(1),
-    updatedAt: past(1),
-  },
-];
-
-const IMAGES = [
-  {
-    id: 1,
-    title: "메인 배너",
-    description: "홈 화면 메인 배너 이미지",
-    fileKey: "mock/banner.jpg",
-    url: "https://picsum.photos/seed/banner/1200/400",
-    mimeType: "image/jpeg",
-    fileSize: 204800,
-    uploadedBy: 1,
-    isPublished: 1,
-    displayOrder: 1,
-    createdAt: past(10),
-    updatedAt: past(10),
-  },
-  {
-    id: 2,
-    title: "갤러리 이미지 1",
-    description: null,
-    fileKey: "mock/gallery1.jpg",
-    url: "https://picsum.photos/seed/gallery1/800/600",
-    mimeType: "image/jpeg",
-    fileSize: 102400,
-    uploadedBy: 1,
-    isPublished: 1,
-    displayOrder: 2,
-    createdAt: past(7),
-    updatedAt: past(7),
-  },
-  {
-    id: 3,
-    title: "[비공개] 갤러리 이미지 2",
-    description: null,
-    fileKey: "mock/gallery2.jpg",
-    url: "https://picsum.photos/seed/gallery2/800/600",
-    mimeType: "image/jpeg",
-    fileSize: 98304,
-    uploadedBy: 1,
-    isPublished: 0,
-    displayOrder: 3,
-    createdAt: past(3),
-    updatedAt: past(3),
-  },
-];
-
-const VIDEOS = [
-  {
-    id: 1,
-    title: "서비스 소개 영상",
-    description: "서비스를 소개하는 유튜브 영상입니다.",
-    videoType: "youtube",
-    fileKey: null,
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    mimeType: null,
-    fileSize: null,
-    duration: 212,
-    uploadedBy: 1,
-    isPublished: 1,
-    displayOrder: 1,
-    createdAt: past(14),
-    updatedAt: past(14),
-  },
-  {
-    id: 2,
-    title: "[초안] 튜토리얼 영상",
-    description: "사용 방법을 안내하는 튜토리얼입니다.",
-    videoType: "youtube",
-    fileKey: null,
-    url: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
-    thumbnailUrl: null,
-    mimeType: null,
-    fileSize: null,
-    duration: null,
-    uploadedBy: 1,
-    isPublished: 0,
-    displayOrder: 2,
-    createdAt: past(2),
-    updatedAt: past(2),
-  },
-];
-
-const FLOATING_MESSAGES = [
-  {
-    id: 1,
-    title: "신규 이벤트 진행 중!",
-    content: "지금 가입하면 첫 달 무료! 자세한 내용은 공지사항을 확인하세요.",
-    messageType: "announcement",
-    isActive: 1,
-    startDate: past(3),
-    endDate: new Date(Date.now() + 7 * 86400_000),
-    displayPosition: "top",
-    createdBy: 1,
-    createdAt: past(3),
-    updatedAt: past(3),
-  },
-  {
-    id: 2,
-    title: "점검 안내",
-    content: "2024-02-28 새벽 2시~4시 시스템 점검 예정입니다.",
-    messageType: "warning",
-    isActive: 0,
-    startDate: null,
-    endDate: null,
-    displayPosition: "bottom",
-    createdBy: 1,
-    createdAt: past(1),
-    updatedAt: past(1),
-  },
-];
-
-const LAYOUT_SETTINGS = [
-  { id: 1, sectionType: "hero", isVisible: 1, displayOrder: 1, title: "환영합니다", subtitle: "서비스 소개 문구가 여기에 표시됩니다.", updatedBy: 1, updatedAt: now },
-  { id: 2, sectionType: "announcements", isVisible: 1, displayOrder: 2, title: "공지사항", subtitle: null, updatedBy: 1, updatedAt: now },
-  { id: 3, sectionType: "images", isVisible: 1, displayOrder: 3, title: "갤러리", subtitle: null, updatedBy: 1, updatedAt: now },
-  { id: 4, sectionType: "videos", isVisible: 1, displayOrder: 4, title: "영상", subtitle: null, updatedBy: 1, updatedAt: now },
-];
-
-// ─── Controllers ─────────────────────────────────────────────────────────────
+// ─── Announcements ────────────────────────────────────────────────────────────
 
 @Controller("announcements")
 export class MockAnnouncementsController {
@@ -169,14 +22,28 @@ export class MockAnnouncementsController {
   }
 
   @Post()
-  create() { return { ...ANNOUNCEMENTS[0], id: 99, title: "[Mock] 새 공지사항", createdAt: new Date(), updatedAt: new Date() }; }
+  create(@Body() body: any) {
+    const item = { ...ANNOUNCEMENTS[0], id: ANNOUNCEMENTS.length + 10, title: body.title ?? "[Mock] 새 공지사항", createdAt: new Date(), updatedAt: new Date() };
+    ANNOUNCEMENTS.push(item);
+    return item;
+  }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return ANNOUNCEMENTS.find((a) => a.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = ANNOUNCEMENTS.findIndex((a) => a.id === Number(id));
+    if (idx !== -1) ANNOUNCEMENTS[idx] = { ...ANNOUNCEMENTS[idx], ...body, updatedAt: new Date() };
+    return ANNOUNCEMENTS[idx] ?? null;
+  }
 
   @Delete(":id")
-  remove() { return { success: true }; }
+  remove(@Param("id") id: string) {
+    const idx = ANNOUNCEMENTS.findIndex((a) => a.id === Number(id));
+    if (idx !== -1) ANNOUNCEMENTS.splice(idx, 1);
+    return { success: true };
+  }
 }
+
+// ─── Images ───────────────────────────────────────────────────────────────────
 
 @Controller("images")
 export class MockImagesController {
@@ -187,35 +54,81 @@ export class MockImagesController {
   findOne(@Param("id") id: string) { return IMAGES.find((i) => i.id === Number(id)) ?? null; }
 
   @Post()
-  create() { return { ...IMAGES[0], id: 99, title: "[Mock] 새 이미지", createdAt: new Date(), updatedAt: new Date() }; }
+  create(@Body() body: any) {
+    const item = { ...IMAGES[0], id: IMAGES.length + 10, title: body.title ?? "[Mock] 새 이미지", createdAt: new Date(), updatedAt: new Date() };
+    IMAGES.push(item);
+    return item;
+  }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return IMAGES.find((i) => i.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = IMAGES.findIndex((i) => i.id === Number(id));
+    if (idx !== -1) IMAGES[idx] = { ...IMAGES[idx], ...body, updatedAt: new Date() };
+    return IMAGES[idx] ?? null;
+  }
 
   @Delete(":id")
-  remove() { return { success: true }; }
+  remove(@Param("id") id: string) {
+    const idx = IMAGES.findIndex((i) => i.id === Number(id));
+    if (idx !== -1) IMAGES.splice(idx, 1);
+    return { success: true };
+  }
 }
+
+// ─── Videos ───────────────────────────────────────────────────────────────────
 
 @Controller("videos")
 export class MockVideosController {
   @Get()
-  findAll() { return VIDEOS; }
+  findAll(
+    @Query("category") category?: string,
+    @Query("publishedOnly") publishedOnly?: string,
+  ) {
+    let result = [...VIDEOS];
+    if (publishedOnly === "true") result = result.filter((v) => v.isPublished === 1);
+    if (category) {
+      result = category === "special"
+        ? result.filter((v) => !["sunday", "wednesday", "friday"].includes(v.category))
+        : result.filter((v) => v.category === category);
+    }
+    return result;
+  }
 
   @Get(":id")
   findOne(@Param("id") id: string) { return VIDEOS.find((v) => v.id === Number(id)) ?? null; }
 
   @Post()
-  create() { return { ...VIDEOS[0], id: 99, title: "[Mock] 새 영상", createdAt: new Date(), updatedAt: new Date() }; }
+  create(@Body() body: any) {
+    const newVideo = {
+      ...VIDEOS[0], id: VIDEOS.length + 10,
+      title: body.title ?? "[Mock] 새 영상",
+      category: body.category ?? null,
+      isPublished: body.isPublished ? 1 : 0,
+      createdAt: new Date(), updatedAt: new Date(),
+    };
+    VIDEOS.push(newVideo);
+    return { success: true, id: newVideo.id };
+  }
 
   @Post("upload-file")
   uploadFile() { return { success: true, message: "Mock mode: file upload skipped" }; }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return VIDEOS.find((v) => v.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = VIDEOS.findIndex((v) => v.id === Number(id));
+    if (idx !== -1) VIDEOS[idx] = { ...VIDEOS[idx], ...body, updatedAt: new Date() };
+    return VIDEOS[idx] ?? null;
+  }
 
   @Delete(":id")
-  remove() { return { success: true }; }
+  remove(@Param("id") id: string) {
+    const idx = VIDEOS.findIndex((v) => v.id !== Number(id));
+    VIDEOS.splice(0, VIDEOS.length, ...VIDEOS.filter((v) => v.id !== Number(id)));
+    return { success: true };
+  }
 }
+
+// ─── Floating Messages ────────────────────────────────────────────────────────
 
 @Controller("floating-messages")
 export class MockFloatingMessagesController {
@@ -226,26 +139,72 @@ export class MockFloatingMessagesController {
   findOne(@Param("id") id: string) { return FLOATING_MESSAGES.find((m) => m.id === Number(id)) ?? null; }
 
   @Post()
-  create() { return { ...FLOATING_MESSAGES[0], id: 99, title: "[Mock] 새 메시지", createdAt: new Date(), updatedAt: new Date() }; }
+  create(@Body() body: any) {
+    const item = { ...FLOATING_MESSAGES[0], id: FLOATING_MESSAGES.length + 10, title: body.title ?? "[Mock] 새 메시지", createdAt: new Date(), updatedAt: new Date() };
+    FLOATING_MESSAGES.push(item);
+    return item;
+  }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return FLOATING_MESSAGES.find((m) => m.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = FLOATING_MESSAGES.findIndex((m) => m.id === Number(id));
+    if (idx !== -1) FLOATING_MESSAGES[idx] = { ...FLOATING_MESSAGES[idx], ...body, updatedAt: new Date() };
+    return FLOATING_MESSAGES[idx] ?? null;
+  }
 
   @Delete(":id")
-  remove() { return { success: true }; }
+  remove(@Param("id") id: string) {
+    const idx = FLOATING_MESSAGES.findIndex((m) => m.id === Number(id));
+    if (idx !== -1) FLOATING_MESSAGES.splice(idx, 1);
+    return { success: true };
+  }
 }
+
+// ─── Layout Settings ──────────────────────────────────────────────────────────
 
 @Controller("layout-settings")
 export class MockLayoutSettingsController {
   @Get()
   findAll() { return LAYOUT_SETTINGS; }
 
+  @Post("save-all")
+  saveAll(@Body() body: any[]) {
+    if (Array.isArray(body)) {
+      for (let i = 0; i < LAYOUT_SETTINGS.length; i++) {
+        const incoming = body.find((b) => b.sectionType === LAYOUT_SETTINGS[i].sectionType);
+        if (!incoming) continue;
+        LAYOUT_SETTINGS[i] = {
+          ...LAYOUT_SETTINGS[i],
+          isVisible: incoming.isVisible ? 1 : 0,
+          displayOrder: incoming.displayOrder ?? LAYOUT_SETTINGS[i].displayOrder,
+          colSpan: incoming.colSpan ?? LAYOUT_SETTINGS[i].colSpan,
+          title: incoming.title ?? LAYOUT_SETTINGS[i].title,
+          subtitle: incoming.subtitle ?? LAYOUT_SETTINGS[i].subtitle,
+          imageKey: incoming.imageKey !== undefined ? incoming.imageKey : LAYOUT_SETTINGS[i].imageKey,
+          imageUrl: incoming.imageUrl !== undefined ? incoming.imageUrl : LAYOUT_SETTINGS[i].imageUrl,
+          updatedAt: new Date(),
+        };
+      }
+    }
+    return { success: true };
+  }
+
   @Post("upsert")
-  upsert() { return LAYOUT_SETTINGS[0]; }
+  upsert(@Body() body: any) {
+    const idx = LAYOUT_SETTINGS.findIndex((s) => s.sectionType === body.sectionType);
+    if (idx !== -1) LAYOUT_SETTINGS[idx] = { ...LAYOUT_SETTINGS[idx], ...body, updatedAt: new Date() };
+    return LAYOUT_SETTINGS[idx] ?? null;
+  }
 
   @Patch(":id")
-  update(@Param("id") id: string) { return LAYOUT_SETTINGS.find((s) => s.id === Number(id)) ?? null; }
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = LAYOUT_SETTINGS.findIndex((s) => s.id === Number(id));
+    if (idx !== -1) LAYOUT_SETTINGS[idx] = { ...LAYOUT_SETTINGS[idx], ...body, updatedAt: new Date() };
+    return LAYOUT_SETTINGS[idx] ?? null;
+  }
 }
+
+// ─── AI Assistant ─────────────────────────────────────────────────────────────
 
 @Controller("ai-assistant")
 export class MockAiAssistantController {
@@ -255,33 +214,7 @@ export class MockAiAssistantController {
   }
 }
 
-// ─── Mock Popups ──────────────────────────────────────────────────────────────
-
-interface MockPopup {
-  id: number; churchId: number | null; title: string;
-  imageKey: string | null; imageUrl: string | null; linkUrl: string | null;
-  startDate: Date | null; endDate: Date | null; isActive: number;
-  createdBy: number; createdAt: Date; updatedAt: Date;
-}
-
-let POPUPS: MockPopup[] = [
-  {
-    id: 1, churchId: null, title: "성탄절 예배 안내",
-    imageKey: null,
-    imageUrl: "https://picsum.photos/seed/popup1/800/600",
-    linkUrl: null,
-    startDate: past(7), endDate: new Date(Date.now() + 7 * 86400_000),
-    isActive: 1, createdBy: 1, createdAt: past(7), updatedAt: past(7),
-  },
-  {
-    id: 2, churchId: null, title: "[비활성] 신년 행사 팝업",
-    imageKey: null,
-    imageUrl: "https://picsum.photos/seed/popup2/800/600",
-    linkUrl: "https://example.com",
-    startDate: null, endDate: null,
-    isActive: 0, createdBy: 1, createdAt: past(14), updatedAt: past(14),
-  },
-];
+// ─── Popups ───────────────────────────────────────────────────────────────────
 
 @Controller("popups")
 export class MockPopupsController {
@@ -299,15 +232,12 @@ export class MockPopupsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return POPUPS.find((p) => p.id === Number(id)) ?? null;
-  }
+  findOne(@Param("id") id: string) { return POPUPS.find((p) => p.id === Number(id)) ?? null; }
 
   @Post()
   create(@Body() body: any) {
-    const popup: MockPopup = {
-      id: POPUPS.length + 10,
-      churchId: null,
+    const popup = {
+      id: POPUPS.length + 10, churchId: null,
       title: body.title ?? "[Mock] 새 팝업",
       imageKey: null,
       imageUrl: body.imageUrl ?? "https://picsum.photos/seed/new/800/600",
@@ -317,106 +247,52 @@ export class MockPopupsController {
       isActive: body.isActive ? 1 : 0,
       createdBy: 1, createdAt: new Date(), updatedAt: new Date(),
     };
-    POPUPS = [...POPUPS, popup];
+    POPUPS.push(popup);
     return { success: true, id: popup.id, imageUrl: popup.imageUrl };
   }
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() body: any) {
-    POPUPS = POPUPS.map((p) =>
-      p.id === Number(id) ? {
-        ...p,
+    const idx = POPUPS.findIndex((p) => p.id === Number(id));
+    if (idx !== -1) {
+      POPUPS[idx] = {
+        ...POPUPS[idx],
         ...(body.title !== undefined && { title: body.title }),
         ...(body.linkUrl !== undefined && { linkUrl: body.linkUrl || null }),
         ...(body.startDate !== undefined && { startDate: body.startDate ? new Date(body.startDate) : null }),
         ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
         ...(body.isActive !== undefined && { isActive: body.isActive ? 1 : 0 }),
         updatedAt: new Date(),
-      } : p,
-    );
+      };
+    }
     return { success: true };
   }
 
   @Delete(":id")
   remove(@Param("id") id: string) {
-    POPUPS = POPUPS.filter((p) => p.id !== Number(id));
+    const idx = POPUPS.findIndex((p) => p.id === Number(id));
+    if (idx !== -1) POPUPS.splice(idx, 1);
     return { success: true };
   }
 }
 
-// ─── Mock Churches ────────────────────────────────────────────────────────────
-
-type ChurchStatus = "pending" | "active" | "suspended" | "rejected";
-
-interface MockChurch {
-  id: number; name: string; slug: string; status: ChurchStatus;
-  description: string | null; email: string | null; phone: string | null;
-  address: string | null; logoUrl: string | null; customDomain: string | null;
-  appliedBy: number; approvedBy: number | null; approvedAt: Date | null;
-  rejectedReason: string | null; createdAt: Date; updatedAt: Date;
-}
-
-// 메모리 내에서 상태 변경이 반영되도록 let으로 선언
-let CHURCHES: MockChurch[] = [
-  {
-    id: 1, name: "은혜교회", slug: "grace-church", status: "pending",
-    description: "서울 강남에 위치한 은혜교회입니다.", email: "grace@church.kr",
-    phone: "02-1234-5678", address: "서울시 강남구 테헤란로 123", logoUrl: null,
-    customDomain: null, appliedBy: 2, approvedBy: null, approvedAt: null,
-    rejectedReason: null, createdAt: past(3), updatedAt: past(3),
-  },
-  {
-    id: 2, name: "새벽빛교회", slug: "dawn-light", status: "active",
-    description: "새벽빛으로 밝히는 교회", email: "dawn@church.kr",
-    phone: "031-987-6543", address: "경기도 성남시 분당구 판교로 45", logoUrl: null,
-    customDomain: null, appliedBy: 3, approvedBy: 1, approvedAt: past(10),
-    rejectedReason: null, createdAt: past(15), updatedAt: past(10),
-  },
-  {
-    id: 3, name: "테스트교회", slug: "test-church", status: "rejected",
-    description: null, email: null, phone: null, address: null, logoUrl: null,
-    customDomain: null, appliedBy: 4, approvedBy: null, approvedAt: null,
-    rejectedReason: "정보가 불충분합니다. 교회 정보를 보완 후 재신청해 주세요.",
-    createdAt: past(20), updatedAt: past(18),
-  },
-];
-
-const ALL_FEATURE_KEYS = ["announcements", "images", "videos", "floating_messages", "layout_settings", "ai_assistant"] as const;
-
-interface MockFeature { id: number; churchId: number; featureKey: string; isEnabled: number; }
-
-let FEATURES: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
-  id: i + 1, churchId: 2, featureKey: key, isEnabled: key === "ai_assistant" ? 0 : 1,
-}));
-
-const ADMINS = [
-  { id: 3, churchId: 2, name: "박집사", email: "deacon@dawn-light.kr", role: "church_admin" },
-];
+// ─── Churches ─────────────────────────────────────────────────────────────────
 
 @Controller("churches")
 export class MockChurchesController {
-  // slug/:slug 와 my/* 는 반드시 :id 라우트보다 먼저 선언해야 함
-
   @Get("slug/:slug")
   findBySlug(@Param("slug") slug: string) {
     return CHURCHES.find((c) => c.slug === slug) ?? null;
   }
 
   @Get("my")
-  myChurches() {
-    // dev 모드에서는 2번 교회를 담당하는 것으로 처리
-    return CHURCHES.filter((c) => c.id === 2);
-  }
+  myChurches() { return CHURCHES.filter((c) => c.id === 2); }
 
   @Get("my/features")
-  myFeatures() {
-    return FEATURES.filter((f) => f.churchId === 2);
-  }
+  myFeatures() { return FEATURES.filter((f) => f.churchId === 2); }
 
   @Get()
-  findAll() {
-    return CHURCHES;
-  }
+  findAll() { return CHURCHES; }
 
   @Get(":id")
   findOne(@Param("id") id: string) {
@@ -425,43 +301,40 @@ export class MockChurchesController {
 
   @Post("apply")
   apply(@Body() body: any) {
-    const newChurch: MockChurch = {
+    const newChurch = {
       id: CHURCHES.length + 10,
-      name: body.name ?? "[Mock] 신규 교회",
-      slug: body.slug ?? "new-church",
-      status: "pending",
-      description: body.description ?? null,
-      email: body.email ?? null,
-      phone: body.phone ?? null,
-      address: body.address ?? null,
+      name: body.name ?? "[Mock] 신규 교회", slug: body.slug ?? "new-church",
+      status: "pending", description: body.description ?? null,
+      email: body.email ?? null, phone: body.phone ?? null, address: body.address ?? null,
       logoUrl: null, customDomain: null,
       appliedBy: 1, approvedBy: null, approvedAt: null, rejectedReason: null,
       createdAt: new Date(), updatedAt: new Date(),
     };
-    CHURCHES = [...CHURCHES, newChurch];
+    CHURCHES.push(newChurch);
     return newChurch;
   }
 
   @Post(":id/review")
   @HttpCode(200)
   review(@Param("id") id: string, @Body() body: { action: "active" | "rejected"; rejectedReason?: string }) {
-    CHURCHES = CHURCHES.map((c) =>
-      c.id === Number(id)
-        ? { ...c, status: body.action, rejectedReason: body.rejectedReason ?? null,
-            approvedBy: body.action === "active" ? 1 : null,
-            approvedAt: body.action === "active" ? new Date() : null,
-            updatedAt: new Date() }
-        : c,
-    );
-    return CHURCHES.find((c) => c.id === Number(id)) ?? null;
+    const idx = CHURCHES.findIndex((c) => c.id === Number(id));
+    if (idx !== -1) {
+      CHURCHES[idx] = {
+        ...CHURCHES[idx], status: body.action,
+        rejectedReason: body.rejectedReason ?? null,
+        approvedBy: body.action === "active" ? 1 : null,
+        approvedAt: body.action === "active" ? new Date() : null,
+        updatedAt: new Date(),
+      };
+    }
+    return CHURCHES[idx] ?? null;
   }
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() body: any) {
-    CHURCHES = CHURCHES.map((c) =>
-      c.id === Number(id) ? { ...c, ...body, updatedAt: new Date() } : c,
-    );
-    return CHURCHES.find((c) => c.id === Number(id)) ?? null;
+    const idx = CHURCHES.findIndex((c) => c.id === Number(id));
+    if (idx !== -1) CHURCHES[idx] = { ...CHURCHES[idx], ...body, updatedAt: new Date() };
+    return CHURCHES[idx] ?? null;
   }
 
   @Get(":id/features")
@@ -469,11 +342,10 @@ export class MockChurchesController {
     const churchId = Number(id);
     const existing = FEATURES.filter((f) => f.churchId === churchId);
     if (existing.length === 0) {
-      // 처음 조회 시 기본 피처 세트 생성
-      const newFeatures: MockFeature[] = ALL_FEATURE_KEYS.map((key, i) => ({
+      const newFeatures = ALL_FEATURE_KEYS.map((key, i) => ({
         id: FEATURES.length + i + 1, churchId, featureKey: key, isEnabled: 1,
       }));
-      FEATURES = [...FEATURES, ...newFeatures];
+      FEATURES.push(...newFeatures);
       return newFeatures;
     }
     return existing;
@@ -486,15 +358,11 @@ export class MockChurchesController {
     @Body("isEnabled") isEnabled: boolean,
   ) {
     const churchId = Number(id);
-    const exists = FEATURES.some((f) => f.churchId === churchId && f.featureKey === featureKey);
-    if (exists) {
-      FEATURES = FEATURES.map((f) =>
-        f.churchId === churchId && f.featureKey === featureKey
-          ? { ...f, isEnabled: isEnabled ? 1 : 0 }
-          : f,
-      );
+    const idx = FEATURES.findIndex((f) => f.churchId === churchId && f.featureKey === featureKey);
+    if (idx !== -1) {
+      FEATURES[idx] = { ...FEATURES[idx], isEnabled: isEnabled ? 1 : 0 };
     } else {
-      FEATURES = [...FEATURES, { id: FEATURES.length + 1, churchId, featureKey, isEnabled: isEnabled ? 1 : 0 }];
+      FEATURES.push({ id: FEATURES.length + 1, churchId, featureKey, isEnabled: isEnabled ? 1 : 0 });
     }
     return FEATURES.find((f) => f.churchId === churchId && f.featureKey === featureKey);
   }
@@ -509,5 +377,170 @@ export class MockChurchesController {
     const idx = ADMINS.findIndex((a) => a.churchId === Number(id) && a.id === Number(userId));
     if (idx !== -1) ADMINS.splice(idx, 1);
     return { success: true };
+  }
+}
+
+// ─── Video Categories ─────────────────────────────────────────────────────────
+
+@Controller("video-categories")
+export class MockVideoCategoriesController {
+  @Get()
+  findAll() { return VIDEO_CATEGORIES; }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: VIDEO_CATEGORIES.length + 10, name: body.name, slug: body.slug, isBuiltIn: false, displayOrder: body.displayOrder ?? 99 };
+    VIDEO_CATEGORIES.push(item);
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = VIDEO_CATEGORIES.findIndex((c) => c.id === Number(id));
+    if (idx !== -1) VIDEO_CATEGORIES[idx] = { ...VIDEO_CATEGORIES[idx], ...body };
+    return VIDEO_CATEGORIES[idx] ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    const item = VIDEO_CATEGORIES.find((c) => c.id === Number(id));
+    if (item?.isBuiltIn) return { success: false, message: "기본 카테고리는 삭제할 수 없습니다." };
+    const idx = VIDEO_CATEGORIES.findIndex((c) => c.id === Number(id));
+    if (idx !== -1) VIDEO_CATEGORIES.splice(idx, 1);
+    return { success: true };
+  }
+}
+
+// ─── Page Groups ──────────────────────────────────────────────────────────────
+
+@Controller("page-groups")
+export class MockPageGroupsController {
+  @Get()
+  findAll(@Query("groupKey") groupKey?: string) {
+    const result = groupKey ? PAGE_GROUPS.filter((g) => g.groupKey === groupKey) : [...PAGE_GROUPS];
+    return result.sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  @Get("by-slug/:groupKey/:slug")
+  findBySlug(@Param("groupKey") groupKey: string, @Param("slug") slug: string) {
+    return PAGE_GROUPS.find((g) => g.groupKey === groupKey && g.slug === slug) ?? null;
+  }
+
+  @Get(":id")
+  findOne(@Param("id") id: string) { return PAGE_GROUPS.find((g) => g.id === Number(id)) ?? null; }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: PAGE_GROUPS.length + 10, ...body, createdAt: new Date(), updatedAt: new Date() };
+    PAGE_GROUPS.push(item);
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = PAGE_GROUPS.findIndex((g) => g.id === Number(id));
+    if (idx !== -1) PAGE_GROUPS[idx] = { ...PAGE_GROUPS[idx], ...body, updatedAt: new Date() };
+    return PAGE_GROUPS[idx] ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    const idx = PAGE_GROUPS.findIndex((g) => g.id === Number(id));
+    if (idx !== -1) PAGE_GROUPS.splice(idx, 1);
+    return { success: true };
+  }
+}
+
+// ─── Form Fields ──────────────────────────────────────────────────────────────
+
+@Controller("form-fields")
+export class MockFormFieldsController {
+  @Get()
+  findAll(@Query("activeOnly") activeOnly?: string) {
+    return activeOnly === "true" ? FORM_FIELDS.filter((f) => f.isActive) : FORM_FIELDS;
+  }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: FORM_FIELDS.length + 10, ...body };
+    FORM_FIELDS.push(item);
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = FORM_FIELDS.findIndex((f) => f.id === Number(id));
+    if (idx !== -1) FORM_FIELDS[idx] = { ...FORM_FIELDS[idx], ...body };
+    return FORM_FIELDS[idx] ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    const idx = FORM_FIELDS.findIndex((f) => f.id === Number(id));
+    if (idx !== -1) FORM_FIELDS.splice(idx, 1);
+    return { success: true };
+  }
+}
+
+// ─── Form Submissions ─────────────────────────────────────────────────────────
+
+@Controller("form-submissions")
+export class MockFormSubmissionsController {
+  @Get()
+  findAll() { return [...FORM_SUBMISSIONS].reverse(); }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = { id: FORM_SUBMISSIONS.length + 10, fieldData: body.fieldData ?? {}, submittedAt: new Date(), churchId: body.churchId ?? null };
+    FORM_SUBMISSIONS.push(item);
+    return { success: true, id: item.id };
+  }
+}
+
+// ─── Admin Permissions ────────────────────────────────────────────────────────
+
+@Controller("admins")
+export class MockAdminPermissionsController {
+  @Get()
+  findAll(@Query("churchId") churchId?: string) {
+    return churchId ? ADMINS.filter((a) => a.churchId === Number(churchId)) : ADMINS;
+  }
+
+  @Get(":id/permissions")
+  getPermissions(@Param("id") id: string) {
+    const permissions = ADMIN_PERMISSIONS
+      .filter((p) => p.adminId === Number(id) && p.isAllowed)
+      .map((p) => p.permKey);
+    return { permissions };
+  }
+
+  @Patch(":id/permissions")
+  updatePermission(
+    @Param("id") id: string,
+    @Body() body: { permKey: string; isAllowed: boolean },
+  ) {
+    const adminId = Number(id);
+    const idx = ADMIN_PERMISSIONS.findIndex((p) => p.adminId === adminId && p.permKey === body.permKey);
+    if (idx !== -1) {
+      ADMIN_PERMISSIONS[idx] = { ...ADMIN_PERMISSIONS[idx], isAllowed: body.isAllowed ? 1 : 0 };
+    } else {
+      ADMIN_PERMISSIONS.push({ adminId, permKey: body.permKey, isAllowed: body.isAllowed ? 1 : 0 });
+    }
+    return { success: true };
+  }
+}
+
+// ─── Site Config ──────────────────────────────────────────────────────────────
+
+@Controller("site-config")
+export class MockSiteConfigController {
+  @Get()
+  findAll() { return SITE_CONFIG; }
+
+  @Patch(":key")
+  update(@Param("key") key: string, @Body("value") value: string) {
+    const idx = SITE_CONFIG.findIndex((c) => c.key === key);
+    if (idx !== -1) SITE_CONFIG[idx] = { ...SITE_CONFIG[idx], value };
+    return SITE_CONFIG[idx] ?? null;
   }
 }
