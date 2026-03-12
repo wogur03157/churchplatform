@@ -109,17 +109,26 @@ export class AuthService {
     const ownerOpenId = process.env.OWNER_OPEN_ID ?? "";
     const role = data.openId === ownerOpenId ? "super_admin" : undefined;
 
-    await this.userRepository.upsert(
-      {
+    let user = await this.userRepository.findOne({ where: { openId: data.openId } });
+
+    if (user) {
+      if (data.name !== undefined) user.name = data.name;
+      if (data.email !== undefined) user.email = data.email;
+      if (data.loginMethod !== undefined) user.loginMethod = data.loginMethod;
+      user.lastSignedIn = data.lastSignedIn ?? new Date();
+      if (role) user.role = role;
+    } else {
+      user = this.userRepository.create({
         openId: data.openId,
         name: data.name ?? null,
         email: data.email ?? null,
         loginMethod: data.loginMethod ?? null,
         lastSignedIn: data.lastSignedIn ?? new Date(),
         ...(role ? { role } : {}),
-      },
-      { conflictPaths: ["openId"] }
-    );
+      });
+    }
+
+    await this.userRepository.save(user);
   }
 
   async getUserByOpenId(openId: string): Promise<User | null> {
