@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-@Entity("floatingMessages")
+@Entity("floating_messages")
 export class FloatingMessage {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -24,8 +24,8 @@ export class FloatingMessage {
   })
   messageType!: "info" | "warning" | "success" | "announcement";
 
-  @Column({ type: "int", default: 0 })
-  isActive!: number;
+  @Column({ type: "enum", enum: ["active", "inactive"], default: "inactive" })
+  status!: "active" | "inactive";
 
   @Column({ type: "timestamp", nullable: true })
   startDate!: Date | null;

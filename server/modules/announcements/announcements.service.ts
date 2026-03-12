@@ -13,7 +13,7 @@ export class AnnouncementsService {
   async findAll(publishedOnly = false): Promise<Announcement[]> {
     const query = this.repo.createQueryBuilder("a");
     if (publishedOnly) {
-      query.where("a.isPublished = 1");
+      query.where("a.status = 'published'");
     }
     return query.orderBy("a.createdAt", "DESC").getMany();
   }
@@ -26,7 +26,7 @@ export class AnnouncementsService {
     title: string;
     content: string;
     authorId: number;
-    isPublished: number;
+    status: "published" | "draft";
     publishedAt?: Date;
   }): Promise<Announcement> {
     const entity = this.repo.create(data);
@@ -38,7 +38,7 @@ export class AnnouncementsService {
     data: Partial<{
       title: string;
       content: string;
-      isPublished: number;
+      status: "published" | "draft";
       publishedAt: Date | null;
     }>
   ): Promise<void> {

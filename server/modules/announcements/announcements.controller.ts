@@ -47,7 +47,7 @@ export class AnnouncementsController {
     body: {
       title: string;
       content: string;
-      isPublished?: boolean;
+      status?: "published" | "draft";
     },
     @CurrentUser() user: User
   ) {
@@ -55,8 +55,8 @@ export class AnnouncementsController {
       title: body.title,
       content: body.content,
       authorId: user.id,
-      isPublished: body.isPublished ? 1 : 0,
-      publishedAt: body.isPublished ? new Date() : undefined,
+      status: body.status ?? "draft",
+      publishedAt: body.status === "published" ? new Date() : undefined,
     });
     return { success: true, id: result.id };
   }
@@ -69,15 +69,15 @@ export class AnnouncementsController {
     body: {
       title?: string;
       content?: string;
-      isPublished?: boolean;
+      status?: "published" | "draft";
     }
   ) {
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.content !== undefined) updateData.content = body.content;
-    if (body.isPublished !== undefined) {
-      updateData.isPublished = body.isPublished ? 1 : 0;
-      if (body.isPublished) updateData.publishedAt = new Date();
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+      if (body.status === "published") updateData.publishedAt = new Date();
     }
     await this.service.update(id, updateData as any);
     return { success: true };

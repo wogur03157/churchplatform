@@ -14,12 +14,12 @@ import { Plus, Edit, Trash2, Layers, ImageIcon, ExternalLink } from "lucide-reac
 
 type Popup = {
   id: number; title: string; imageUrl: string | null; linkUrl: string | null;
-  startDate: string | null; endDate: string | null; isActive: number;
+  startDate: string | null; endDate: string | null; status: "active" | "inactive";
   createdAt: string;
 };
 
 const EMPTY_FORM = {
-  title: "", linkUrl: "", startDate: "", endDate: "", isActive: false,
+  title: "", linkUrl: "", startDate: "", endDate: "", status: "inactive" as "active" | "inactive",
   fileData: "", mimeType: "", previewUrl: "",
 };
 
@@ -64,7 +64,7 @@ export default function AdminPopups() {
     linkUrl: form.linkUrl || undefined,
     startDate: form.startDate || undefined,
     endDate: form.endDate || undefined,
-    isActive: form.isActive,
+    status: form.status,
     ...(form.fileData ? { fileData: form.fileData, mimeType: form.mimeType } : {}),
   });
 
@@ -75,14 +75,14 @@ export default function AdminPopups() {
       linkUrl: p.linkUrl ?? "",
       startDate: p.startDate ? new Date(p.startDate).toISOString().slice(0, 16) : "",
       endDate: p.endDate ? new Date(p.endDate).toISOString().slice(0, 16) : "",
-      isActive: p.isActive === 1,
+      status: p.status,
       fileData: "", mimeType: "",
       previewUrl: p.imageUrl ?? "",
     });
   };
 
   const getStatus = (p: Popup) => {
-    if (!p.isActive) return { label: "비활성", variant: "secondary" as const };
+    if (p.status !== "active") return { label: "비활성", variant: "secondary" as const };
     const now = new Date();
     if (p.startDate && new Date(p.startDate) > now) return { label: "예정", variant: "outline" as const };
     if (p.endDate && new Date(p.endDate) < now) return { label: "종료", variant: "outline" as const };
@@ -155,7 +155,7 @@ export default function AdminPopups() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Switch id="popup-active" checked={form.isActive} onCheckedChange={(v) => set("isActive", v)} />
+        <Switch id="popup-active" checked={form.status === "active"} onCheckedChange={(v) => set("status", v ? "active" : "inactive")} />
         <Label htmlFor="popup-active" className="cursor-pointer">활성화</Label>
       </div>
     </div>

@@ -22,7 +22,7 @@ export default function AdminFloatingMessages() {
   const [content, setContent] = useState("");
   const [messageType, setMessageType] = useState<"info" | "warning" | "success" | "announcement">("info");
   const [displayPosition, setDisplayPosition] = useState<"top" | "bottom" | "center">("center");
-  const [isActive, setIsActive] = useState(false);
+  const [status, setStatus] = useState<"active" | "inactive">("inactive");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -31,7 +31,7 @@ export default function AdminFloatingMessages() {
     setContent("");
     setMessageType("info");
     setDisplayPosition("center");
-    setIsActive(false);
+    setStatus("inactive");
     setStartDate("");
     setEndDate("");
     setEditingId(null);
@@ -57,7 +57,7 @@ export default function AdminFloatingMessages() {
       return;
     }
     createMutation.mutate({
-      title, content, messageType, displayPosition, isActive,
+      title, content, messageType, displayPosition, status,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
@@ -69,7 +69,7 @@ export default function AdminFloatingMessages() {
     setContent(message.content);
     setMessageType(message.messageType);
     setDisplayPosition(message.displayPosition);
-    setIsActive(message.isActive === 1);
+    setStatus(message.status);
     setStartDate(message.startDate ? new Date(message.startDate).toISOString().slice(0, 16) : "");
     setEndDate(message.endDate ? new Date(message.endDate).toISOString().slice(0, 16) : "");
     setIsEditOpen(true);
@@ -81,7 +81,7 @@ export default function AdminFloatingMessages() {
       return;
     }
     updateMutation.mutate({
-      id: editingId, title, content, messageType, displayPosition, isActive,
+      id: editingId, title, content, messageType, displayPosition, status,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
@@ -143,7 +143,7 @@ export default function AdminFloatingMessages() {
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <Switch id={`${prefix}active`} checked={isActive} onCheckedChange={setIsActive} />
+        <Switch id={`${prefix}active`} checked={status === "active"} onCheckedChange={(v) => setStatus(v ? "active" : "inactive")} />
         <Label htmlFor={`${prefix}active`}>활성화</Label>
       </div>
     </div>
@@ -188,7 +188,7 @@ export default function AdminFloatingMessages() {
                     <CardTitle className="flex items-center gap-2">
                       {message.title}
                       <span className={`text-xs px-2 py-1 rounded ${getTypeColor(message.messageType)}`}>{message.messageType}</span>
-                      {message.isActive === 1 && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">활성</span>}
+                      {message.status === "active" && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">활성</span>}
                     </CardTitle>
                     <CardDescription>
                       위치: {message.displayPosition === "top" ? "상단" : message.displayPosition === "center" ? "중앙" : "하단"}

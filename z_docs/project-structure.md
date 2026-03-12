@@ -50,12 +50,14 @@ admin-dashboard/
 │       │   ├── PreviewPanel.tsx
 │       │   └── ui/                  # shadcn/ui 컴포넌트들
 │       │
-│       ├── _core/hooks/
-│       │   └── useAuth.ts           # 인증 상태 관리
+│       ├── hooks/
+│       │   ├── useAuth.ts           # 인증 상태 관리
+│       │   └── useCRUD.ts           # 어드민 CRUD 공통 훅
 │       │
 │       └── lib/
 │           ├── api.ts               # fetch 래퍼 (credentials: include)
-│           └── queryClient.ts       # TanStack Query 설정
+│           ├── queryClient.ts       # TanStack Query 설정
+│           └── video-utils.ts       # 영상 임베드 URL 유틸 (YouTube·Vimeo)
 │
 ├── server/                          # 백엔드 (NestJS)
 │   ├── main.ts                      # 서버 부트스트랩
@@ -93,17 +95,24 @@ admin-dashboard/
 │       │
 │       ├── health/                  # GET /api/health
 │       └── mock/                    # DB 없이 개발 모드
+│           ├── mock-store.ts             # 인메모리 데이터 배열 (데이터만)
 │           ├── mock-auth.controller.ts
-│           └── mock-data.controller.ts   # 모든 도메인 mock 포함
+│           └── mock-data.controller.ts   # 라우팅·비즈니스 로직
 │
 ├── shared/                          # 서버·클라이언트 공통 타입
+│   ├── entities.ts                  # 모든 엔티티 인터페이스 정의
 │   ├── const.ts                     # COOKIE_NAME, ONE_YEAR_MS 등
-│   └── types.ts
+│   └── types.ts                     # entities re-export 포함
 │
 └── z_docs/                          # 기능 문서
     ├── project-structure.md         # 이 파일
     ├── super-admin.md               # 멀티 교회 플랫폼 아키텍처
-    └── popup.md                     # 팝업 관리 기능
+    ├── popup.md                     # 팝업 관리 기능
+    ├── menu-reorg-impl.md           # 메뉴 재편 구현 내용
+    ├── admin-permissions.md         # 관리자 권한 설정
+    ├── modularity-refactor.md       # 모듈화·useCRUD·mock 분리
+    ├── status-enum-refactor.md      # boolean → status enum 전환
+    └── db-schema.sql                # MySQL 스키마 (실 DB 연동 시 사용)
 ```
 
 ---
@@ -177,7 +186,7 @@ user         →  일반 방문자 (공개 페이지 열람)
 ## 개발 모드 (DB 없이 실행)
 
 ```bash
-SKIP_DB=true pnpm dev
+pnpm dev:no-db   # SKIP_DB=true pnpm dev 와 동일
 ```
 
 - `MockModule` 활성화 → 모든 API가 메모리 데이터로 동작

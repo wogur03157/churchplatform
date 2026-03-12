@@ -13,7 +13,7 @@ export class ImagesService {
   async findAll(publishedOnly = false): Promise<Image[]> {
     const query = this.repo.createQueryBuilder("i");
     if (publishedOnly) {
-      query.where("i.isPublished = 1");
+      query.where("i.status = 'published'");
     }
     return query
       .orderBy("i.displayOrder", "ASC")
@@ -33,7 +33,7 @@ export class ImagesService {
     mimeType?: string;
     fileSize?: number;
     uploadedBy: number;
-    isPublished: number;
+    status: "published" | "draft";
     displayOrder: number;
   }): Promise<Image> {
     const entity = this.repo.create(data);
@@ -45,7 +45,7 @@ export class ImagesService {
     data: Partial<{
       title: string;
       description: string | null;
-      isPublished: number;
+      status: "published" | "draft";
       displayOrder: number;
     }>
   ): Promise<void> {

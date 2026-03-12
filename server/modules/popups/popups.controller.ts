@@ -39,7 +39,7 @@ export class PopupsController {
       linkUrl?: string;
       startDate?: string;
       endDate?: string;
-      isActive?: boolean;
+      status?: "active" | "inactive";
       fileData?: string;
       mimeType?: string;
       fileSize?: number;
@@ -64,7 +64,7 @@ export class PopupsController {
       linkUrl: body.linkUrl ?? null,
       startDate: body.startDate ? new Date(body.startDate) : null,
       endDate: body.endDate ? new Date(body.endDate) : null,
-      isActive: body.isActive ? 1 : 0,
+      status: body.status ?? "inactive",
       createdBy: user.id,
       churchId: null,
     });
@@ -81,7 +81,7 @@ export class PopupsController {
       linkUrl?: string;
       startDate?: string;
       endDate?: string;
-      isActive?: boolean;
+      status?: "active" | "inactive";
       fileData?: string;
       mimeType?: string;
     },
@@ -92,7 +92,7 @@ export class PopupsController {
     if (body.linkUrl !== undefined) data.linkUrl = body.linkUrl || null;
     if (body.startDate !== undefined) data.startDate = body.startDate ? new Date(body.startDate) : null;
     if (body.endDate !== undefined) data.endDate = body.endDate ? new Date(body.endDate) : null;
-    if (body.isActive !== undefined) data.isActive = body.isActive ? 1 : 0;
+    if (body.status !== undefined) data.status = body.status;
 
     if (body.fileData && body.mimeType) {
       const buffer = Buffer.from(body.fileData, "base64");

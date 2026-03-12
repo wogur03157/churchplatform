@@ -34,7 +34,7 @@ export class LayoutSettingsController {
     @Body()
     body: Array<{
       sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
-      isVisible: boolean;
+      status: "visible" | "hidden";
       displayOrder: number;
       colSpan: number;
       title?: string;
@@ -47,7 +47,7 @@ export class LayoutSettingsController {
     await this.service.saveAll(
       body.map((item) => ({
         sectionType: item.sectionType,
-        isVisible: item.isVisible ? 1 : 0,
+        status: item.status,
         displayOrder: item.displayOrder,
         colSpan: item.colSpan ?? 1,
         title: item.title,
@@ -66,7 +66,7 @@ export class LayoutSettingsController {
     @Body()
     body: {
       sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
-      isVisible: boolean;
+      status: "visible" | "hidden";
       displayOrder: number;
       colSpan?: number;
       title?: string;
@@ -78,7 +78,7 @@ export class LayoutSettingsController {
   ) {
     await this.service.upsert({
       sectionType: body.sectionType,
-      isVisible: body.isVisible ? 1 : 0,
+      status: body.status,
       displayOrder: body.displayOrder,
       colSpan: body.colSpan ?? 1,
       title: body.title,
@@ -96,7 +96,7 @@ export class LayoutSettingsController {
     @Param("id", ParseIntPipe) id: number,
     @Body()
     body: {
-      isVisible?: boolean;
+      status?: "visible" | "hidden";
       displayOrder?: number;
       colSpan?: number;
       title?: string;
@@ -105,7 +105,7 @@ export class LayoutSettingsController {
     @CurrentUser() user: User
   ) {
     const updateData: Record<string, unknown> = {};
-    if (body.isVisible !== undefined) updateData.isVisible = body.isVisible ? 1 : 0;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder;
     if (body.colSpan !== undefined) updateData.colSpan = body.colSpan;
     if (body.title !== undefined) updateData.title = body.title;

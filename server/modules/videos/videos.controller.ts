@@ -58,7 +58,7 @@ export class VideosController {
       mimeType?: string;
       fileSize?: number;
       duration?: number;
-      isPublished?: boolean;
+      status?: "published" | "draft";
       displayOrder?: number;
     },
     @CurrentUser() user: User
@@ -74,7 +74,7 @@ export class VideosController {
       fileSize: body.fileSize,
       duration: body.duration,
       uploadedBy: user.id,
-      isPublished: body.isPublished ? 1 : 0,
+      status: body.status ?? "draft",
       displayOrder: body.displayOrder ?? 0,
     });
     return { success: true, id: result.id };
@@ -107,7 +107,7 @@ export class VideosController {
       description?: string;
       url?: string;
       thumbnailUrl?: string;
-      isPublished?: boolean;
+      status?: "published" | "draft";
       displayOrder?: number;
     }
   ) {
@@ -116,8 +116,7 @@ export class VideosController {
     if (body.description !== undefined) updateData.description = body.description;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.thumbnailUrl !== undefined) updateData.thumbnailUrl = body.thumbnailUrl;
-    if (body.isPublished !== undefined)
-      updateData.isPublished = body.isPublished ? 1 : 0;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined)
       updateData.displayOrder = body.displayOrder;
 

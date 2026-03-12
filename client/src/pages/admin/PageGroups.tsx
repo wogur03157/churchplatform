@@ -22,7 +22,7 @@ const TABS = [
 type GroupKey = (typeof TABS)[number]["key"];
 
 function emptyForm() {
-  return { name: "", slug: "", description: "", imageUrl: "", displayOrder: 99, isVisible: true };
+  return { name: "", slug: "", description: "", imageUrl: "", displayOrder: 99, status: "visible" as "visible" | "hidden" };
 }
 
 export default function AdminPageGroups() {
@@ -47,16 +47,16 @@ export default function AdminPageGroups() {
 
   const openEdit = (g: PageGroup) => {
     setEditingId(g.id);
-    setForm({ name: g.name, slug: g.slug ?? "", description: g.description ?? "", imageUrl: g.imageUrl ?? "", displayOrder: g.displayOrder, isVisible: g.isVisible === 1 });
+    setForm({ name: g.name, slug: g.slug ?? "", description: g.description ?? "", imageUrl: g.imageUrl ?? "", displayOrder: g.displayOrder, status: g.status });
     setIsOpen(true);
   };
 
   const handleSave = () => {
     if (!form.name.trim() || !form.slug.trim()) { toast.error("이름과 슬러그를 입력해주세요"); return; }
     if (editingId) {
-      updateMutation.mutate({ id: editingId, ...form, isVisible: form.isVisible ? 1 : 0 });
+      updateMutation.mutate({ id: editingId, ...form });
     } else {
-      createMutation.mutate({ ...form, isVisible: form.isVisible ? 1 : 0, groupKey: tab });
+      createMutation.mutate({ ...form, groupKey: tab });
     }
   };
 
@@ -110,7 +110,7 @@ export default function AdminPageGroups() {
                     <p className="text-xs text-muted-foreground line-clamp-1">{g.description}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {(!g.isVisible && g.isVisible !== undefined) && (
+                    {g.status === "hidden" && (
                       <span className="text-xs text-muted-foreground">숨김</span>
                     )}
                     <Button variant="ghost" size="sm" onClick={() => openEdit(g)}>
@@ -159,7 +159,7 @@ export default function AdminPageGroups() {
                 <Input type="number" value={form.displayOrder} onChange={(e) => setForm({ ...form, displayOrder: Number(e.target.value) })} className="mt-1" />
               </div>
               <div className="flex items-center gap-2 mt-6">
-                <Switch checked={form.isVisible} onCheckedChange={(v) => setForm({ ...form, isVisible: v })} />
+                <Switch checked={form.status === "visible"} onCheckedChange={(v) => setForm({ ...form, status: v ? "visible" : "hidden" })} />
                 <Label>공개</Label>
               </div>
             </div>

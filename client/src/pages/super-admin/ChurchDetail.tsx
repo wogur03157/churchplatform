@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 
 type Church = { id: number; name: string; slug: string; status: string; email: string | null; phone: string | null; address: string | null };
-type Feature = { id: number; churchId: number; featureKey: string; isEnabled: number };
+type Feature = { id: number; churchId: number; featureKey: string; status: "enabled" | "disabled" };
 type AdminUser = { id: number; name: string | null; email: string | null; role: string };
 
 const FEATURE_LABELS: Record<string, string> = {
@@ -115,21 +115,21 @@ export default function ChurchDetail() {
   });
 
   const updatePerm = useMutation({
-    mutationFn: ({ permKey, isAllowed }: { permKey: string; isAllowed: boolean }) =>
-      api.patch(`/admins/${permAdminId}/permissions`, { permKey, isAllowed }),
+    mutationFn: ({ permKey, status }: { permKey: string; status: "allowed" | "denied" }) =>
+      api.patch(`/admins/${permAdminId}/permissions`, { permKey, status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-permissions", permAdminId] }),
     onError: (e: any) => toast.error(e.message),
   });
 
-  const handleBulkPerm = (isAllowed: boolean) => {
-    ALL_PERM_KEYS.forEach((permKey) => updatePerm.mutate({ permKey, isAllowed }));
+  const handleBulkPerm = (status: "allowed" | "denied") => {
+    ALL_PERM_KEYS.forEach((permKey) => updatePerm.mutate({ permKey, status }));
   };
 
   if (loading) return null;
   if (!user || user.role !== "super_admin") { navigate("/admin/login"); return null; }
   if (!church) return <div className="p-8 text-center text-muted-foreground">로딩 중...</div>;
 
-  const getFeatureEnabled = (key: string) => (features.find((f) => f.featureKey === key)?.isEnabled ?? 1) === 1;
+  const getFeatureEnabled = (key: string) => (features.find((f) => f.featureKey === key)?.status ?? "enabled") === "enabled";
 
   const permAdmin = admins.find((a) => a.id === permAdminId);
   const allowedPerms = permsData?.permissions ?? [];
@@ -248,14 +248,14 @@ export default function ChurchDetail() {
             <Button
               size="sm" variant="outline" className="flex-1"
               disabled={allAllowed || !permsData}
-              onClick={() => handleBulkPerm(true)}
+              onClick={() => handleBulkPerm("allowed")}
             >
               전체 허용
             </Button>
             <Button
               size="sm" variant="outline" className="flex-1"
               disabled={noneAllowed || !permsData}
-              onClick={() => handleBulkPerm(false)}
+              onClick={() => handleBulkPerm("denied")}
             >
               전체 해제
             </Button>
@@ -285,7 +285,7 @@ export default function ChurchDetail() {
                           id={`perm-${permKey}`}
                           checked={allowed}
                           disabled={!permsData}
-                          onCheckedChange={(checked) => updatePerm.mutate({ permKey, isAllowed: checked })}
+                          onCheckedChange={(checked) => updatePerm.mutate({ permKey, status: checked ? "allowed" : "denied" })}
                         />
                       </div>
                     );

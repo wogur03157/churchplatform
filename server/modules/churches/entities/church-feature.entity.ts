@@ -29,8 +29,8 @@ export class ChurchFeature {
   @Column({ type: "varchar", length: 100 })
   featureKey!: FeatureKey;
 
-  @Column({ type: "int", default: 1 })
-  isEnabled!: number;
+  @Column({ type: "enum", enum: ["enabled", "disabled"], default: "enabled" })
+  status!: "enabled" | "disabled";
 
   @Column({ type: "int", nullable: true })
   updatedBy!: number | null;

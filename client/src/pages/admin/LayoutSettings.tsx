@@ -47,7 +47,7 @@ const ALL_SECTIONS = Object.keys(SECTION_META) as SectionType[];
 type LayoutItem = {
   id?: number;
   sectionType: SectionType;
-  isVisible: boolean;
+  status: "visible" | "hidden";
   displayOrder: number;
   colSpan: 1 | 2 | 3;
   title: string;
@@ -283,7 +283,7 @@ export default function AdminLayoutSettings() {
     const loaded: LayoutItem[] = layoutSettings.map((s) => ({
       id: s.id,
       sectionType: s.sectionType as SectionType,
-      isVisible: s.isVisible === 1,
+      status: (s.status ?? "visible") as "visible" | "hidden",
       displayOrder: s.displayOrder,
       colSpan: (s.colSpan ?? 1) as 1 | 2 | 3,
       title: s.title ?? "",
@@ -293,7 +293,7 @@ export default function AdminLayoutSettings() {
     }));
     ALL_SECTIONS.forEach((type) => {
       if (!loaded.find((i) => i.sectionType === type)) {
-        loaded.push({ sectionType: type, isVisible: false, displayOrder: 99, colSpan: 1, title: "", subtitle: "", imageKey: null, imageUrl: null });
+        loaded.push({ sectionType: type, status: "hidden", displayOrder: 99, colSpan: 1, title: "", subtitle: "", imageKey: null, imageUrl: null });
       }
     });
     setItems(loaded.sort((a, b) => a.displayOrder - b.displayOrder));
@@ -304,7 +304,7 @@ export default function AdminLayoutSettings() {
       api.post("/layout-settings/save-all",
         items.map((item, i) => ({
           sectionType: item.sectionType,
-          isVisible: item.isVisible,
+          status: item.status,
           displayOrder: i + 1,
           colSpan: item.colSpan,
           title: item.title || undefined,
@@ -320,14 +320,14 @@ export default function AdminLayoutSettings() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const active   = items.filter((i) => i.isVisible);
-  const inactive = items.filter((i) => !i.isVisible);
+  const active   = items.filter((i) => i.status === "visible");
+  const inactive = items.filter((i) => i.status === "hidden");
 
   const update = (type: SectionType, patch: Partial<LayoutItem>) =>
     setItems((prev) => prev.map((i) => i.sectionType === type ? { ...i, ...patch } : i));
 
-  const addSection    = (type: SectionType) => { update(type, { isVisible: true }); setSelected(type); };
-  const removeSection = (type: SectionType) => { update(type, { isVisible: false }); if (selected === type) setSelected(null); };
+  const addSection    = (type: SectionType) => { update(type, { status: "visible" }); setSelected(type); };
+  const removeSection = (type: SectionType) => { update(type, { status: "hidden" }); if (selected === type) setSelected(null); };
 
   const handleDragStart = ({ active: a }: DragStartEvent) => setDraggingId(String(a.id));
 
@@ -454,7 +454,7 @@ export default function AdminLayoutSettings() {
           </DndContext>
 
           {/* ── 선택된 섹션 설정 ── */}
-          {selectedItem && selectedItem.isVisible && (
+          {selectedItem && selectedItem.status === "visible" && (
             <SectionSettings
               item={selectedItem}
               onUpdate={(patch) => update(selectedItem.sectionType, patch)}

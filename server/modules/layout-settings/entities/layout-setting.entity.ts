@@ -5,7 +5,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-@Entity("layoutSettings")
+@Entity("layout_settings")
 export class LayoutSetting {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -17,8 +17,8 @@ export class LayoutSetting {
   })
   sectionType!: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
 
-  @Column({ type: "int", default: 1 })
-  isVisible!: number;
+  @Column({ type: "enum", enum: ["visible", "hidden"], default: "visible" })
+  status!: "visible" | "hidden";
 
   @Column({ type: "int" })
   displayOrder!: number;

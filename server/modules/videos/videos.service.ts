@@ -13,7 +13,7 @@ export class VideosService {
   async findAll(publishedOnly = false): Promise<Video[]> {
     const query = this.repo.createQueryBuilder("v");
     if (publishedOnly) {
-      query.where("v.isPublished = 1");
+      query.where("v.status = 'published'");
     }
     return query
       .orderBy("v.displayOrder", "ASC")
@@ -36,8 +36,9 @@ export class VideosService {
     fileSize?: number;
     duration?: number;
     uploadedBy: number;
-    isPublished: number;
+    status: "published" | "draft";
     displayOrder: number;
+    category?: string;
   }): Promise<Video> {
     const entity = this.repo.create(data);
     return this.repo.save(entity);

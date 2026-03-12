@@ -48,7 +48,7 @@ export class FloatingMessagesController {
       title: string;
       content: string;
       messageType?: "info" | "warning" | "success" | "announcement";
-      isActive?: boolean;
+      status?: "active" | "inactive";
       startDate?: string;
       endDate?: string;
       displayPosition?: "top" | "bottom" | "center";
@@ -59,7 +59,7 @@ export class FloatingMessagesController {
       title: body.title,
       content: body.content,
       messageType: body.messageType ?? "info",
-      isActive: body.isActive ? 1 : 0,
+      status: body.status ?? "inactive",
       startDate: body.startDate ? new Date(body.startDate) : undefined,
       endDate: body.endDate ? new Date(body.endDate) : undefined,
       displayPosition: body.displayPosition ?? "center",
@@ -77,7 +77,7 @@ export class FloatingMessagesController {
       title?: string;
       content?: string;
       messageType?: "info" | "warning" | "success" | "announcement";
-      isActive?: boolean;
+      status?: "active" | "inactive";
       startDate?: string;
       endDate?: string;
       displayPosition?: "top" | "bottom" | "center";
@@ -87,7 +87,7 @@ export class FloatingMessagesController {
     if (body.title !== undefined) updateData.title = body.title;
     if (body.content !== undefined) updateData.content = body.content;
     if (body.messageType !== undefined) updateData.messageType = body.messageType;
-    if (body.isActive !== undefined) updateData.isActive = body.isActive ? 1 : 0;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.startDate !== undefined)
       updateData.startDate = body.startDate ? new Date(body.startDate) : null;
     if (body.endDate !== undefined)

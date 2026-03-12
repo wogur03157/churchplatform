@@ -85,7 +85,7 @@ export class MockVideosController {
     @Query("publishedOnly") publishedOnly?: string,
   ) {
     let result = [...VIDEOS];
-    if (publishedOnly === "true") result = result.filter((v) => v.isPublished === 1);
+    if (publishedOnly === "true") result = result.filter((v) => v.status === "published");
     if (category) {
       result = category === "special"
         ? result.filter((v) => !["sunday", "wednesday", "friday"].includes(v.category))
@@ -103,7 +103,7 @@ export class MockVideosController {
       ...VIDEOS[0], id: VIDEOS.length + 10,
       title: body.title ?? "[Mock] 새 영상",
       category: body.category ?? null,
-      isPublished: body.isPublished ? 1 : 0,
+      status: body.status ?? "draft",
       createdAt: new Date(), updatedAt: new Date(),
     };
     VIDEOS.push(newVideo);
@@ -175,7 +175,7 @@ export class MockLayoutSettingsController {
         if (!incoming) continue;
         LAYOUT_SETTINGS[i] = {
           ...LAYOUT_SETTINGS[i],
-          isVisible: incoming.isVisible ? 1 : 0,
+          status: incoming.status ?? LAYOUT_SETTINGS[i].status,
           displayOrder: incoming.displayOrder ?? LAYOUT_SETTINGS[i].displayOrder,
           colSpan: incoming.colSpan ?? LAYOUT_SETTINGS[i].colSpan,
           title: incoming.title ?? LAYOUT_SETTINGS[i].title,
@@ -223,7 +223,7 @@ export class MockPopupsController {
     if (activeOnly === "true") {
       const now = new Date();
       return POPUPS.filter(
-        (p) => p.isActive === 1
+        (p) => p.status === "active"
           && (p.startDate === null || p.startDate <= now)
           && (p.endDate === null || p.endDate >= now),
       );
@@ -244,7 +244,7 @@ export class MockPopupsController {
       linkUrl: body.linkUrl ?? null,
       startDate: body.startDate ? new Date(body.startDate) : null,
       endDate: body.endDate ? new Date(body.endDate) : null,
-      isActive: body.isActive ? 1 : 0,
+      status: body.status ?? "inactive",
       createdBy: 1, createdAt: new Date(), updatedAt: new Date(),
     };
     POPUPS.push(popup);
@@ -261,7 +261,7 @@ export class MockPopupsController {
         ...(body.linkUrl !== undefined && { linkUrl: body.linkUrl || null }),
         ...(body.startDate !== undefined && { startDate: body.startDate ? new Date(body.startDate) : null }),
         ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
-        ...(body.isActive !== undefined && { isActive: body.isActive ? 1 : 0 }),
+        ...(body.status !== undefined && { status: body.status }),
         updatedAt: new Date(),
       };
     }
@@ -343,7 +343,7 @@ export class MockChurchesController {
     const existing = FEATURES.filter((f) => f.churchId === churchId);
     if (existing.length === 0) {
       const newFeatures = ALL_FEATURE_KEYS.map((key, i) => ({
-        id: FEATURES.length + i + 1, churchId, featureKey: key, isEnabled: 1,
+        id: FEATURES.length + i + 1, churchId, featureKey: key, status: "enabled", updatedBy: null, updatedAt: new Date(),
       }));
       FEATURES.push(...newFeatures);
       return newFeatures;
@@ -358,11 +358,12 @@ export class MockChurchesController {
     @Body("isEnabled") isEnabled: boolean,
   ) {
     const churchId = Number(id);
+    const newStatus = isEnabled ? "enabled" : "disabled";
     const idx = FEATURES.findIndex((f) => f.churchId === churchId && f.featureKey === featureKey);
     if (idx !== -1) {
-      FEATURES[idx] = { ...FEATURES[idx], isEnabled: isEnabled ? 1 : 0 };
+      FEATURES[idx] = { ...FEATURES[idx], status: newStatus, updatedAt: new Date() };
     } else {
-      FEATURES.push({ id: FEATURES.length + 1, churchId, featureKey, isEnabled: isEnabled ? 1 : 0 });
+      FEATURES.push({ id: FEATURES.length + 1, churchId, featureKey, status: newStatus, updatedBy: null, updatedAt: new Date() });
     }
     return FEATURES.find((f) => f.churchId === churchId && f.featureKey === featureKey);
   }
@@ -457,7 +458,7 @@ export class MockPageGroupsController {
 export class MockFormFieldsController {
   @Get()
   findAll(@Query("activeOnly") activeOnly?: string) {
-    return activeOnly === "true" ? FORM_FIELDS.filter((f) => f.isActive) : FORM_FIELDS;
+    return activeOnly === "true" ? FORM_FIELDS.filter((f) => f.status === "active") : FORM_FIELDS;
   }
 
   @Post()
@@ -509,7 +510,7 @@ export class MockAdminPermissionsController {
   @Get(":id/permissions")
   getPermissions(@Param("id") id: string) {
     const permissions = ADMIN_PERMISSIONS
-      .filter((p) => p.adminId === Number(id) && p.isAllowed)
+      .filter((p) => p.adminId === Number(id) && p.status === "allowed")
       .map((p) => p.permKey);
     return { permissions };
   }
@@ -517,14 +518,14 @@ export class MockAdminPermissionsController {
   @Patch(":id/permissions")
   updatePermission(
     @Param("id") id: string,
-    @Body() body: { permKey: string; isAllowed: boolean },
+    @Body() body: { permKey: string; status: "allowed" | "denied" },
   ) {
     const adminId = Number(id);
     const idx = ADMIN_PERMISSIONS.findIndex((p) => p.adminId === adminId && p.permKey === body.permKey);
     if (idx !== -1) {
-      ADMIN_PERMISSIONS[idx] = { ...ADMIN_PERMISSIONS[idx], isAllowed: body.isAllowed ? 1 : 0 };
+      ADMIN_PERMISSIONS[idx] = { ...ADMIN_PERMISSIONS[idx], status: body.status };
     } else {
-      ADMIN_PERMISSIONS.push({ adminId, permKey: body.permKey, isAllowed: body.isAllowed ? 1 : 0 });
+      ADMIN_PERMISSIONS.push({ adminId, permKey: body.permKey, status: body.status });
     }
     return { success: true };
   }
