@@ -2,6 +2,10 @@
 -- 시드 데이터 (개발/테스트용)
 -- INSERT IGNORE 사용 → 이미 존재하는 row는 건너뜀
 --
+-- 실행 방법:
+--   터미널: mysql -u 유저명 -p 디비명 < z_docs/seed.sql
+--   MySQL 접속 후: SOURCE /path/to/z_docs/seed.sql;
+--
 -- 실행 순서:
 --   1. 이 파일 전체 실행 (교회 + 기본 데이터 생성)
 --   2. Google 로그인 → users 테이블에 자동 생성됨
