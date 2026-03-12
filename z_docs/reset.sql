@@ -4,7 +4,7 @@
 -- ⚠️  실행 후 seed.sql 다시 실행해야 기본 데이터 복구됨
 --
 -- 실행 방법:
---   터미널: mysql -u 유저명 -p 디비명 < z_docs/reset.sql
+--   터미널: mysql -u churchuser -pchurchpassword churchplatform < z_docs/reset.sql
 --   MySQL 접속 후: SOURCE /path/to/z_docs/reset.sql;
 -- ============================================================
 

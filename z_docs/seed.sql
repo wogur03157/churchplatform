@@ -3,7 +3,7 @@
 -- INSERT IGNORE 사용 → 이미 존재하는 row는 건너뜀
 --
 -- 실행 방법:
---   터미널: mysql -u 유저명 -p 디비명 < z_docs/seed.sql
+--   터미널: mysql -u churchuser -pchurchpassword churchplatform < z_docs/seed.sql
 --   MySQL 접속 후: SOURCE /path/to/z_docs/seed.sql;
 --
 -- 실행 순서:
