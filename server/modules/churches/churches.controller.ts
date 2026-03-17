@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe,
+  Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseIntPipe,
   Patch, Post, Query, UseGuards,
 } from "@nestjs/common";
 import { ChurchesService } from "./churches.service";
@@ -15,7 +15,10 @@ import { User } from "../users/entities/user.entity";
 @Controller("churches")
 @UseGuards(OptionalAuthGuard)
 export class ChurchesController {
-  constructor(private readonly churchesService: ChurchesService) {}
+  constructor(
+    @Inject(ChurchesService)
+    private readonly churchesService: ChurchesService,
+  ) {}
 
   // ── 공개 ──────────────────────────────────────────────────────────────────
 

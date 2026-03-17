@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { FormFieldsService } from "./form-fields.service";
 import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 
 @Controller("form-fields")
 @UseGuards(OptionalAuthGuard)
 export class FormFieldsController {
-  constructor(private readonly service: FormFieldsService) {}
+  constructor(@Inject(FormFieldsService) private readonly service: FormFieldsService) {}
 
   @Get() findAll(@Query("activeOnly") activeOnly?: string) { return this.service.findAll(activeOnly === "true"); }
   @Get(":id") findOne(@Param("id", ParseIntPipe) id: number) { return this.service.findOne(id); }
