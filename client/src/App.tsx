@@ -22,6 +22,7 @@ import AdminLogin from "./pages/AdminLogin";
 import Apply from "./pages/Apply";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import ChurchDetail from "./pages/super-admin/ChurchDetail";
+import AdminInvite from "./pages/AdminInvite";
 
 // 공개 페이지
 import ChurchAbout from "./pages/public/ChurchAbout";
@@ -49,6 +50,7 @@ function Router() {
 
       {/* 관리자 */}
       <Route path={"/admin/login"} component={AdminLogin} />
+      <Route path={"/admin/invite"} component={AdminInvite} />
       <Route path={"/admin"}>
         <DashboardLayout><Home /></DashboardLayout>
       </Route>
