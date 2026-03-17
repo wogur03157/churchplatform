@@ -247,6 +247,10 @@ export let ADMIN_PERMISSIONS: { adminId: number; permKey: string; status: "allow
   ...ALL_PERM_KEYS.map((k) => ({ adminId: 3, permKey: k, status: "allowed" as const })),
 ];
 
+// ─── Invitations ──────────────────────────────────────────────────────────────
+
+export let INVITATIONS: { id: number; churchId: number; email: string; token: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[] = [];
+
 // ─── Site Config ──────────────────────────────────────────────────────────────
 
 export let SITE_CONFIG: any[] = [

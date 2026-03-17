@@ -3,7 +3,7 @@ import {
   ANNOUNCEMENTS, IMAGES, VIDEOS, FLOATING_MESSAGES, LAYOUT_SETTINGS,
   POPUPS, CHURCHES, FEATURES, ALL_FEATURE_KEYS, ADMINS, VIDEO_CATEGORIES,
   PAGE_GROUPS, FORM_FIELDS, FORM_SUBMISSIONS, ADMIN_PERMISSIONS, ALL_PERM_KEYS,
-  SITE_CONFIG, getEnabledFeatures,
+  SITE_CONFIG, INVITATIONS, getEnabledFeatures,
 } from "./mock-store";
 
 // mock-auth.controller 등 다른 모듈에서 사용할 수 있도록 재export
@@ -379,6 +379,18 @@ export class MockChurchesController {
     if (idx !== -1) ADMINS.splice(idx, 1);
     return { success: true };
   }
+
+  @Post(":id/admins/invite")
+  @HttpCode(200)
+  inviteAdmin(@Param("id") id: string, @Body("email") email: string) {
+    const churchId = Number(id);
+    const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    INVITATIONS.push({ id: INVITATIONS.length + 1, churchId, email, token, expiresAt, usedAt: null, createdAt: new Date() });
+    const inviteUrl = `/admin/invite?token=${token}`;
+    console.log(`[Mock] 초대 메일 → ${email} : ${inviteUrl}`);
+    return { token, inviteUrl };
+  }
 }
 
 // ─── Video Categories ─────────────────────────────────────────────────────────
@@ -543,5 +555,38 @@ export class MockSiteConfigController {
     const idx = SITE_CONFIG.findIndex((c) => c.key === key);
     if (idx !== -1) SITE_CONFIG[idx] = { ...SITE_CONFIG[idx], value };
     return SITE_CONFIG[idx] ?? null;
+  }
+}
+
+// ─── Invitations ──────────────────────────────────────────────────────────────
+
+@Controller("invitations")
+export class MockInvitationsController {
+  @Get(":token")
+  findOne(@Param("token") token: string) {
+    const inv = INVITATIONS.find((i) => i.token === token);
+    if (!inv) return null;
+    const church = CHURCHES.find((c) => c.id === inv.churchId);
+    return {
+      valid: !inv.usedAt && new Date() < inv.expiresAt,
+      email: inv.email,
+      churchId: inv.churchId,
+      churchName: church?.name ?? null,
+      expiresAt: inv.expiresAt,
+      used: !!inv.usedAt,
+    };
+  }
+
+  @Post(":token/accept")
+  @HttpCode(200)
+  accept(@Param("token") token: string) {
+    const idx = INVITATIONS.findIndex((i) => i.token === token);
+    if (idx === -1) return { success: false, message: "유효하지 않은 초대입니다" };
+    const inv = INVITATIONS[idx];
+    if (inv.usedAt) return { success: false, message: "이미 사용된 초대입니다" };
+    if (new Date() > inv.expiresAt) return { success: false, message: "만료된 초대입니다" };
+    INVITATIONS[idx] = { ...inv, usedAt: new Date() };
+    ADMINS.push({ id: ADMINS.length + 10, churchId: inv.churchId, name: "초대된 관리자", email: inv.email, role: "church_admin" });
+    return { success: true };
   }
 }
