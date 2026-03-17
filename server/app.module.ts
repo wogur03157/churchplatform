@@ -34,6 +34,8 @@ import { FormSubmission } from "./modules/form-submissions/entities/form-submiss
 import { FormSubmissionsModule } from "./modules/form-submissions/form-submissions.module";
 import { SiteConfig } from "./modules/site-config/entities/site-config.entity";
 import { SiteConfigModule } from "./modules/site-config/site-config.module";
+import { Invitation } from "./modules/invitations/entities/invitation.entity";
+import { InvitationsModule } from "./modules/invitations/invitations.module";
 
 // DB가 설정되지 않았거나 SKIP_DB=true 이면 DB 관련 모듈 전체 스킵
 // (AuthModule이 UserRepository에 의존하므로 AuthModule을 쓰는 모든 모듈 함께 제외)
@@ -52,18 +54,19 @@ const dbModules = isDbEnabled
       TypeOrmModule.forRoot({
         type: "mysql",
         url: dbUrl,
-        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup, PageGroup, VideoCategory, FormField, FormSubmission, SiteConfig],
+        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup, PageGroup, VideoCategory, FormField, FormSubmission, SiteConfig, Invitation],
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
       AuthModule,
       OAuthModule,
+      InvitationsModule,
+      ChurchesModule,
       AnnouncementsModule,
       ImagesModule,
       VideosModule,
       FloatingMessagesModule,
       LayoutSettingsModule,
-      ChurchesModule,
       PopupsModule,
       AiAssistantModule,
       StorageModule,
