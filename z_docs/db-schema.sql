@@ -277,6 +277,20 @@ CREATE TABLE `site_config` (
   CONSTRAINT `fk_sc_churchId` FOREIGN KEY (`churchId`) REFERENCES `churches` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ─── invitations ─────────────────────────────────────────────
+CREATE TABLE `invitations` (
+  `id`        INT          NOT NULL AUTO_INCREMENT,
+  `churchId`  INT          NOT NULL,
+  `email`     VARCHAR(320) NOT NULL,
+  `token`     VARCHAR(64)  NOT NULL,
+  `expiresAt` TIMESTAMP    NOT NULL,
+  `usedAt`    TIMESTAMP    NULL,
+  `createdAt` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_invitations_token` (`token`),
+  CONSTRAINT `fk_inv_churchId` FOREIGN KEY (`churchId`) REFERENCES `churches` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ============================================================
 -- 기본 데이터 (site_config, video_categories)
 -- ============================================================
