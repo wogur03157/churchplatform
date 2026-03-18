@@ -13,7 +13,6 @@ export class LayoutSetting {
   @Column({
     type: "enum",
     enum: ["announcements", "images", "videos", "hero", "image_a", "image_b"],
-    unique: true,
   })
   sectionType!: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
 
