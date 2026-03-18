@@ -7,8 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Link, useParams, useLocation } from "wouter";
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, User, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -75,6 +77,9 @@ export default function ChurchDetail() {
   const [, navigate] = useLocation();
   const qc = useQueryClient();
   const [permAdminId, setPermAdminId] = useState<number | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const { data: church } = useQuery<Church>({
     queryKey: ["church", churchId],
@@ -104,6 +109,16 @@ export default function ChurchDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["church-admins", churchId] });
       toast.success("관리자가 제거되었습니다");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: (email: string) =>
+      api.post<{ token: string; inviteUrl: string }>(`/churches/${churchId}/admins/invite`, { email }),
+    onSuccess: (data) => {
+      setInviteLink(data.inviteUrl);
+      toast.success("초대 링크가 생성되었습니다");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -185,9 +200,17 @@ export default function ChurchDetail() {
 
         {/* 관리자 목록 */}
         <Card>
-          <CardHeader>
-            <CardTitle>관리자</CardTitle>
-            <CardDescription>이 교회를 관리할 수 있는 계정 목록</CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+              <CardTitle>관리자</CardTitle>
+              <CardDescription>이 교회를 관리할 수 있는 계정 목록</CardDescription>
+            </div>
+            <Button
+              size="sm" variant="outline"
+              onClick={() => { setInviteEmail(""); setInviteLink(null); setInviteOpen(true); }}
+            >
+              <UserPlus className="h-3.5 w-3.5 mr-1" /> 초대
+            </Button>
           </CardHeader>
           <CardContent className="space-y-3">
             {admins.length === 0 ? (
@@ -220,6 +243,61 @@ export default function ChurchDetail() {
           </CardContent>
         </Card>
       </main>
+
+      {/* 관리자 초대 Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={(o) => { if (!o) { setInviteOpen(false); setInviteEmail(""); setInviteLink(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>관리자 초대 — {church.name}</DialogTitle>
+          </DialogHeader>
+          {inviteLink ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                초대 링크가 생성되었습니다. 아래 링크를 복사해 전달하세요.<br />
+                <span className="text-xs">(유효기간 7일, 1회 사용)</span>
+              </p>
+              <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+                <code className="flex-1 text-xs break-all">{window.location.origin}{inviteLink}</code>
+                <Button
+                  size="sm" variant="ghost"
+                  onClick={() => { navigator.clipboard.writeText(window.location.origin + inviteLink); toast.success("복사되었습니다"); }}
+                >
+                  복사
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                이메일 주소를 입력하면 관리자 초대 링크를 생성합니다.<br />
+                초대받은 사람은 링크에서 Google 로그인 후 자동으로 관리자로 등록됩니다.
+              </p>
+              <Input
+                type="email"
+                placeholder="admin@church.kr"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && inviteEmail) inviteMutation.mutate(inviteEmail); }}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            {inviteLink ? (
+              <Button onClick={() => { setInviteOpen(false); setInviteLink(null); setInviteEmail(""); }}>닫기</Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setInviteOpen(false)}>취소</Button>
+                <Button
+                  disabled={!inviteEmail || inviteMutation.isPending}
+                  onClick={() => inviteMutation.mutate(inviteEmail)}
+                >
+                  {inviteMutation.isPending ? "생성 중..." : "초대 링크 생성"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 권한 설정 Sheet */}
       <Sheet open={permAdminId !== null} onOpenChange={(open) => { if (!open) setPermAdminId(null); }}>
