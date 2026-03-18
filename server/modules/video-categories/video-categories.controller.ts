@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
 import { VideoCategoriesService } from "./video-categories.service";
 import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 
 @Controller("video-categories")
 @UseGuards(OptionalAuthGuard)
 export class VideoCategoriesController {
-  constructor(private readonly service: VideoCategoriesService) {}
+  constructor(@Inject(VideoCategoriesService) private readonly service: VideoCategoriesService) {}
 
   @Get() findAll() { return this.service.findAll(); }
   @Get(":id") findOne(@Param("id", ParseIntPipe) id: number) { return this.service.findOne(id); }

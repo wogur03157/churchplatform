@@ -1,10 +1,33 @@
 -- ============================================================
 -- 시드 데이터 (개발/테스트용)
--- 실행 전 churchId를 실제 DB의 churches.id 값으로 교체하세요.
 -- INSERT IGNORE 사용 → 이미 존재하는 row는 건너뜀
+--
+-- 실행 방법:
+--   터미널: mysql -u churchuser -pchurchpassword churchplatform < z_docs/seed.sql
+--   MySQL 접속 후: SOURCE /path/to/z_docs/seed.sql;
+--
+-- 실행 순서:
+--   1. 이 파일 전체 실행 (교회 + 기본 데이터 생성)
+--   2. Google 로그인 → users 테이블에 자동 생성됨
+--   3. 로그인 후 아래 쿼리로 어드민 연결:
+--        INSERT INTO church_admins (churchId, userId) VALUES (6, 30);
+--        SELECT 1, id FROM users WHERE openId = '본인_구글_openId';
+--      그리고 슈퍼어드민으로 지정:
+--        UPDATE users SET role = 'super_admin' WHERE openId = '본인_구글_openId';
 -- ============================================================
 
-SET @churchId = 1; -- ← 실제 교회 id로 변경
+-- ─── churches ────────────────────────────────────────────────────────────────
+-- 이미 교회가 있으면 MAX(id)+1로 새 교회를 생성 (slug: youngshin → youngshin-2 → youngshin-3 ...)
+
+SET @churchId = (SELECT COALESCE(MAX(id), 0) + 1 FROM churches);
+
+INSERT INTO churches (id, name, slug, status, email, phone, address, appliedBy, approvedBy, approvedAt)
+VALUES (
+  @churchId,
+  '영신교회',
+  IF(@churchId = 1, 'youngshin', CONCAT('youngshin-', @churchId)),
+  'active', NULL, NULL, NULL, NULL, NULL, NOW()
+);
 
 -- ─── layout_settings ─────────────────────────────────────────────────────────
 
@@ -32,10 +55,12 @@ VALUES
 
 INSERT IGNORE INTO page_groups (groupKey, name, slug, description, content, imageUrl, displayOrder, status, churchId)
 VALUES
-  ('departments',   '유아부',       'infant',           '0~36개월 영아 및 유아를 위한 부서입니다.', NULL, NULL, 1, 'visible', @churchId),
-  ('departments',   '아동부',       'children',         '초등학생을 위한 부서입니다.',               NULL, NULL, 2, 'visible', @churchId),
-  ('departments',   '청소년부',     'youth',            '중고등학생을 위한 부서입니다.',             NULL, NULL, 3, 'visible', @churchId),
-  ('departments',   '청년부',       'young-adult',      '청년들이 함께 모이는 부서입니다.',          NULL, NULL, 4, 'visible', @churchId),
+  ('departments',   '영아부',       'infant1',           '0 ~ 12개월 영아를 위한 부서입니다.', NULL, NULL, 1, 'visible', @churchId),
+  ('departments',   '유아부',       'infant2',           '1세 ~ 4세 유아를 위한 부서입니다.', NULL, NULL, 2, 'visible', @churchId),
+  ('departments',   '유치부',       'children1',         '5세 ~ 7세 미취학아동을 위한 부서입니다.', NULL, NULL, 3, 'visible', @churchId),
+  ('departments',   '초등부',       'children2',         '초등학생을 위한 부서입니다.',               NULL, NULL, 4, 'visible', @churchId),
+  ('departments',   '청소년부',     'youth',            '중고등학생을 위한 부서입니다.',             NULL, NULL, 5, 'visible', @churchId),
+  ('departments',   '청년부',       'young-adult',      '청년들이 함께 모이는 부서입니다.',          NULL, NULL, 6, 'visible', @churchId),
   ('god-love',      '새벽기도회',   'dawn-prayer',      '매일 새벽 5시 30분 예배당에서 진행됩니다.', NULL, NULL, 1, 'visible', @churchId),
   ('god-love',      '성경공부',     'bible-study',      '화요일 오전 10시, 깊은 말씀 공부.',         NULL, NULL, 2, 'visible', @churchId),
   ('god-love',      '구역예배',     'cell-group',       '각 구역별로 모여 드리는 예배입니다.',        NULL, NULL, 3, 'visible', @churchId),
