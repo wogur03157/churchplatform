@@ -55,10 +55,24 @@ export default function PublicView() {
 
   useEffect(() => {
     if (popups && popups.length > 0) {
-      setPopup(popups[0]);
-      setShowPopup(true);
+      const currentPopup = popups[0];
+      const dontShowUntil = localStorage.getItem(`popup_hide_${currentPopup.id}`);
+      
+      if (!dontShowUntil || new Date().getTime() > parseInt(dontShowUntil)) {
+        setPopup(currentPopup);
+        setShowPopup(true);
+      }
     }
   }, [popups]);
+
+  const handleClosePopup = (dontShowToday: boolean = false) => {
+    if (dontShowToday && popup) {
+      // 24시간 뒤의 타임스탬프 저장
+      const expiry = new Date().getTime() + 24 * 60 * 60 * 1000;
+      localStorage.setItem(`popup_hide_${popup.id}`, expiry.toString());
+    }
+    setShowPopup(false);
+  };
 
   const visibleSections = layoutSettings
     ?.filter((s) => s.status === "visible")
@@ -322,14 +336,14 @@ export default function PublicView() {
 
       {/* 팝업 모달 */}
       {showPopup && popup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowPopup(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => handleClosePopup()}>
           <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="sm" className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-black/10 hover:bg-black/20 rounded-full" onClick={() => setShowPopup(false)}>
+            <Button variant="ghost" size="sm" className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-black/10 hover:bg-black/20 rounded-full" onClick={() => handleClosePopup()}>
               <X className="h-4 w-4" />
             </Button>
             {popup.imageUrl && (
               popup.linkUrl ? (
-                <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" onClick={() => setShowPopup(false)}>
+                <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" onClick={() => handleClosePopup()}>
                   <img src={popup.imageUrl} alt={popup.title} className="w-full object-contain cursor-pointer" />
                 </a>
               ) : (
@@ -337,14 +351,22 @@ export default function PublicView() {
               )
             )}
             <div className="p-6 flex items-center justify-between gap-4 bg-white border-t">
-              <p className="font-bold">{popup.title}</p>
+              <div className="flex flex-col gap-1">
+                <p className="font-bold">{popup.title}</p>
+                <button 
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors text-left font-medium"
+                  onClick={() => handleClosePopup(true)}
+                >
+                  오늘 하루 보지 않기
+                </button>
+              </div>
               <div className="flex items-center gap-4">
                 {popup.linkUrl && (
-                  <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:underline flex items-center gap-1" onClick={() => setShowPopup(false)}>
+                  <a href={popup.linkUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:underline flex items-center gap-1" onClick={() => handleClosePopup()}>
                     자세히 보기 <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                <button className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowPopup(false)}>닫기</button>
+                <button className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors" onClick={() => handleClosePopup()}>닫기</button>
               </div>
             </div>
           </div>

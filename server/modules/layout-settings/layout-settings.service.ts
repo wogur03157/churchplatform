@@ -10,8 +10,10 @@ export class LayoutSettingsService {
     private readonly repo: Repository<LayoutSetting>
   ) {}
 
-  async findAll(): Promise<LayoutSetting[]> {
-    return this.repo.find({ order: { displayOrder: "ASC" } });
+  async findAll(churchId?: number): Promise<LayoutSetting[]> {
+    // churchId가 없으면 기본적으로 1번 교회를 조회하거나 전체를 조회 (하위 호환성)
+    const where = churchId ? { churchId } : {};
+    return this.repo.find({ where, order: { displayOrder: "ASC" } });
   }
 
   private async upsertOne(data: {
@@ -23,9 +25,17 @@ export class LayoutSettingsService {
     subtitle?: string;
     imageKey?: string;
     imageUrl?: string;
+    churchId: number;
     updatedBy: number;
   }): Promise<void> {
-    let entity = await this.repo.findOne({ where: { sectionType: data.sectionType } });
+    // churchId와 sectionType의 조합으로 유니크하게 조회
+    let entity = await this.repo.findOne({ 
+      where: { 
+        churchId: data.churchId, 
+        sectionType: data.sectionType 
+      } 
+    });
+    
     if (entity) {
       Object.assign(entity, data);
     } else {
@@ -43,6 +53,7 @@ export class LayoutSettingsService {
     subtitle?: string;
     imageKey?: string;
     imageUrl?: string;
+    churchId: number;
     updatedBy: number;
   }): Promise<void> {
     await this.upsertOne(data);
@@ -59,9 +70,10 @@ export class LayoutSettingsService {
       imageKey?: string;
       imageUrl?: string;
     }>,
+    churchId: number,
     updatedBy: number,
   ): Promise<void> {
-    await Promise.all(items.map((item) => this.upsertOne({ ...item, updatedBy })));
+    await Promise.all(items.map((item) => this.upsertOne({ ...item, churchId, updatedBy })));
   }
 
   async update(id: number, data: Record<string, unknown>): Promise<void> {
