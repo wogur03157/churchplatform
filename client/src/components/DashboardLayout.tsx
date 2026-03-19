@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers, Tag, Users, FormInput, ClipboardList, Lock } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, FileText, Image as ImageIcon, Video, MessageSquare, Settings, Layers, Tag, Users, FormInput, ClipboardList, Lock, Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { icon: Users,           label: "소그룹 관리",   path: "/admin/page-groups",       permKey: "page_groups" },
   { icon: FormInput,       label: "폼 필드 설정",  path: "/admin/form-config",       permKey: "form_config" },
   { icon: ClipboardList,   label: "신청 내역",     path: "/admin/form-submissions",  permKey: "form_submissions" },
+  { icon: Globe,           label: "사이트 설정",   path: "/admin/site-settings",     permKey: "layout_settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

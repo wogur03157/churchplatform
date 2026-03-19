@@ -16,6 +16,7 @@ import AdminVideoCategories from "./pages/admin/VideoCategories";
 import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
 import AdminFormSubmissions from "./pages/admin/FormSubmissions";
+import AdminSiteSettings from "./pages/admin/SiteSettings";
 import PublicView from "./pages/PublicView";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import AdminLogin from "./pages/AdminLogin";
@@ -83,6 +84,9 @@ function Router() {
       </Route>
       <Route path={"/admin/form-submissions"}>
         <DashboardLayout><AdminFormSubmissions /></DashboardLayout>
+      </Route>
+      <Route path={"/admin/site-settings"}>
+        <DashboardLayout><AdminSiteSettings /></DashboardLayout>
       </Route>
 
       {/* 공개 다중 페이지 — /:churchSlug 앞에 배치 (wouter는 1세그먼트만 매칭) */}

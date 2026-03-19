@@ -254,7 +254,12 @@ export let INVITATIONS: { id: number; churchId: number; email: string; token: st
 // ─── Site Config ──────────────────────────────────────────────────────────────
 
 export let SITE_CONFIG: any[] = [
-  { id: 1, churchId: null, key: "church_name",   value: "영신교회",                         description: "교회 이름" },
-  { id: 2, churchId: null, key: "map_address",   value: "서울특별시 양천구 목동로 19길 28", description: "교회 주소" },
-  { id: 3, churchId: null, key: "map_embed_url", value: "",                                 description: "카카오맵 임베드 URL (비어있으면 링크로 대체)" },
+  { id: 1, churchId: null, key: "church_name",    value: "영신교회",                         description: "교회 이름" },
+  { id: 2, churchId: null, key: "map_address",    value: "서울특별시 양천구 목동로 19길 28", description: "교회 주소" },
+  { id: 3, churchId: null, key: "map_embed_url",  value: "",                                 description: "카카오맵 임베드 URL (비어있으면 링크로 대체)" },
+  { id: 4, churchId: null, key: "church_logo_url",value: "",                                 description: "교회 로고 이미지 URL" },
+  { id: 5, churchId: null, key: "hero_icon_1_url",value: "",                                 description: "홈 퀵메뉴 아이콘 1 (예배 안내)" },
+  { id: 6, churchId: null, key: "hero_icon_2_url",value: "",                                 description: "홈 퀵메뉴 아이콘 2 (오시는 길)" },
+  { id: 7, churchId: null, key: "hero_icon_3_url",value: "",                                 description: "홈 퀵메뉴 아이콘 3 (새가족 안내)" },
+  { id: 8, churchId: null, key: "hero_icon_4_url",value: "",                                 description: "홈 퀵메뉴 아이콘 4 (온라인 예배)" },
 ];
