@@ -37,7 +37,7 @@ const DEFAULT_FORM: VideoForm = {
   thumbnailUrl: "",
   status: "draft" as "published" | "draft",
   displayOrder: 0,
-  category: "",
+  category: "none",
 };
 
 export default function AdminVideos() {
@@ -81,7 +81,7 @@ export default function AdminVideos() {
     createMutation.mutate({
       ...form,
       thumbnailUrl: form.thumbnailUrl || undefined,
-      category: form.category || null,
+      category: form.category === "none" ? null : form.category || null,
     });
   };
 
@@ -95,7 +95,7 @@ export default function AdminVideos() {
       thumbnailUrl: video.thumbnailUrl ?? "",
       status: video.status,
       displayOrder: video.displayOrder,
-      category: video.category ?? "",
+      category: video.category ?? "none",
     });
     setIsEditOpen(true);
   };
@@ -109,11 +109,11 @@ export default function AdminVideos() {
       id: editingId,
       ...form,
       thumbnailUrl: form.thumbnailUrl || undefined,
-      category: form.category || null,
+      category: form.category === "none" ? null : form.category || null,
     });
   };
 
-  const FormFields = () => (
+  const formFields = (
     <div className="space-y-4">
       <div>
         <Label htmlFor="videoType">영상 유형</Label>
@@ -147,7 +147,7 @@ export default function AdminVideos() {
         <Select value={form.category} onValueChange={(v) => setField("category", v)}>
           <SelectTrigger id="category"><SelectValue placeholder="카테고리 선택 (선택사항)" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="">없음</SelectItem>
+            <SelectItem value="none">없음</SelectItem>
             {(videoCategories ?? []).map((c) => (
               <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
             ))}
@@ -183,7 +183,7 @@ export default function AdminVideos() {
               <DialogTitle>영상 추가</DialogTitle>
               <DialogDescription>새 영상을 등록하세요</DialogDescription>
             </DialogHeader>
-            <FormFields />
+            {formFields}
             <DialogFooter>
               <Button variant="outline" onClick={resetForm}>취소</Button>
               <Button onClick={handleCreate} disabled={createMutation.isPending}>
@@ -261,7 +261,7 @@ export default function AdminVideos() {
             <DialogTitle>영상 수정</DialogTitle>
             <DialogDescription>영상 정보를 수정하세요</DialogDescription>
           </DialogHeader>
-          <FormFields />
+          {formFields}
           <DialogFooter>
             <Button variant="outline" onClick={resetForm}>취소</Button>
             <Button onClick={handleUpdate} disabled={updateMutation.isPending}>

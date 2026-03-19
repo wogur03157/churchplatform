@@ -99,7 +99,7 @@ export default function AdminAnnouncements() {
     aiAssistMutation.mutate({ text: plainText, action: aiAction });
   };
 
-  const FormFields = () => (
+  const formFields = (
     <div className="space-y-4">
       <div>
         <Label htmlFor="title">제목</Label>
@@ -156,7 +156,7 @@ export default function AdminAnnouncements() {
                 <DialogTitle>새 공지사항 작성</DialogTitle>
                 <DialogDescription>공지사항의 제목과 내용을 입력하세요</DialogDescription>
               </DialogHeader>
-              <FormFields />
+              {formFields}
               <DialogFooter>
                 <Button variant="outline" onClick={resetForm}>취소</Button>
                 <Button onClick={handleCreate} disabled={createMutation.isPending}>
@@ -220,7 +220,7 @@ export default function AdminAnnouncements() {
             <DialogTitle>공지사항 수정</DialogTitle>
             <DialogDescription>공지사항의 내용을 수정하세요</DialogDescription>
           </DialogHeader>
-          <FormFields />
+          {formFields}
           <DialogFooter>
             <Button variant="outline" onClick={resetForm}>취소</Button>
             <Button onClick={handleUpdate} disabled={updateMutation.isPending}>

@@ -26,10 +26,11 @@ async function request<T>(
     throw new ApiError(res.status, body?.message ?? res.statusText);
   }
 
-  // 204 No Content
+  // 204 No Content 또는 빈 바디
   if (res.status === 204) return undefined as T;
 
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : (undefined as T);
 }
 
 export const api = {
