@@ -49,7 +49,7 @@ type LayoutItem = {
   sectionType: SectionType;
   status: "visible" | "hidden";
   displayOrder: number;
-  colSpan: 1 | 2 | 3;
+  colSpan: number;
   title: string;
   subtitle: string;
   imageKey: string | null;
@@ -69,21 +69,29 @@ const SECTION_COLORS: Record<SectionType, { bg: string; border: string; text: st
 
 // ─── 열 너비 토글 ─────────────────────────────────────────────────────────────
 
-function ColSpanToggle({ value, onChange }: { value: 1 | 2 | 3; onChange: (v: 1 | 2 | 3) => void }) {
+// 12열 그리드 기준 프리셋 (colSpan → label)
+const SPAN_PRESETS = [
+  { label: "1/4", value: 3 },
+  { label: "1/3", value: 4 },
+  { label: "1/2", value: 6 },
+  { label: "2/3", value: 8 },
+  { label: "3/4", value: 9 },
+  { label: "전체", value: 12 },
+] as const;
+
+function ColSpanToggle({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <div className="flex gap-0.5">
-      {([1, 2, 3] as const).map((n) => (
+      {SPAN_PRESETS.map(({ label, value: v }) => (
         <button
-          key={n}
-          onClick={(e) => { e.stopPropagation(); onChange(n); }}
-          title={`${n}열`}
-          className={`flex gap-0.5 p-1 rounded border transition-colors ${
-            value === n ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 bg-background/80"
+          key={v}
+          onClick={(e) => { e.stopPropagation(); onChange(v); }}
+          title={label}
+          className={`px-1 py-0.5 text-[9px] font-medium rounded border transition-colors ${
+            value === v ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/50 bg-background/80 text-muted-foreground"
           }`}
         >
-          {Array.from({ length: 3 }).map((_, i) => (
-            <span key={i} className={`w-1.5 h-2.5 rounded-sm ${i < n ? "bg-primary" : "bg-muted-foreground/20"}`} />
-          ))}
+          {label}
         </button>
       ))}
     </div>
@@ -121,11 +129,16 @@ function CanvasBlock({
     zIndex: isDragging ? 0 : undefined,
   };
 
-  const loadFile = (file: File) => {
+  const loadFile = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => onUpdate({ imageUrl: reader.result as string, imageKey: file.name });
-    reader.readAsDataURL(file);
+    const res = await fetch("/api/layout-settings/upload-image", {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!res.ok) { toast.error("이미지 업로드 실패"); return; }
+    const { url, key } = await res.json() as { url: string; key: string };
+    onUpdate({ imageUrl: url, imageKey: key });
   };
 
   return (
@@ -208,10 +221,15 @@ function SectionSettings({
   const c = SECTION_COLORS[item.sectionType];
   const isImageWidget = item.sectionType === "image_a" || item.sectionType === "image_b";
 
-  const loadFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => onUpdate({ imageUrl: reader.result as string, imageKey: file.name });
-    reader.readAsDataURL(file);
+  const loadFile = async (file: File) => {
+    const res = await fetch("/api/layout-settings/upload-image", {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!res.ok) { toast.error("이미지 업로드 실패"); return; }
+    const { url, key } = await res.json() as { url: string; key: string };
+    onUpdate({ imageUrl: url, imageKey: key });
   };
 
   return (
@@ -278,14 +296,17 @@ export default function AdminLayoutSettings() {
     queryFn: () => api.get<any[]>("/layout-settings"),
   });
 
+
   useEffect(() => {
     if (!layoutSettings) return;
+    // 구 포맷(1-3) → 12열 포맷으로 변환
+    const toSpan12 = (v: number) => v <= 3 ? ({ 1: 4, 2: 8, 3: 12 }[v] ?? 12) : v;
     const loaded: LayoutItem[] = layoutSettings.map((s) => ({
       id: s.id,
       sectionType: s.sectionType as SectionType,
       status: (s.status ?? "visible") as "visible" | "hidden",
       displayOrder: s.displayOrder,
-      colSpan: (s.colSpan ?? 1) as 1 | 2 | 3,
+      colSpan: toSpan12(s.colSpan ?? 3),
       title: s.title ?? "",
       subtitle: s.subtitle ?? "",
       imageKey: s.imageKey ?? null,
@@ -293,7 +314,7 @@ export default function AdminLayoutSettings() {
     }));
     ALL_SECTIONS.forEach((type) => {
       if (!loaded.find((i) => i.sectionType === type)) {
-        loaded.push({ sectionType: type, status: "hidden", displayOrder: 99, colSpan: 1, title: "", subtitle: "", imageKey: null, imageUrl: null });
+        loaded.push({ sectionType: type, status: "hidden", displayOrder: 99, colSpan: 4, title: "", subtitle: "", imageKey: null, imageUrl: null });
       }
     });
     setItems(loaded.sort((a, b) => a.displayOrder - b.displayOrder));
@@ -413,7 +434,7 @@ export default function AdminLayoutSettings() {
                   items={dataSections.map((i) => i.sectionType)}
                   strategy={rectSortingStrategy}
                 >
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-12 gap-2">
                     {dataSections.map((item) => (
                       <CanvasBlock
                         key={item.sectionType}
@@ -463,7 +484,7 @@ export default function AdminLayoutSettings() {
 
           {/* 안내 */}
           <p className="text-[11px] text-muted-foreground">
-            열 너비 합이 3이 되면 같은 행에 나란히 배치됩니다 (예: 1+2열, 1+1+1열)
+            같은 행의 너비 합이 전체(12)가 되면 나란히 배치됩니다 (예: 1/3+2/3, 1/4+3/4, 1/3+1/3+1/3, 1/4×4)
           </p>
         </div>
 

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "../auth/auth.module";
 import { ChurchesModule } from "../churches/churches.module";
+import { StorageModule } from "../storage/storage.module";
 import { LayoutSetting } from "./entities/layout-setting.entity";
 import { LayoutSettingsController } from "./layout-settings.controller";
 import { LayoutSettingsService } from "./layout-settings.service";
@@ -11,6 +12,7 @@ import { LayoutSettingsService } from "./layout-settings.service";
     TypeOrmModule.forFeature([LayoutSetting]),
     AuthModule,
     ChurchesModule,
+    StorageModule,
   ],
   controllers: [LayoutSettingsController],
   providers: [LayoutSettingsService],

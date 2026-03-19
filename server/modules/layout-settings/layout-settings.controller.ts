@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
   ForbiddenException,
 } from "@nestjs/common";
@@ -16,6 +17,8 @@ import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 import type { User } from "../users/entities/user.entity";
 import { LayoutSettingsService } from "./layout-settings.service";
 import { ChurchesService } from "../churches/churches.service";
+import { StorageService } from "../storage/storage.service";
+import type { Request } from "express";
 
 @Controller("layout-settings")
 export class LayoutSettingsController {
@@ -24,6 +27,8 @@ export class LayoutSettingsController {
     private readonly service: LayoutSettingsService,
     @Inject(ChurchesService)
     private readonly churchesService: ChurchesService,
+    @Inject(StorageService)
+    private readonly storageService: StorageService,
   ) {}
 
   @Get()
@@ -52,6 +57,27 @@ export class LayoutSettingsController {
     const churches = await this.churchesService.findByAdmin(user.id);
     if (churches.length === 0) throw new ForbiddenException("소속된 교회가 없습니다");
     return churches[0].id;
+  }
+
+  @Post("upload-image")
+  @UseGuards(AdminGuard)
+  async uploadImage(@Req() req: Request) {
+    return new Promise<{ url: string; key: string }>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk: Buffer) => chunks.push(chunk));
+      req.on("end", async () => {
+        try {
+          const body = Buffer.concat(chunks);
+          const contentType = req.headers["content-type"] ?? "image/jpeg";
+          const ext = contentType.split("/")[1]?.split(";")[0] ?? "jpg";
+          const key = `layout-settings/${Date.now()}.${ext}`;
+          const result = await this.storageService.put(key, body, contentType);
+          resolve(result);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
 
   @Post("save-all")
