@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { stripHtml } from "@/lib/utils";
@@ -35,6 +36,156 @@ const COL_SPAN_CLASS: Record<number, string> = {
   12: "lg:col-span-12",
 };
 
+// ─── 히어로 캐러셀 ────────────────────────────────────────────────────────────
+
+function HeroCarousel({ slides }: { slides: any[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIdx(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (!emblaApi || slides.length <= 1) return;
+    const id = setInterval(() => emblaApi.scrollNext(), 5000);
+    return () => clearInterval(id);
+  }, [emblaApi, slides.length]);
+
+  return (
+    <div className="relative overflow-hidden">
+      <div ref={emblaRef} className="overflow-hidden">
+        <div className="flex touch-pan-y">
+          {slides.map((slide, i) => (
+            <div key={slide.id ?? i} className="flex-none w-full">
+
+              {/* ── 텍스트만 ── */}
+              {slide.type === "text" && (
+                <div className="relative py-24 lg:py-32">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_25%)] opacity-[0.03]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--accent-gold)_0%,transparent_25%)] opacity-[0.05]" />
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="max-w-4xl mx-auto text-center space-y-6">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase">
+                        Love God, Love Neighbors
+                      </div>
+                      <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">
+                        {slide.title || "영신교회에 오신 것을 환영합니다"}
+                      </h1>
+                      {slide.subtitle && (
+                        <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto">
+                          {slide.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── 좌우 분할: 이미지 왼쪽 / 텍스트 오른쪽 ── */}
+              {slide.type === "image_split" && (
+                <div className="flex flex-col md:flex-row min-h-[480px] lg:min-h-[520px]">
+                  <div className="flex-1 relative overflow-hidden min-h-[240px]">
+                    {slide.imageUrl && (
+                      <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <div className="flex-1 flex items-center justify-center bg-white px-8 py-12 md:py-0">
+                    <div className="max-w-sm space-y-4">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase">
+                        Love God, Love Neighbors
+                      </div>
+                      {slide.title && (
+                        <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
+                          {slide.title}
+                        </h1>
+                      )}
+                      {slide.subtitle && (
+                        <p className="text-lg text-muted-foreground font-medium">
+                          {slide.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── 텍스트 하단: 이미지 전체 + 그라디언트 + 텍스트 하단 고정 ── */}
+              {slide.type === "image_bottom" && (
+                <div className="relative min-h-[480px] lg:min-h-[520px] flex items-end">
+                  {slide.imageUrl && (
+                    <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="relative z-10 text-white w-full px-8 pb-12 lg:px-16 lg:pb-16">
+                    {slide.title && (
+                      <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.15]">
+                        {slide.title}
+                      </h1>
+                    )}
+                    {slide.subtitle && (
+                      <p className="text-lg md:text-xl font-medium mt-2 opacity-90 max-w-2xl">
+                        {slide.subtitle}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── 이미지 (텍스트 선택적 오버레이) ── */}
+              {slide.type === "image" && slide.imageUrl && (
+                <div className="relative">
+                  <img src={slide.imageUrl} alt={slide.title || ""} className="w-full object-cover max-h-[580px]" />
+                  {(slide.title || slide.subtitle) && (
+                    <>
+                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
+                        {slide.title && (
+                          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.15] drop-shadow-lg">
+                            {slide.title}
+                          </h1>
+                        )}
+                        {slide.subtitle && (
+                          <p className="text-lg md:text-xl font-medium mt-3 opacity-90 max-w-2xl drop-shadow">
+                            {slide.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 도트 인디케이터 */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => emblaApi?.scrollTo(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${i === selectedIdx ? "bg-primary w-6" : "bg-primary/30 w-2"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
   const [showFloating, setShowFloating] = useState(false);
@@ -61,6 +212,11 @@ export default function PublicView() {
   const { data: siteConfigs } = useQuery({
     queryKey: ["site-config"],
     queryFn: () => api.get<any[]>("/site-config"),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: heroSlides } = useQuery({
+    queryKey: ["hero-slides"],
+    queryFn: () => api.get<any[]>("/hero-slides"),
     staleTime: 5 * 60 * 1000,
   });
   const cfg = (key: string) =>
@@ -130,71 +286,34 @@ export default function PublicView() {
 
   // ── 렌더러 ──────────────────────────────────────────────────────────────────
 
-  const renderHero = (section: any) => (
-    <section
-      key="hero"
-      className="relative py-24 lg:py-32 overflow-hidden bg-white"
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_25%)] opacity-[0.03]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--accent-gold)_0%,transparent_25%)] opacity-[0.05]" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase animate-in fade-in slide-in-from-bottom-2 duration-700">
-            Love God, Love Neighbors
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-            {section.title || "영신교회에 오신 것을\n환영합니다"}
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-            {section.subtitle ||
-              "하나님을 사랑하고 이웃을 사랑하는 행복한 공동체"}
-          </p>
+  const renderHero = (section: any) => {
+    const slides =
+      heroSlides && heroSlides.length > 0
+        ? heroSlides
+        : [{ id: 0, type: "text", title: section.title, subtitle: section.subtitle, imageUrl: null }];
 
-          {/* 퀵 메뉴 (왕버튼) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-            {[
-              {
-                icon: Clock,
-                label: "예배 안내",
-                color: "bg-primary",
-                href: "/church/worship",
-                iconUrl: cfg("hero_icon_1_url"),
-              },
-              {
-                icon: MapPin,
-                label: "오시는 길",
-                color: "bg-accent-gold",
-                href: "/church/directions",
-                iconUrl: cfg("hero_icon_2_url"),
-              },
-              {
-                icon: UserPlus,
-                label: "새가족 안내",
-                color: "bg-primary/80",
-                href: "/community/new-member",
-                iconUrl: cfg("hero_icon_3_url"),
-              },
-              {
-                icon: Youtube,
-                label: "온라인 예배",
-                color: "bg-red-500",
-                href: "/sermons/sunday",
-                iconUrl: cfg("hero_icon_4_url"),
-              },
-            ].map((item, idx) => (
+    const quickMenuItems = [
+      { icon: Clock,    label: "예배 안내",   color: "bg-primary",    href: "/church/worship",      iconUrl: cfg("hero_icon_1_url") },
+      { icon: MapPin,   label: "오시는 길",   color: "bg-accent-gold", href: "/church/directions",   iconUrl: cfg("hero_icon_2_url") },
+      { icon: UserPlus, label: "새가족 안내", color: "bg-primary/80", href: "/community/new-member", iconUrl: cfg("hero_icon_3_url") },
+      { icon: Youtube,  label: "온라인 예배", color: "bg-red-500",    href: "/sermons/sunday",       iconUrl: cfg("hero_icon_4_url") },
+    ];
+
+    return (
+      <section key="hero" className="bg-white overflow-hidden">
+        <HeroCarousel slides={slides} />
+
+        {/* 퀵 메뉴 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickMenuItems.map((item, idx) => (
               <Link key={idx} href={item.href}>
                 <div className="group cursor-pointer flex flex-col items-center gap-4 p-6 rounded-3xl bg-white border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <div className="group-hover:scale-110 transition-transform duration-300">
                     {item.iconUrl ? (
-                      <img
-                        src={item.iconUrl}
-                        alt={item.label}
-                        className="h-14 w-14 object-contain"
-                      />
+                      <img src={item.iconUrl} alt={item.label} className="h-14 w-14 object-contain" />
                     ) : (
-                      <div
-                        className={`p-4 rounded-2xl ${item.color} text-white shadow-lg shadow-current/10`}
-                      >
+                      <div className={`p-4 rounded-2xl ${item.color} text-white shadow-lg shadow-current/10`}>
                         <item.icon className="h-8 w-8" />
                       </div>
                     )}
@@ -205,9 +324,9 @@ export default function PublicView() {
             ))}
           </div>
         </div>
-      </div>
-    </section>
-  );
+      </section>
+    );
+  };
 
   const renderSection = (section: any, rowBg: string) => {
     const span: number = section.colSpan ?? 12;

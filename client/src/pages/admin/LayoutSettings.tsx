@@ -208,6 +208,177 @@ function CanvasBlock({
   );
 }
 
+// ─── 히어로 슬라이드 관리 ─────────────────────────────────────────────────────
+
+type HeroSlideType = "text" | "image_split" | "image_bottom" | "image";
+
+const SLIDE_TYPE_META: Record<HeroSlideType, string> = {
+  text:         "텍스트만",
+  image_split:  "좌우분할",
+  image_bottom: "텍스트하단",
+  image:        "이미지",
+};
+
+function HeroSlideForm({
+  form, setForm, onSave, onCancel, isPending,
+}: {
+  form: any;
+  setForm: (v: any) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const imgRef = useRef<HTMLInputElement>(null);
+  const needsImage = form.type !== "text";
+
+  const loadFile = async (file: File) => {
+    const res = await fetch("/api/layout-settings/upload-image", {
+      method: "POST", headers: { "Content-Type": file.type }, body: file,
+    });
+    if (!res.ok) { toast.error("이미지 업로드 실패"); return; }
+    const { url, key } = await res.json() as { url: string; key: string };
+    setForm({ ...form, imageUrl: url, imageKey: key });
+  };
+
+  return (
+    <div className="space-y-2 p-2 border rounded-lg bg-muted/30">
+      {/* 타입 */}
+      <div className="flex gap-1">
+        {(Object.keys(SLIDE_TYPE_META) as HeroSlideType[]).map((t) => (
+          <button key={t}
+            className={`flex-1 text-[10px] py-1 px-1 rounded border transition-colors ${form.type === t ? "border-primary bg-primary/10 text-primary font-semibold" : "border-border bg-background text-muted-foreground hover:border-primary/40"}`}
+            onClick={() => setForm({ ...form, type: t })}
+          >
+            {SLIDE_TYPE_META[t]}
+          </button>
+        ))}
+      </div>
+
+      {/* 이미지 */}
+      {needsImage && (
+        <div>
+          <input ref={imgRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = ""; }} />
+          {form.imageUrl ? (
+            <div className="relative rounded overflow-hidden border">
+              <img src={form.imageUrl} alt="" className="w-full h-20 object-cover" />
+              <button className="absolute top-1 right-1 bg-black/50 text-white rounded p-0.5 hover:bg-red-500 transition-colors"
+                onClick={() => setForm({ ...form, imageUrl: null, imageKey: null })}>
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <button className="w-full h-14 border-2 border-dashed rounded flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:border-primary/50 transition-colors"
+              onClick={() => imgRef.current?.click()}>
+              <ImageIcon className="h-4 w-4" />이미지 업로드
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 제목/부제목 — 모든 타입에서 입력 가능 (image 타입은 선택사항) */}
+      <Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })}
+        placeholder={form.type === "image" ? "제목 (선택 — 없으면 이미지만 표시)" : "제목"} className="h-7 text-xs" />
+      <Input value={form.subtitle ?? ""} onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+        placeholder="부제목 (선택)" className="h-7 text-xs" />
+
+      <div className="flex gap-1.5 justify-end">
+        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={onCancel}>취소</Button>
+        <Button size="sm" className="h-7 text-xs" onClick={onSave} disabled={isPending}>
+          <Save className="h-3 w-3 mr-1" />{isPending ? "저장 중..." : "저장"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function HeroSlidePanel() {
+  const qc = useQueryClient();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [editForm, setEditForm]     = useState<any | null>(null);
+  const [addForm,  setAddForm]      = useState<any | null>(null);
+
+  const { data: slides = [] } = useQuery<any[]>({
+    queryKey: ["hero-slides"],
+    queryFn: () => api.get<any[]>("/hero-slides/all"),
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["hero-slides"] });
+
+  const createMutation = useMutation({
+    mutationFn: (body: any) => api.post("/hero-slides", body),
+    onSuccess: () => { invalidate(); setAddForm(null); toast.success("슬라이드 추가됨"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...body }: any) => api.patch(`/hero-slides/${id}`, body),
+    onSuccess: () => { invalidate(); setExpandedId(null); setEditForm(null); toast.success("슬라이드 저장됨"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/hero-slides/${id}`),
+    onSuccess: () => { invalidate(); toast.success("슬라이드 삭제됨"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-2 mt-2">
+      <p className="text-[11px] text-muted-foreground font-medium">슬라이드 ({slides.length}개)</p>
+
+      {slides.map((slide: any) => (
+        <div key={slide.id} className="border rounded-lg overflow-hidden">
+          <div
+            className="flex items-center gap-2 px-2.5 py-2 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors"
+            onClick={() => {
+              if (expandedId === slide.id) { setExpandedId(null); setEditForm(null); }
+              else { setExpandedId(slide.id); setEditForm({ ...slide }); }
+            }}
+          >
+            <span className="text-[10px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
+              {SLIDE_TYPE_META[slide.type as HeroSlideType] ?? slide.type}
+            </span>
+            <span className="flex-1 text-xs font-medium truncate">{slide.title || "(제목 없음)"}</span>
+            <button onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(slide.id); }}
+              className="p-0.5 hover:text-destructive text-muted-foreground">
+              <X className="h-3.5 w-3.5" />
+            </button>
+            {expandedId === slide.id ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+          </div>
+
+          {expandedId === slide.id && editForm && (
+            <div className="p-2">
+              <HeroSlideForm
+                form={editForm}
+                setForm={setEditForm}
+                onSave={() => updateMutation.mutate({ id: slide.id, type: editForm.type, title: editForm.title, subtitle: editForm.subtitle, imageUrl: editForm.imageUrl, imageKey: editForm.imageKey })}
+                onCancel={() => { setExpandedId(null); setEditForm(null); }}
+                isPending={updateMutation.isPending}
+              />
+            </div>
+          )}
+        </div>
+      ))}
+
+      {addForm ? (
+        <HeroSlideForm
+          form={addForm}
+          setForm={setAddForm}
+          onSave={() => createMutation.mutate(addForm)}
+          onCancel={() => setAddForm(null)}
+          isPending={createMutation.isPending}
+        />
+      ) : (
+        <Button size="sm" variant="outline" className="w-full h-7 text-xs"
+          onClick={() => setAddForm({ type: "text", title: "", subtitle: "", imageUrl: null, imageKey: null, status: "visible" })}>
+          <Plus className="h-3.5 w-3.5 mr-1" />슬라이드 추가
+        </Button>
+      )}
+    </div>
+  );
+}
+
 // ─── 섹션 설정 패널 ───────────────────────────────────────────────────────────
 
 function SectionSettings({
@@ -239,7 +410,9 @@ function SectionSettings({
           {SECTION_META[item.sectionType].label} 설정
         </p>
 
-        {isImageWidget ? (
+        {item.sectionType === "hero" ? (
+          <HeroSlidePanel />
+        ) : isImageWidget ? (
           <div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = ""; }} />
