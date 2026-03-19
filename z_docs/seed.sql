@@ -19,15 +19,16 @@
 -- ─── churches ────────────────────────────────────────────────────────────────
 -- 이미 교회가 있으면 MAX(id)+1로 새 교회를 생성 (slug: youngshin → youngshin-2 → youngshin-3 ...)
 
-SET @churchId = (SELECT COALESCE(MAX(id), 0) + 1 FROM churches);
+SET @slugNum = (SELECT COALESCE(MAX(id), 0) + 1 FROM churches);
 
-INSERT INTO churches (id, name, slug, status, email, phone, address, appliedBy, approvedBy, approvedAt)
+INSERT INTO churches (name, slug, status, email, phone, address, appliedBy, approvedBy, approvedAt)
 VALUES (
-  @churchId,
   '영신교회',
-  IF(@churchId = 1, 'youngshin', CONCAT('youngshin-', @churchId)),
+  IF(@slugNum = 1, 'youngshin', CONCAT('youngshin-', @slugNum)),
   'active', NULL, NULL, NULL, NULL, NULL, NOW()
 );
+
+SET @churchId = LAST_INSERT_ID();
 
 -- ─── layout_settings ─────────────────────────────────────────────────────────
 

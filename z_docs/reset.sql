@@ -23,6 +23,6 @@ TRUNCATE TABLE church_features;
 TRUNCATE TABLE church_admins;
 TRUNCATE TABLE floating_messages;
 TRUNCATE TABLE popups;
-DELETE FROM churches WHERE id = 1;
+TRUNCATE TABLE churches;
 
 SET FOREIGN_KEY_CHECKS = 1;
