@@ -3,7 +3,7 @@ import {
   ANNOUNCEMENTS, IMAGES, VIDEOS, FLOATING_MESSAGES, LAYOUT_SETTINGS,
   POPUPS, CHURCHES, FEATURES, ALL_FEATURE_KEYS, ADMINS, VIDEO_CATEGORIES,
   PAGE_GROUPS, FORM_FIELDS, FORM_SUBMISSIONS, ADMIN_PERMISSIONS, ALL_PERM_KEYS,
-  SITE_CONFIG, INVITATIONS, getEnabledFeatures,
+  SITE_CONFIG, INVITATIONS, HERO_SLIDES, getEnabledFeatures,
 } from "./mock-store";
 
 // mock-auth.controller 등 다른 모듈에서 사용할 수 있도록 재export
@@ -555,6 +555,56 @@ export class MockSiteConfigController {
     const idx = SITE_CONFIG.findIndex((c) => c.key === key);
     if (idx !== -1) SITE_CONFIG[idx] = { ...SITE_CONFIG[idx], value };
     return SITE_CONFIG[idx] ?? null;
+  }
+}
+
+// ─── Hero Slides ──────────────────────────────────────────────────────────────
+
+@Controller("hero-slides")
+export class MockHeroSlidesController {
+  @Get()
+  findAll() {
+    return [...HERO_SLIDES]
+      .filter((s) => s.status === "visible")
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  @Get("all")
+  findAllAdmin() {
+    return [...HERO_SLIDES].sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  @Post()
+  create(@Body() body: any) {
+    const item = {
+      id: HERO_SLIDES.length + 10,
+      type: body.type ?? "text",
+      title: body.title ?? "",
+      subtitle: body.subtitle ?? null,
+      imageUrl: body.imageUrl ?? null,
+      imageKey: body.imageKey ?? null,
+      displayOrder: body.displayOrder ?? HERO_SLIDES.length + 1,
+      status: body.status ?? "visible",
+      churchId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    HERO_SLIDES.push(item);
+    return item;
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: any) {
+    const idx = HERO_SLIDES.findIndex((s) => s.id === Number(id));
+    if (idx !== -1) HERO_SLIDES[idx] = { ...HERO_SLIDES[idx], ...body, updatedAt: new Date() };
+    return HERO_SLIDES[idx] ?? null;
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string) {
+    const idx = HERO_SLIDES.findIndex((s) => s.id === Number(id));
+    if (idx !== -1) HERO_SLIDES.splice(idx, 1);
+    return { success: true };
   }
 }
 

@@ -251,6 +251,24 @@ export let ADMIN_PERMISSIONS: { adminId: number; permKey: string; status: "allow
 
 export let INVITATIONS: { id: number; churchId: number; email: string; token: string; expiresAt: Date; usedAt: Date | null; createdAt: Date }[] = [];
 
+// ─── Hero Slides ──────────────────────────────────────────────────────────────
+
+export let HERO_SLIDES: any[] = [
+  {
+    id: 1,
+    type: "text",
+    title: "영신교회에 오신 것을 환영합니다",
+    subtitle: "하나님을 사랑하고 이웃을 사랑하는 행복한 공동체",
+    imageUrl: null,
+    imageKey: null,
+    displayOrder: 1,
+    status: "visible",
+    churchId: null,
+    createdAt: past(10),
+    updatedAt: past(10),
+  },
+];
+
 // ─── Site Config ──────────────────────────────────────────────────────────────
 
 export let SITE_CONFIG: any[] = [
