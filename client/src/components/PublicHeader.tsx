@@ -52,6 +52,15 @@ export default function PublicHeader() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: siteConfigs } = useQuery({
+    queryKey: ["site-config"],
+    queryFn: () => api.get<any[]>("/site-config"),
+    staleTime: 5 * 60 * 1000,
+  });
+  const cfg = (key: string) => (siteConfigs ?? []).find((c: any) => c.key === key)?.value ?? "";
+  const churchName = cfg("church_name") || "영광교회";
+  const logoUrl    = cfg("church_logo_url");
+
   const cancelClose = () => {
     if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
   };
@@ -122,13 +131,18 @@ export default function PublicHeader() {
 
           {/* 로고 */}
           <Link href="/">
-            <div className="flex flex-col cursor-pointer group">
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                영광교회
-              </span>
-              <span className="text-[10px] text-muted-foreground font-medium tracking-tighter group-hover:text-primary transition-colors">
-                하나님사랑 이웃사랑
-              </span>
+            <div className="flex items-center gap-2 cursor-pointer group">
+              {logoUrl && (
+                <img src={logoUrl} alt={churchName} className="h-9 w-9 object-contain" />
+              )}
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                  {churchName}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium tracking-tighter group-hover:text-primary transition-colors">
+                  하나님사랑 이웃사랑
+                </span>
+              </div>
             </div>
           </Link>
 
