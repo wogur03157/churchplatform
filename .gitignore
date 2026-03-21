@@ -110,7 +110,7 @@ temp/
 .webdev/
 
 # Local file uploads (S3 연동 전 로컬 스토리지)
-uploads/
+# uploads/  ← git에서 관리 (S3 연동 시 다시 제외)
 
 # package-lock.json (pnpm 프로젝트, pnpm-lock.yaml 사용)
 package-lock.json
