@@ -71,7 +71,7 @@ export function serveStatic(app: Express) {
   const distPath =
     process.env.NODE_ENV === "development"
       ? path.resolve(__moduleDir, "..", "dist", "public")
-      : path.resolve(__moduleDir, "public");
+      : path.resolve(__moduleDir, "..", "public");
 
   if (!fs.existsSync(distPath)) {
     console.error(
@@ -81,7 +81,8 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  app.use("*", (_req, res) => {
+  app.use("*", (_req, res, next) => {
+    if (_req.originalUrl.startsWith("/api/")) return next();
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
