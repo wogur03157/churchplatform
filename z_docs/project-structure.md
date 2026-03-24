@@ -89,8 +89,9 @@ admin-dashboard/
 │       ├── floating-messages/       # 플로팅 메시지
 │       ├── popups/                  # 팝업
 │       ├── layout-settings/         # 레이아웃 설정
+│       ├── hero-slides/             # 히어로 배너 슬라이드 (4가지 타입)
 │       ├── ai-assistant/            # AI 텍스트 개선
-│       ├── storage/                 # S3 파일 업로드
+│       ├── storage/                 # S3/로컬 파일 업로드 (uploads/ 디렉토리)
 │       ├── notifications/           # 알림
 │       │
 │       ├── health/                  # GET /api/health
@@ -112,7 +113,9 @@ admin-dashboard/
     ├── admin-permissions.md         # 관리자 권한 설정
     ├── modularity-refactor.md       # 모듈화·useCRUD·mock 분리
     ├── status-enum-refactor.md      # boolean → status enum 전환
-    └── db-schema.sql                # MySQL 스키마 (실 DB 연동 시 사용)
+    ├── hero-slides.md               # 히어로 배너 슬라이드 기능
+    ├── db-schema.sql                # MySQL 스키마 (실 DB 연동 시 사용)
+    └── seed.sql                     # 개발용 시드 데이터
 ```
 
 ---
@@ -153,6 +156,7 @@ admin-dashboard/
 | GET/POST/PATCH/DELETE | `/api/floating-messages` | 플로팅 메시지 CRUD |
 | GET/POST/PATCH/DELETE | `/api/popups` | 팝업 CRUD |
 | GET/POST/PATCH | `/api/layout-settings` | 레이아웃 설정 |
+| GET/POST/PATCH/DELETE | `/api/hero-slides` | 히어로 배너 슬라이드 |
 | POST | `/api/ai-assistant/improve-text` | AI 텍스트 개선 |
 | GET/POST | `/api/churches` | 교회 목록/신청 |
 | POST | `/api/churches/:id/review` | 교회 승인·거절 |
@@ -207,3 +211,60 @@ pnpm dev:no-db   # SKIP_DB=true pnpm dev 와 동일
 | `BUILT_IN_FORGE_API_KEY` | S3 스토리지 proxy API 키 |
 | `OWNER_OPEN_ID` | super_admin으로 지정할 Google ID |
 | `SKIP_DB` | `true` 설정 시 DB 없이 mock 모드 실행 |
+| `OAUTH_CALLBACK_URL` | Google OAuth 콜백 URL |
+
+---
+
+## 원격 서버 배포
+
+### 초기 환경 설정
+
+```bash
+bash scripts/setup-env.sh   # .env 파일 대화형 생성
+```
+
+### 빌드 및 실행
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pm2 start ecosystem.config.js   # 또는 NODE_ENV=production node dist/server/main.js
+```
+
+### 업데이트 배포
+
+```bash
+git pull
+pnpm build
+pm2 restart all
+```
+
+### nginx 필수 설정
+
+```nginx
+# API 프록시
+location /api/ {
+    proxy_pass http://127.0.0.1:4000;   # localhost 아닌 127.0.0.1 사용 (IPv6 방지)
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+}
+
+# 업로드 파일 프록시 (로컬 스토리지 사용 시)
+location /uploads/ {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+}
+
+# 정적 파일 (빌드 결과물)
+location / {
+    root /path/to/dist/public;
+    try_files $uri $uri/ /index.html;
+}
+```
+
+### 주의사항
+
+- `dist/public/` — 클라이언트 빌드 결과물 (nginx가 직접 서빙)
+- `uploads/` — 로컬 업로드 이미지 (Node.js가 `/uploads` 경로로 서빙)
+- nginx에서 `proxy_pass http://localhost:4000` 쓰면 IPv6 `::1`로 해석될 수 있음 → `127.0.0.1` 사용

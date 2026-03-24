@@ -96,6 +96,12 @@ VALUES
   (@churchId, 'layout_settings', 'enabled',  NULL),
   (@churchId, 'ai_assistant',    'disabled', NULL);
 
+-- ─── hero_slides ─────────────────────────────────────────────────────────────
+
+INSERT IGNORE INTO hero_slides (type, title, subtitle, imageUrl, imageKey, displayOrder, status, churchId)
+VALUES
+  ('text', '영신교회에 오신 것을 환영합니다', '하나님을 사랑하고 이웃을 사랑하는 행복한 공동체', NULL, NULL, 1, 'visible', @churchId);
+
 -- ─── announcements ───────────────────────────────────────────────────────────
 
 INSERT IGNORE INTO announcements (title, content, authorId, churchId, status, publishedAt)

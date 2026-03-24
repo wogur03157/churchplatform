@@ -291,6 +291,25 @@ CREATE TABLE `invitations` (
   CONSTRAINT `fk_inv_churchId` FOREIGN KEY (`churchId`) REFERENCES `churches` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ─── hero_slides ─────────────────────────────────────────────
+-- 홈화면 히어로 배너 슬라이드 (4가지 타입)
+CREATE TABLE `hero_slides` (
+  `id`           INT          NOT NULL AUTO_INCREMENT,
+  `churchId`     INT          NULL,
+  `type`         ENUM('text','image_split','image_bottom','image') NOT NULL DEFAULT 'text',
+  `title`        VARCHAR(255) NULL,
+  `subtitle`     VARCHAR(500) NULL,
+  `imageUrl`     TEXT         NULL,
+  `imageKey`     VARCHAR(500) NULL,
+  `displayOrder` INT          NOT NULL DEFAULT 1,
+  `status`       ENUM('visible','hidden') NOT NULL DEFAULT 'visible',
+  `createdAt`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_hs_churchId` (`churchId`),
+  CONSTRAINT `fk_hs_churchId` FOREIGN KEY (`churchId`) REFERENCES `churches` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ============================================================
 -- 기본 데이터 (site_config, video_categories)
 -- ============================================================
