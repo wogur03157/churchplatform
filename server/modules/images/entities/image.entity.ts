@@ -41,6 +41,9 @@ export class Image {
   @Column({ type: "int", default: 0 })
   displayOrder!: number;
 
+  @Column({ type: "tinyint", width: 1, default: 0 })
+  showOnHome!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

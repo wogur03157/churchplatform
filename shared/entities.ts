@@ -56,6 +56,7 @@ export interface Image {
   churchId: number | null;
   status: "published" | "draft";
   displayOrder: number;
+  showOnHome: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
