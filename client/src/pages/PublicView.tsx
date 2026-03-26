@@ -26,6 +26,15 @@ import {
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 
+// 이미지 갤러리 데스크탑 열 수 → Tailwind 클래스
+const GALLERY_COLS_CLASS: Record<number, string> = {
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-3",
+  4: "sm:grid-cols-4",
+  5: "sm:grid-cols-5",
+  6: "sm:grid-cols-6",
+};
+
 // colSpan(12열 기준) → Tailwind col-span 클래스
 const COL_SPAN_CLASS: Record<number, string> = {
   3: "lg:col-span-3",
@@ -177,6 +186,52 @@ function HeroCarousel({ slides }: { slides: any[] }) {
               onClick={() => emblaApi?.scrollTo(i)}
               className={`h-2 rounded-full transition-all duration-300 ${i === selectedIdx ? "bg-primary w-6" : "bg-primary/30 w-2"}`}
             />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 이미지 갤러리 캐러셀 (모바일 전용) ──────────────────────────────────────
+
+function GalleryCarousel({ images }: { images: any[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIdx(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi, onSelect]);
+
+  return (
+    <div className="relative">
+      <div ref={emblaRef} className="overflow-hidden">
+        <div className="flex touch-pan-y">
+          {images.map((item, i) => (
+            <div key={item.id ?? i} className="flex-none w-full px-1">
+              <div className="aspect-square relative overflow-hidden rounded-xl elegant-shadow">
+                <img src={item.url} alt={item.title}
+                  className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-3">
+                  <p className="text-white font-bold text-sm line-clamp-1">{item.title}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {images.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {images.map((_, i) => (
+            <button key={i} onClick={() => emblaApi?.scrollTo(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === selectedIdx ? "bg-primary w-5" : "bg-primary/30 w-1.5"}`} />
           ))}
         </div>
       )}
@@ -452,42 +507,39 @@ export default function PublicView() {
           </section>
         );
 
-      case "images":
-        if (!images || images.length === 0) return null;
+      case "images": {
+        const displayImages = (images ?? []).filter((img: any) => img.showOnHome);
+        if (displayImages.length === 0) return null;
+        const gridCols: number = section.gridCols ?? 4;
+        const toShow = displayImages;
+        const desktopCols = narrow ? "sm:grid-cols-2" : mid ? "sm:grid-cols-3" : (GALLERY_COLS_CLASS[gridCols] ?? "sm:grid-cols-4");
         return (
           <section key="images" className={`py-12 lg:py-16 h-full ${rowBg}`}>
             <div className={innerCls}>
-              <div
-                className={`${full ? "text-center" : ""} mb-6 lg:mb-10 space-y-1`}
-              >
-                <h2
-                  className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
-                >
+              <div className={`${full ? "text-center" : ""} mb-6 lg:mb-8 space-y-1`}>
+                <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
                   {section.title || "교회 갤러리"}
                 </h2>
                 {section.subtitle && !narrow && (
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
-                    {section.subtitle}
-                  </p>
+                  <p className="text-muted-foreground max-w-2xl mx-auto">{section.subtitle}</p>
                 )}
               </div>
-              <div
-                className={`grid gap-2 ${narrow ? "grid-cols-2" : mid ? "grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}`}
-              >
-                {images.slice(0, narrow ? 4 : mid ? 6 : 8).map(item => (
-                  <div
-                    key={item.id}
+
+              {/* 모바일: 캐러셀 */}
+              <div className="sm:hidden">
+                <GalleryCarousel images={toShow} />
+              </div>
+
+              {/* 데스크탑: 그리드 */}
+              <div className={`hidden sm:grid gap-2 grid-cols-2 ${desktopCols}`}>
+                {toShow.map((item: any) => (
+                  <div key={item.id}
                     className="aspect-square relative overflow-hidden rounded-lg group cursor-pointer border border-border/50 elegant-shadow"
                   >
-                    <img
-                      src={item.url}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
+                    <img src={item.url} alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2">
-                      <p className="text-white font-bold text-xs line-clamp-1">
-                        {item.title}
-                      </p>
+                      <p className="text-white font-bold text-xs line-clamp-1">{item.title}</p>
                     </div>
                   </div>
                 ))}
@@ -495,6 +547,7 @@ export default function PublicView() {
             </div>
           </section>
         );
+      }
 
       case "videos":
         if (!videos || videos.length === 0) return null;
