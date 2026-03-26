@@ -21,6 +21,7 @@ export class LayoutSettingsService {
     status: "visible" | "hidden";
     displayOrder: number;
     colSpan?: number;
+    gridCols?: number | null;
     title?: string;
     subtitle?: string;
     imageKey?: string;
@@ -49,6 +50,7 @@ export class LayoutSettingsService {
     status: "visible" | "hidden";
     displayOrder: number;
     colSpan?: number;
+    gridCols?: number | null;
     title?: string;
     subtitle?: string;
     imageKey?: string;
@@ -65,6 +67,7 @@ export class LayoutSettingsService {
       status: "visible" | "hidden";
       displayOrder: number;
       colSpan: number;
+      gridCols?: number | null;
       title?: string;
       subtitle?: string;
       imageKey?: string;

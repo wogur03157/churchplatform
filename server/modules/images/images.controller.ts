@@ -93,14 +93,15 @@ export class ImagesController {
       description?: string;
       status?: "published" | "draft";
       displayOrder?: number;
+      showOnHome?: boolean;
     }
   ) {
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.status !== undefined) updateData.status = body.status;
-    if (body.displayOrder !== undefined)
-      updateData.displayOrder = body.displayOrder;
+    if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder;
+    if (body.showOnHome !== undefined) updateData.showOnHome = body.showOnHome;
 
     await this.service.update(id, updateData as any);
     return { success: true };
