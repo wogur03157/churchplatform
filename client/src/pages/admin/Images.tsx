@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { api } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCRUD } from "@/hooks/useCRUD";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Home } from "lucide-react";
 import type { Image } from "@shared/entities";
 
 export default function AdminImages() {
@@ -21,15 +21,25 @@ export default function AdminImages() {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"published" | "draft">("draft");
   const [displayOrder, setDisplayOrder] = useState(0);
+  const [showOnHome, setShowOnHome] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const qc = useQueryClient();
+
+  const homeToggleMutation = useMutation({
+    mutationFn: ({ id, v }: { id: number; v: boolean }) =>
+      api.patch<Image>(`/images/${id}`, { showOnHome: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["images"] }),
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setStatus("draft");
     setDisplayOrder(0);
+    setShowOnHome(false);
     setSelectedFile(null);
     setPreviewUrl("");
     setEditingId(null);
@@ -93,6 +103,7 @@ export default function AdminImages() {
         fileSize: selectedFile.size,
         status,
         displayOrder,
+        showOnHome,
       });
     };
     reader.readAsDataURL(selectedFile);
@@ -104,6 +115,7 @@ export default function AdminImages() {
     setDescription(image.description || "");
     setStatus(image.status);
     setDisplayOrder(image.displayOrder);
+    setShowOnHome(image.showOnHome);
     setPreviewUrl(image.url);
     setIsEditOpen(true);
   };
@@ -113,7 +125,7 @@ export default function AdminImages() {
       toast.error("제목을 입력해주세요");
       return;
     }
-    updateMutation.mutate({ id: editingId, title, description, status, displayOrder });
+    updateMutation.mutate({ id: editingId, title, description, status, displayOrder, showOnHome });
   };
 
   return (
@@ -171,6 +183,10 @@ export default function AdminImages() {
                 <Switch id="published" checked={status === "published"} onCheckedChange={(v) => setStatus(v ? "published" : "draft")} />
                 <Label htmlFor="published">즉시 발행</Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="showOnHome" checked={showOnHome} onCheckedChange={setShowOnHome} />
+                <Label htmlFor="showOnHome">홈화면 갤러리에 노출</Label>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>취소</Button>
@@ -209,6 +225,16 @@ export default function AdminImages() {
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{image.description}</p>
                 )}
                 <div className="flex gap-2">
+                  <Button
+                    variant={image.showOnHome ? "default" : "outline"}
+                    size="sm"
+                    className="flex-shrink-0"
+                    title="홈화면 노출 여부"
+                    disabled={homeToggleMutation.isPending}
+                    onClick={() => homeToggleMutation.mutate({ id: image.id, v: !image.showOnHome })}
+                  >
+                    <Home className="h-4 w-4" />
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => handleEdit(image)} className="flex-1">
                     <Edit className="h-4 w-4 mr-1" />수정
                   </Button>
@@ -252,6 +278,10 @@ export default function AdminImages() {
             <div className="flex items-center space-x-2">
               <Switch id="edit-published" checked={status === "published"} onCheckedChange={(v) => setStatus(v ? "published" : "draft")} />
               <Label htmlFor="edit-published">발행 상태</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch id="edit-showOnHome" checked={showOnHome} onCheckedChange={setShowOnHome} />
+              <Label htmlFor="edit-showOnHome">홈화면 갤러리에 노출</Label>
             </div>
           </div>
           <DialogFooter>
