@@ -48,7 +48,9 @@ const isDbEnabled =
   !dbUrl.includes("user:password@host");
 
 if (!isDbEnabled) {
-  console.warn("[AppModule] DB disabled — running in no-db mode (health endpoint only)");
+  console.warn(
+    "[AppModule] DB disabled — running in no-db mode (health endpoint only)"
+  );
 }
 
 const dbModules = isDbEnabled
@@ -56,8 +58,26 @@ const dbModules = isDbEnabled
       TypeOrmModule.forRoot({
         type: "mysql",
         url: dbUrl,
-        entities: [User, Announcement, Image, Video, FloatingMessage, LayoutSetting, Church, ChurchAdmin, ChurchFeature, Popup, PageGroup, VideoCategory, FormField, FormSubmission, SiteConfig, Invitation, HeroSlide],
-        synchronize: false,
+        entities: [
+          User,
+          Announcement,
+          Image,
+          Video,
+          FloatingMessage,
+          LayoutSetting,
+          Church,
+          ChurchAdmin,
+          ChurchFeature,
+          Popup,
+          PageGroup,
+          VideoCategory,
+          FormField,
+          FormSubmission,
+          SiteConfig,
+          Invitation,
+          HeroSlide,
+        ],
+        synchronize: true,
         logging: process.env.NODE_ENV === "development",
       }),
       AuthModule,
