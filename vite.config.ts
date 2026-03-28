@@ -59,7 +59,7 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
   const logPath = path.join(LOG_DIR, `${source}.log`);
 
   // Format entries with timestamps
-  const lines = entries.map((entry) => {
+  const lines = entries.map(entry => {
     const ts = new Date().toISOString();
     return `[${ts}] ${JSON.stringify(entry)}`;
   });
@@ -135,7 +135,7 @@ function vitePluginManusDebugCollector(): Plugin {
         }
 
         let body = "";
-        req.on("data", (chunk) => {
+        req.on("data", chunk => {
           body += chunk.toString();
         });
 
@@ -153,7 +153,13 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  vitePluginManusDebugCollector(),
+];
 
 export default defineConfig({
   plugins,
@@ -168,7 +174,7 @@ export default defineConfig({
   root: path.resolve(PROJECT_ROOT, "client"),
   publicDir: path.resolve(PROJECT_ROOT, "client", "public"),
   build: {
-    outDir: path.resolve(PROJECT_ROOT, "dist/public"),
+    outDir: path.resolve(PROJECT_ROOT, "dist/server/public"),
     emptyOutDir: true,
   },
   server: {
