@@ -37,6 +37,9 @@ export class LayoutSetting {
   @Column({ type: "varchar", length: 1024, nullable: true })
   imageUrl!: string | null;
 
+  @Column({ type: "int", nullable: true, default: null })
+  gridCols!: number | null;
+
   @Column({ type: "int", nullable: true })
   churchId!: number | null;
 

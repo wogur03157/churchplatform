@@ -47,6 +47,7 @@ export class ImagesService {
       description: string | null;
       status: "published" | "draft";
       displayOrder: number;
+      showOnHome: boolean;
     }>
   ): Promise<void> {
     await this.repo.update(id, data);

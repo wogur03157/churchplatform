@@ -50,6 +50,7 @@ type LayoutItem = {
   status: "visible" | "hidden";
   displayOrder: number;
   colSpan: number;
+  gridCols: number;
   title: string;
   subtitle: string;
   imageKey: string | null;
@@ -412,6 +413,39 @@ function SectionSettings({
 
         {item.sectionType === "hero" ? (
           <HeroSlidePanel />
+        ) : item.sectionType === "images" ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">제목</Label>
+                <Input value={item.title} onChange={(e) => onUpdate({ title: e.target.value })}
+                  placeholder="이미지 갤러리" className="h-7 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">부제목</Label>
+                <Input value={item.subtitle} onChange={(e) => onUpdate({ subtitle: e.target.value })}
+                  placeholder="부제목 (선택사항)" className="h-7 text-xs" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">웹 열 수 (가로로 놓을 최대 이미지 수)</Label>
+              <div className="flex gap-1">
+                {[2, 3, 4, 5, 6].map((n) => (
+                  <button key={n}
+                    onClick={() => onUpdate({ gridCols: n })}
+                    className={`flex-1 py-1 text-xs font-medium rounded border transition-colors ${
+                      item.gridCols === n
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50 bg-background text-muted-foreground"
+                    }`}
+                  >
+                    {n}열
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">홈 노출 이미지는 이미지 갤러리 관리에서 <strong>홈 버튼(🏠)</strong>으로 선택합니다.</p>
+          </div>
         ) : isImageWidget ? (
           <div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden"
@@ -480,6 +514,7 @@ export default function AdminLayoutSettings() {
       status: (s.status ?? "visible") as "visible" | "hidden",
       displayOrder: s.displayOrder,
       colSpan: toSpan12(s.colSpan ?? 3),
+      gridCols: s.gridCols ?? 4,
       title: s.title ?? "",
       subtitle: s.subtitle ?? "",
       imageKey: s.imageKey ?? null,
@@ -487,7 +522,7 @@ export default function AdminLayoutSettings() {
     }));
     ALL_SECTIONS.forEach((type) => {
       if (!loaded.find((i) => i.sectionType === type)) {
-        loaded.push({ sectionType: type, status: "hidden", displayOrder: 99, colSpan: 4, title: "", subtitle: "", imageKey: null, imageUrl: null });
+        loaded.push({ sectionType: type, status: "hidden", displayOrder: 99, colSpan: 4, gridCols: 4, title: "", subtitle: "", imageKey: null, imageUrl: null });
       }
     });
     setItems(loaded.sort((a, b) => a.displayOrder - b.displayOrder));
@@ -501,6 +536,7 @@ export default function AdminLayoutSettings() {
           status: item.status,
           displayOrder: i + 1,
           colSpan: item.colSpan,
+          gridCols: item.gridCols,
           title: item.title || undefined,
           subtitle: item.subtitle || undefined,
           imageKey: item.imageKey || undefined,

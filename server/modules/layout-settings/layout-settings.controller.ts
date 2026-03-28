@@ -89,6 +89,7 @@ export class LayoutSettingsController {
       status: "visible" | "hidden";
       displayOrder: number;
       colSpan: number;
+      gridCols?: number | null;
       title?: string;
       subtitle?: string;
       imageKey?: string;
@@ -103,6 +104,7 @@ export class LayoutSettingsController {
         status: item.status,
         displayOrder: item.displayOrder,
         colSpan: item.colSpan ?? 1,
+        gridCols: item.gridCols ?? null,
         title: item.title,
         subtitle: item.subtitle,
         imageKey: item.imageKey,

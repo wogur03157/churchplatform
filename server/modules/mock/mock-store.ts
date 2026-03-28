@@ -37,19 +37,19 @@ export let IMAGES: any[] = [
     id: 1, title: "메인 배너", description: "홈 화면 메인 배너 이미지",
     fileKey: "mock/banner.jpg", url: "https://picsum.photos/seed/banner/1200/400",
     mimeType: "image/jpeg", fileSize: 204800, uploadedBy: 1, churchId: null,
-    status: "published", displayOrder: 1, createdAt: past(10), updatedAt: past(10),
+    status: "published", displayOrder: 1, showOnHome: true, createdAt: past(10), updatedAt: past(10),
   },
   {
     id: 2, title: "갤러리 이미지 1", description: null,
     fileKey: "mock/gallery1.jpg", url: "https://picsum.photos/seed/gallery1/800/600",
     mimeType: "image/jpeg", fileSize: 102400, uploadedBy: 1, churchId: null,
-    status: "published", displayOrder: 2, createdAt: past(7), updatedAt: past(7),
+    status: "published", displayOrder: 2, showOnHome: true, createdAt: past(7), updatedAt: past(7),
   },
   {
     id: 3, title: "[비공개] 갤러리 이미지 2", description: null,
     fileKey: "mock/gallery2.jpg", url: "https://picsum.photos/seed/gallery2/800/600",
     mimeType: "image/jpeg", fileSize: 98304, uploadedBy: 1, churchId: null,
-    status: "draft", displayOrder: 3, createdAt: past(3), updatedAt: past(3),
+    status: "draft", displayOrder: 3, showOnHome: false, createdAt: past(3), updatedAt: past(3),
   },
 ];
 
@@ -119,7 +119,7 @@ export let FLOATING_MESSAGES: any[] = [
 export let LAYOUT_SETTINGS: any[] = [
   { id: 1, sectionType: "hero",          churchId: null, status: "visible", displayOrder: 1, colSpan: 3, title: "환영합니다", subtitle: "서비스 소개 문구가 여기에 표시됩니다.", imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
   { id: 2, sectionType: "announcements", churchId: null, status: "visible", displayOrder: 2, colSpan: 1, title: "공지사항",   subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
-  { id: 3, sectionType: "images",        churchId: null, status: "visible", displayOrder: 3, colSpan: 1, title: "갤러리",    subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
+  { id: 3, sectionType: "images",        churchId: null, status: "visible", displayOrder: 3, colSpan: 1, title: "갤러리",    subtitle: null, imageKey: null, imageUrl: null, gridCols: 4, updatedBy: 1, updatedAt: now },
   { id: 4, sectionType: "videos",        churchId: null, status: "visible", displayOrder: 4, colSpan: 1, title: "영상",      subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
   { id: 5, sectionType: "image_a",       churchId: null, status: "hidden",  displayOrder: 5, colSpan: 1, title: null,       subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
   { id: 6, sectionType: "image_b",       churchId: null, status: "hidden",  displayOrder: 6, colSpan: 1, title: null,       subtitle: null, imageKey: null, imageUrl: null, updatedBy: 1, updatedAt: now },
