@@ -1,4 +1,4 @@
-import PublicPageLayout from "@/components/PublicPageLayout";
+﻿import PublicPageLayout from "@/components/PublicPageLayout";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,13 +26,13 @@ export default function MidweekSermons() {
     <PublicPageLayout>
       <div className="container py-16 max-w-5xl">
         <h1 className="text-4xl font-bold mb-2">수요/금요 설교</h1>
-        <p className="text-muted-foreground mb-10">수요예배 · 금요기도회 설교 영상입니다</p>
+        <p className="text-muted-foreground mb-10">수요예배와 금요기도회 설교 영상을 확인할 수 있습니다.</p>
 
         {videos.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
               <VideoIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">등록된 설교가 없습니다.</p>
+              <p className="text-muted-foreground">등록된 설교 영상이 없습니다.</p>
             </CardContent>
           </Card>
         ) : (

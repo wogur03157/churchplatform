@@ -1,69 +1,89 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Menu, X, ChevronDown } from "lucide-react";
+import type { ContentCategory, ContentPage } from "@shared/entities";
+import { ChevronDown, Menu, X } from "lucide-react";
 
-type NavChild = { label: string; href: string; groupKey?: string };
-type NavItem  = { label: string; children: NavChild[] };
+type CategoryNode = ContentCategory & {
+  page: Pick<ContentPage, "id" | "status" | "title" | "templateCode"> | null;
+  children: CategoryNode[];
+};
 
-// ─── 드롭다운 스타일 ─────────────────────────────────────────────────────────
-//   "full" : 브라우저 전체 너비 (full-bleed mega menu)
-//   "nav"  : 내비게이션 버튼 영역 너비에 맞춤
+type NavGrandChild = { label: string; href: string };
+type NavChild = { label: string; href: string; children: NavGrandChild[] };
+type NavItem = { label: string; children: NavChild[] };
+
+type PublicHeaderProps = {
+  preloadedSiteConfigs?: any[];
+  preloadedCategoryForest?: CategoryNode[];
+};
+
 const DROPDOWN_STYLE: "full" | "nav" = "nav";
-// ─────────────────────────────────────────────────────────────────────────────
 
-const NAV_MENU: NavItem[] = [
-  { label: "교회소개", children: [
-    { label: "영신교회",   href: "/church/about" },
-    { label: "예배안내",   href: "/church/worship" },
-    { label: "오시는길",   href: "/church/directions" },
-  ]},
-  { label: "설교", children: [
-    { label: "주일설교",       href: "/sermons/sunday" },
-    { label: "수요/금요 설교", href: "/sermons/midweek" },
-    { label: "특별설교",       href: "/sermons/special" },
-  ]},
-  { label: "공동체", children: [
-    { label: "부서소개",    href: "/community/departments", groupKey: "departments" },
-    { label: "작은교회",    href: "/community/small-church" },
-    { label: "새가족 안내", href: "/community/new-member" },
-  ]},
-  { label: "사역과양육", children: [
-    { label: "하나님사랑", href: "/ministry/god-love",      groupKey: "god-love" },
-    { label: "이웃사랑",   href: "/ministry/neighbor-love", groupKey: "neighbor-love" },
-  ]},
-  { label: "교회소식", children: [
-    { label: "공지사항",   href: "/news/announcements" },
-    { label: "사역게시판", href: "/news/ministry-board" },
-  ]},
-];
+function buildNavigationMenu(roots: CategoryNode[] | undefined): NavItem[] {
+  return (roots ?? [])
+    .filter((root) => root.status === "active")
+    .map((root) => ({
+      label: root.name,
+      children: (root.children ?? [])
+        .filter((child) => child.status === "active")
+        .map((child) => ({
+          label: child.name,
+          href: `/${root.slug}/${child.slug}`,
+          children: (child.children ?? [])
+            .filter((grandChild) => grandChild.status === "active")
+            .map((grandChild) => ({
+              label: grandChild.name,
+              href: `/${root.slug}/${child.slug}/${grandChild.slug}`,
+            })),
+        })),
+    }))
+    .filter((item) => item.children.length > 0);
+}
 
-export default function PublicHeader() {
-  const [mobileOpen, setMobileOpen]       = useState(false);
-  const [openMenu, setOpenMenu]           = useState<number | null>(null);
+export default function PublicHeader({
+  preloadedSiteConfigs,
+  preloadedCategoryForest,
+}: PublicHeaderProps = {}) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [openAccordion, setOpenAccordion] = useState<number | null>(null);
   const [location] = useLocation();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: pageGroups } = useQuery({
-    queryKey: ["page-groups"],
-    queryFn: () => api.get<any[]>("/page-groups"),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: siteConfigs } = useQuery({
+  const { data: fetchedSiteConfigs } = useQuery({
     queryKey: ["site-config"],
     queryFn: () => api.get<any[]>("/site-config"),
     staleTime: 5 * 60 * 1000,
+    enabled: !preloadedSiteConfigs,
   });
-  const cfg = (key: string) => (siteConfigs ?? []).find((c: any) => c.key === key)?.value ?? "";
-  const churchName = cfg("church_name") || "영광교회";
-  const logoUrl    = cfg("church_logo_url");
+
+  const { data: fetchedCategoryForest } = useQuery<CategoryNode[]>({
+    queryKey: ["content-pages", "tree", "forest"],
+    queryFn: () => api.get<CategoryNode[]>("/content-pages/categories/tree"),
+    staleTime: 5 * 60 * 1000,
+    enabled: !preloadedCategoryForest,
+  });
+
+  const siteConfigs = preloadedSiteConfigs ?? fetchedSiteConfigs ?? [];
+  const categoryForest = preloadedCategoryForest ?? fetchedCategoryForest ?? [];
+
+  const cfg = (key: string) =>
+    siteConfigs.find((item: any) => item.key === key)?.value ?? "";
+
+  const churchName = cfg("church_name") || "영신교회";
+  const logoUrl = cfg("church_logo_url");
+  const navMenu = useMemo(() => buildNavigationMenu(categoryForest), [categoryForest]);
+  const selectedMenu = openMenu !== null ? navMenu[openMenu] ?? null : null;
 
   const cancelClose = () => {
-    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
   };
+
   const scheduleClose = () => {
     cancelClose();
     closeTimer.current = setTimeout(() => setOpenMenu(null), 180);
@@ -71,195 +91,132 @@ export default function PublicHeader() {
 
   useEffect(() => {
     setMobileOpen(false);
-    cancelClose();
     setOpenMenu(null);
+    setOpenAccordion(null);
+    cancelClose();
   }, [location]);
 
   useEffect(() => () => cancelClose(), []);
 
-  const getGroupItems = (groupKey: string) =>
-    (pageGroups ?? []).filter((g: any) => g.groupKey === groupKey && g.status === "visible");
-
-  /* ── 드롭다운 컨텐츠 (두 스타일 공통) ────────────────────── */
-  const megaContent = (
-    <div className="grid grid-cols-5 gap-6 py-6 px-4">
-      {NAV_MENU.map((menuItem, menuIdx) => {
-        const isActive = openMenu === menuIdx;
-        return (
-          <div
-            key={menuIdx}
-            className={`transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-40"}`}
-            onMouseEnter={() => { cancelClose(); setOpenMenu(menuIdx); }}
-          >
-            <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isActive ? "text-primary" : "text-muted-foreground"}`}>
-              {menuItem.label}
-            </p>
-            <div className="space-y-0.5">
-              {menuItem.children.map((child, cidx) => {
-                const subItems = child.groupKey ? getGroupItems(child.groupKey) : [];
-                return (
-                  <div key={cidx} className="mb-1">
-                    <Link href={child.href}>
-                      <a className="block py-1 text-sm font-medium hover:text-primary transition-colors">
-                        {child.label}
-                      </a>
-                    </Link>
-                    {subItems.map((group: any) => (
-                      <Link key={group.id} href={`${child.href}/${group.slug ?? group.id}`}>
-                        <a className="flex items-center gap-1.5 pl-3 py-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                          <span className="w-1 h-1 rounded-full bg-current shrink-0 opacity-60" />
-                          {group.name}
-                        </a>
-                      </Link>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+  const dropdownContent = selectedMenu ? (
+    <div className="px-6 py-6 lg:px-8 lg:py-7">
+      <div className="mb-5 border-b border-border/60 pb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">{selectedMenu.label}</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {selectedMenu.children.map((child) => (
+          <div key={`${selectedMenu.label}-${child.href}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40">
+            <Link href={child.href}>
+              <a className="block text-base font-semibold transition-colors hover:text-primary">
+                {child.label}
+              </a>
+            </Link>
+            {child.children.length > 0 && (
+              <div className="mt-3 space-y-1.5 border-t border-border/50 pt-3">
+                {child.children.map((grandChild) => (
+                  <Link key={grandChild.href} href={grandChild.href}>
+                    <a className="flex items-center gap-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                      {grandChild.label}
+                    </a>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
-  );
+  ) : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full relative">
-
-      {/* ── 상단 바 ──────────────────────────────────────────── */}
+    <header className="sticky top-0 z-50 relative w-full">
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-
-          {/* 로고 */}
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer group">
-              {logoUrl && (
-                <img src={logoUrl} alt={churchName} className="h-9 w-9 object-contain" />
-              )}
+            <div className="group flex cursor-pointer items-center gap-2">
+              {logoUrl && <img src={logoUrl} alt={churchName} className="h-9 w-9 object-contain" />}
               <div className="flex flex-col">
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-bold text-transparent">
                   {churchName}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-medium tracking-tighter group-hover:text-primary transition-colors">
-                  하나님사랑 이웃사랑
+                <span className="text-[10px] font-medium tracking-tighter text-muted-foreground transition-colors group-hover:text-primary">
+                  하나님 사랑 이웃 사랑
                 </span>
               </div>
             </div>
           </Link>
 
-          {/* ── 데스크탑 내비게이션 ──────────────────────────── */}
           {DROPDOWN_STYLE === "nav" ? (
-            /* NAV 스타일: nav 컨테이너가 포지셔닝 기준 */
-            <div
-              className="relative hidden md:flex items-center gap-1"
-              onMouseLeave={scheduleClose}
-            >
-              {NAV_MENU.map((item, idx) => (
+            <div className="relative hidden items-center gap-2 lg:gap-3 md:flex" onMouseLeave={scheduleClose}>
+              {navMenu.map((item, index) => (
                 <button
-                  key={idx}
-                  className={`flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
-                    openMenu === idx 
-                      ? "bg-primary text-primary-foreground shadow-md" 
+                  key={item.label}
+                  className={`flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 lg:px-6 ${
+                    openMenu === index
+                      ? "bg-primary text-primary-foreground shadow-md"
                       : "hover:bg-accent hover:text-accent-foreground"
                   }`}
-                  onMouseEnter={() => { cancelClose(); setOpenMenu(idx); }}
+                  onMouseEnter={() => {
+                    cancelClose();
+                    setOpenMenu(index);
+                  }}
                 >
                   {item.label}
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === idx ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === index ? "rotate-180" : ""}`} />
                 </button>
               ))}
 
-              {/* 드롭다운: nav 오른쪽 끝 기준 정렬, 너비는 컨텐츠에 맞게 */}
-              {openMenu !== null && (
-                <div
-                  className="absolute top-full right-0 z-50 pt-2 animate-in fade-in slide-in-from-top-2 duration-200"
-                  onMouseEnter={cancelClose}
-                >
-                  <div className="bg-white/95 backdrop-blur-md border border-border/50 rounded-2xl shadow-xl overflow-hidden w-[640px]">
-                    {megaContent}
+              {selectedMenu && (
+                <div className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-3 duration-200" onMouseEnter={cancelClose}>
+                  <div className="w-[760px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-3xl border border-border/50 bg-white/95 shadow-xl backdrop-blur-md">
+                    {dropdownContent}
                   </div>
                 </div>
               )}
             </div>
-          ) : (
-            /* FULL 스타일: 버튼만, 드롭다운은 header 기준으로 아래에 따로 렌더 */
-            <nav
-              className="hidden md:flex items-center gap-0.5"
-              onMouseLeave={scheduleClose}
-            >
-              {NAV_MENU.map((item, idx) => (
-                <button
-                  key={idx}
-                  className={`flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    openMenu === idx ? "bg-accent text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"
-                  }`}
-                  onMouseEnter={() => { cancelClose(); setOpenMenu(idx); }}
-                >
-                  {item.label}
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${openMenu !== null ? "rotate-180" : ""}`} />
-                </button>
-              ))}
-            </nav>
-          )}
+          ) : null}
 
-          {/* 모바일 햄버거 */}
           <button
-            className="md:hidden p-2 rounded-md hover:bg-accent transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="메뉴 열기/닫기"
+            className="rounded-md p-2 transition-colors hover:bg-accent md:hidden"
+            onClick={() => setMobileOpen((prev) => !prev)}
+            aria-label="메뉴 열기"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {/* ── FULL 스타일 전용: 헤더 전체 너비 드롭다운 ──────────── */}
-      {DROPDOWN_STYLE === "full" && openMenu !== null && (
-        <div
-          className="absolute top-full left-0 right-0 z-50 border-b bg-background shadow-lg"
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleClose}
-        >
-          <div className="container">
-            {megaContent}
-          </div>
-        </div>
-      )}
-
-      {/* ── 모바일 슬라이드 패널 ─────────────────────────────── */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-background max-h-[80vh] overflow-y-auto">
-          {NAV_MENU.map((item, idx) => (
-            <div key={idx} className="border-b last:border-b-0">
+        <div className="max-h-[80vh] overflow-y-auto border-t bg-background md:hidden">
+          {navMenu.map((item, index) => (
+            <div key={item.label} className="border-b last:border-b-0">
               <button
-                className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-left hover:bg-accent/50 transition-colors"
-                onClick={() => setOpenAccordion(openAccordion === idx ? null : idx)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent/50"
+                onClick={() => setOpenAccordion(openAccordion === index ? null : index)}
               >
                 {item.label}
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openAccordion === idx ? "rotate-180" : ""}`} />
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openAccordion === index ? "rotate-180" : ""}`} />
               </button>
 
-              {openAccordion === idx && (
+              {openAccordion === index && (
                 <div className="bg-muted/30 pb-1">
-                  {item.children.map((child, cidx) => {
-                    const subItems = child.groupKey ? getGroupItems(child.groupKey) : [];
-                    return (
-                      <div key={cidx}>
-                        <Link href={child.href}>
-                          <a className="block px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                            {child.label}
+                  {item.children.map((child) => (
+                    <div key={`${item.label}-${child.href}`} className="border-t border-border/30 px-2 py-1 first:border-t-0">
+                      <Link href={child.href}>
+                        <a className="block px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                          {child.label}
+                        </a>
+                      </Link>
+                      {child.children.map((grandChild) => (
+                        <Link key={grandChild.href} href={grandChild.href}>
+                          <a className="block py-1.5 pl-8 pr-4 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                            {grandChild.label}
                           </a>
                         </Link>
-                        {subItems.map((group: any) => (
-                          <Link key={group.id} href={`${child.href}/${group.slug ?? group.id}`}>
-                            <a className="flex items-center gap-2 pl-10 pr-4 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                              <span className="w-1 h-1 rounded-full bg-current shrink-0 opacity-60" />
-                              {group.name}
-                            </a>
-                          </Link>
-                        ))}
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

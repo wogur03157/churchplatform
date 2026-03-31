@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video as VideoIcon } from "lucide-react";
@@ -6,7 +6,6 @@ import { getVideoEmbedUrl } from "@/lib/video-utils";
 import type { Video } from "@shared/entities";
 
 interface SermonListProps {
-  /** "sunday" | "wednesday" | "friday" | "special" (special = 주일/수/금 외) */
   category: string;
   title: string;
 }
@@ -34,7 +33,7 @@ export default function SermonList({ category, title }: SermonListProps) {
       <Card>
         <CardContent className="py-16 text-center">
           <VideoIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">등록된 {title}가 없습니다.</p>
+          <p className="text-muted-foreground">등록된 {title} 영상이 없습니다.</p>
         </CardContent>
       </Card>
     );

@@ -1,28 +1,19 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Video } from "./entities/video.entity";
+import { Inject, Injectable } from "@nestjs/common";
+import { MediaService } from "../media/media.service";
 
 @Injectable()
 export class VideosService {
   constructor(
-    @InjectRepository(Video)
-    private readonly repo: Repository<Video>
+    @Inject(MediaService)
+    private readonly mediaService: MediaService,
   ) {}
 
-  async findAll(publishedOnly = false): Promise<Video[]> {
-    const query = this.repo.createQueryBuilder("v");
-    if (publishedOnly) {
-      query.where("v.status = 'published'");
-    }
-    return query
-      .orderBy("v.displayOrder", "ASC")
-      .addOrderBy("v.createdAt", "DESC")
-      .getMany();
+  async findAll(publishedOnly = false, categorySlug?: string | null) {
+    return this.mediaService.findVideos(publishedOnly, categorySlug ?? null);
   }
 
-  async findOne(id: number): Promise<Video | null> {
-    return this.repo.findOne({ where: { id } });
+  async findOne(id: number) {
+    return this.mediaService.findVideo(id);
   }
 
   async create(data: {
@@ -38,17 +29,16 @@ export class VideosService {
     uploadedBy: number;
     status: "published" | "draft";
     displayOrder: number;
-    category?: string;
-  }): Promise<Video> {
-    const entity = this.repo.create(data);
-    return this.repo.save(entity);
+    category?: string | null;
+  }) {
+    return this.mediaService.createVideo(data);
   }
 
   async update(id: number, data: Record<string, unknown>): Promise<void> {
-    await this.repo.update(id, data);
+    await this.mediaService.updateVideo(id, data);
   }
 
   async remove(id: number): Promise<void> {
-    await this.repo.delete(id);
+    await this.mediaService.removeVideo(id);
   }
 }

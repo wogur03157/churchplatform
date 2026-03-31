@@ -32,8 +32,11 @@ export class VideosController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
-  findAll(@Query("publishedOnly") publishedOnly?: string) {
-    return this.service.findAll(publishedOnly === "true");
+  findAll(
+    @Query("publishedOnly") publishedOnly?: string,
+    @Query("category") category?: string,
+  ) {
+    return this.service.findAll(publishedOnly === "true", category);
   }
 
   @Get(":id")
@@ -60,6 +63,7 @@ export class VideosController {
       duration?: number;
       status?: "published" | "draft";
       displayOrder?: number;
+      category?: string | null;
     },
     @CurrentUser() user: User
   ) {
@@ -76,6 +80,7 @@ export class VideosController {
       uploadedBy: user.id,
       status: body.status ?? "draft",
       displayOrder: body.displayOrder ?? 0,
+      category: body.category ?? null,
     });
     return { success: true, id: result.id };
   }
@@ -109,6 +114,7 @@ export class VideosController {
       thumbnailUrl?: string;
       status?: "published" | "draft";
       displayOrder?: number;
+      category?: string | null;
     }
   ) {
     const updateData: Record<string, unknown> = {};
@@ -119,6 +125,7 @@ export class VideosController {
     if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined)
       updateData.displayOrder = body.displayOrder;
+    if (body.category !== undefined) updateData.category = body.category;
 
     await this.service.update(id, updateData);
     return { success: true };

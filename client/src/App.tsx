@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/sonner";
+﻿import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -17,6 +17,8 @@ import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
 import AdminFormSubmissions from "./pages/admin/FormSubmissions";
 import AdminSiteSettings from "./pages/admin/SiteSettings";
+import AdminContentCategories from "./pages/admin/ContentCategories";
+import AdminContentPages from "./pages/admin/ContentPages";
 import PublicView from "./pages/PublicView";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import AdminLogin from "./pages/AdminLogin";
@@ -24,11 +26,7 @@ import Apply from "./pages/Apply";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import ChurchDetail from "./pages/super-admin/ChurchDetail";
 import AdminInvite from "./pages/AdminInvite";
-
-// 공개 페이지
-import ChurchAbout from "./pages/public/ChurchAbout";
-import ChurchWorship from "./pages/public/ChurchWorship";
-import ChurchDirections from "./pages/public/ChurchDirections";
+import DynamicContentPage from "./pages/public/DynamicContentPage";
 import SundaySermons from "./pages/public/SundaySermons";
 import MidweekSermons from "./pages/public/MidweekSermons";
 import SpecialSermons from "./pages/public/SpecialSermons";
@@ -42,86 +40,87 @@ import MinistryBoard from "./pages/public/MinistryBoard";
 function Router() {
   return (
     <Switch>
-      {/* 최고관리자 */}
-      <Route path={"/super-admin"} component={SuperAdminDashboard} />
-      <Route path={"/super-admin/churches/:id"} component={ChurchDetail} />
+      <Route path="/super-admin/churches/:id" component={ChurchDetail} />
+      <Route path="/super-admin" component={SuperAdminDashboard} />
 
-      {/* 교회 신청 */}
-      <Route path={"/apply"} component={Apply} />
+      <Route path="/apply" component={Apply} />
 
-      {/* 관리자 */}
-      <Route path={"/admin/login"} component={AdminLogin} />
-      <Route path={"/admin/invite"} component={AdminInvite} />
-      <Route path={"/admin"}>
-        <DashboardLayout><Home /></DashboardLayout>
-      </Route>
-      <Route path={"/admin/announcements"}>
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/invite" component={AdminInvite} />
+      <Route path="/admin/announcements">
         <DashboardLayout><AdminAnnouncements /></DashboardLayout>
       </Route>
-      <Route path={"/admin/images"}>
+      <Route path="/admin/images">
         <DashboardLayout><AdminImages /></DashboardLayout>
       </Route>
-      <Route path={"/admin/videos"}>
+      <Route path="/admin/videos">
         <DashboardLayout><AdminVideos /></DashboardLayout>
       </Route>
-      <Route path={"/admin/floating-messages"}>
+      <Route path="/admin/floating-messages">
         <DashboardLayout><AdminFloatingMessages /></DashboardLayout>
       </Route>
-      <Route path={"/admin/popups"}>
+      <Route path="/admin/popups">
         <DashboardLayout><AdminPopups /></DashboardLayout>
       </Route>
-      <Route path={"/admin/layout"}>
+      <Route path="/admin/layout">
         <DashboardLayout><AdminLayoutSettings /></DashboardLayout>
       </Route>
-      <Route path={"/admin/video-categories"}>
+      <Route path="/admin/video-categories">
         <DashboardLayout><AdminVideoCategories /></DashboardLayout>
       </Route>
-      <Route path={"/admin/page-groups"}>
+      <Route path="/admin/page-groups">
         <DashboardLayout><AdminPageGroups /></DashboardLayout>
       </Route>
-      <Route path={"/admin/form-config"}>
+      <Route path="/admin/form-config">
         <DashboardLayout><AdminFormConfig /></DashboardLayout>
       </Route>
-      <Route path={"/admin/form-submissions"}>
+      <Route path="/admin/form-submissions">
         <DashboardLayout><AdminFormSubmissions /></DashboardLayout>
       </Route>
-      <Route path={"/admin/site-settings"}>
+      <Route path="/admin/site-settings">
         <DashboardLayout><AdminSiteSettings /></DashboardLayout>
       </Route>
-
-      {/* 공개 다중 페이지 — /:churchSlug 앞에 배치 (wouter는 1세그먼트만 매칭) */}
-      <Route path={"/church/about"} component={ChurchAbout} />
-      <Route path={"/church/worship"} component={ChurchWorship} />
-      <Route path={"/church/directions"} component={ChurchDirections} />
-      <Route path={"/sermons/sunday"} component={SundaySermons} />
-      <Route path={"/sermons/midweek"} component={MidweekSermons} />
-      <Route path={"/sermons/special"} component={SpecialSermons} />
-      <Route path={"/community/departments/:slug"} component={CommunityDepartments} />
-      <Route path={"/community/departments"} component={CommunityDepartments} />
-      <Route path={"/community/small-church"} component={SmallChurch} />
-      <Route path={"/community/new-member"} component={NewMember} />
-      <Route path={"/ministry/god-love/:slug"}>
-        {(params) => <Ministry groupKey="god-love" />}
+      <Route path="/admin/content-categories">
+        <DashboardLayout><AdminContentCategories /></DashboardLayout>
       </Route>
-      <Route path={"/ministry/god-love"}>
+      <Route path="/admin/content-pages">
+        <DashboardLayout><AdminContentPages /></DashboardLayout>
+      </Route>
+      <Route path="/admin">
+        <DashboardLayout><Home /></DashboardLayout>
+      </Route>
+
+      <Route path="/church/:slug1/:slug2/:slug3" component={DynamicContentPage} />
+      <Route path="/church/:slug1/:slug2" component={DynamicContentPage} />
+      <Route path="/church/:slug1" component={DynamicContentPage} />
+      <Route path="/sermons/sunday" component={SundaySermons} />
+      <Route path="/sermons/midweek" component={MidweekSermons} />
+      <Route path="/sermons/special" component={SpecialSermons} />
+      <Route path="/community/departments/:slug" component={CommunityDepartments} />
+      <Route path="/community/departments" component={CommunityDepartments} />
+      <Route path="/community/small-church" component={SmallChurch} />
+      <Route path="/community/new-member" component={NewMember} />
+      <Route path="/ministry/god-love/:slug">
         {() => <Ministry groupKey="god-love" />}
       </Route>
-      <Route path={"/ministry/neighbor-love/:slug"}>
-        {(params) => <Ministry groupKey="neighbor-love" />}
+      <Route path="/ministry/god-love">
+        {() => <Ministry groupKey="god-love" />}
       </Route>
-      <Route path={"/ministry/neighbor-love"}>
+      <Route path="/ministry/neighbor-love/:slug">
         {() => <Ministry groupKey="neighbor-love" />}
       </Route>
-      <Route path={"/news/announcements"} component={NewsAnnouncements} />
-      <Route path={"/news/ministry-board"} component={MinistryBoard} />
+      <Route path="/ministry/neighbor-love">
+        {() => <Ministry groupKey="neighbor-love" />}
+      </Route>
+      <Route path="/news/announcements" component={NewsAnnouncements} />
+      <Route path="/news/ministry-board" component={MinistryBoard} />
 
-      {/* 기존 홈·슬러그 공개 페이지 */}
-      <Route path={"/"} component={PublicView} />
-      <Route path={"/:churchSlug"} component={PublicView} />
-      <Route path={"/:churchSlug/announcements/:id"} component={AnnouncementDetail} />
-      <Route path={"/announcements/:id"} component={AnnouncementDetail} />
+      <Route path="/" component={PublicView} />
+      <Route path="/:churchSlug" component={PublicView} />
+      <Route path="/:churchSlug/announcements/:id" component={AnnouncementDetail} />
+      <Route path="/announcements/:id" component={AnnouncementDetail} />
 
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );

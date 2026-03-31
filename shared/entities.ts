@@ -1,6 +1,6 @@
-/**
- * 공유 엔티티 인터페이스 — DB 스키마 및 mock 데이터 구조를 반영합니다.
- * 클라이언트·서버 양쪽에서 "@shared/entities"로 import해서 사용하세요.
+﻿/**
+ * 怨듭쑀 ?뷀떚???명꽣?섏씠????DB ?ㅽ궎留?諛?mock ?곗씠??援ъ“瑜?諛섏쁺?⑸땲??
+ * ?대씪?댁뼵?맞룹꽌踰??묒そ?먯꽌 "@shared/entities"濡?import?댁꽌 ?ъ슜?섏꽭??
  */
 
 export interface Video {
@@ -18,6 +18,7 @@ export interface Video {
   uploadedBy: number;
   status: "published" | "draft";
   displayOrder: number;
+  categoryId: number | null;
   category: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -57,6 +58,32 @@ export interface Image {
   status: "published" | "draft";
   displayOrder: number;
   showOnHome: boolean;
+  categoryId: number | null;
+  category: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface Media {
+  id: number;
+  title: string;
+  description: string | null;
+  mediaType: "image" | "video";
+  videoType: "youtube" | "vimeo" | "upload" | "url" | null;
+  fileKey: string | null;
+  url: string;
+  thumbnailUrl: string | null;
+  mimeType: string | null;
+  fileSize: number | null;
+  duration: number | null;
+  churchId: number | null;
+  uploadedBy: number;
+  status: "published" | "draft";
+  displayOrder: number;
+  showOnHome: boolean;
+  altText: string | null;
+  categoryId: number | null;
+  category: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
@@ -121,6 +148,50 @@ export interface PageGroup {
   updatedAt: string | Date;
 }
 
+export type ContentPageStatus = "published" | "draft";
+export type ContentTemplateCode = "hero" | "gallery" | "board" | "content";
+export type ContentMediaType = "image" | "video";
+
+export interface ContentCategory {
+  id: number;
+  churchId: number | null;
+  parentId: number | null;
+  name: string;
+  slug: string;
+  depth: 1 | 2 | 3;
+  sortOrder: number;
+  status: "active" | "hidden";
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface ContentPageMedia {
+  id: number;
+  pageId: number;
+  slotKey: string;
+  mediaType: ContentMediaType;
+  url: string;
+  thumbnailUrl: string | null;
+  altText: string | null;
+  sortOrder: number;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface ContentPage {
+  id: number;
+  categoryId: number;
+  churchId: number | null;
+  templateCode: ContentTemplateCode;
+  title: string;
+  content: string | null;
+  status: ContentPageStatus;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  media?: ContentPageMedia[];
+  category?: ContentCategory;
+}
+
 export type ChurchStatus = "pending" | "active" | "suspended" | "rejected";
 
 export interface Church {
@@ -180,3 +251,5 @@ export interface SiteConfig {
   value: string;
   description: string | null;
 }
+
+

@@ -3,13 +3,14 @@ import {
   ANNOUNCEMENTS, IMAGES, VIDEOS, FLOATING_MESSAGES, LAYOUT_SETTINGS,
   POPUPS, CHURCHES, FEATURES, ALL_FEATURE_KEYS, ADMINS, VIDEO_CATEGORIES,
   PAGE_GROUPS, FORM_FIELDS, FORM_SUBMISSIONS, ADMIN_PERMISSIONS, ALL_PERM_KEYS,
-  SITE_CONFIG, INVITATIONS, HERO_SLIDES, getEnabledFeatures,
+  SITE_CONFIG, INVITATIONS, HERO_SLIDES, CONTENT_CATEGORIES, CONTENT_PAGES,
+  CONTENT_PAGE_MEDIA, getEnabledFeatures,
 } from "./mock-store";
 
-// mock-auth.controller ë“± ë‹¤ë¥¸ ëª¨ë“ˆì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ ìž¬export
+// mock-auth.controller ???¤ë¥¸ ëª¨ë“ˆ?ì„œ ?¬ìš©?????ˆë„ë¡??¬export
 export { getEnabledFeatures };
 
-// â”€â”€â”€ Announcements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Announcements ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("announcements")
 export class MockAnnouncementsController {
@@ -23,7 +24,7 @@ export class MockAnnouncementsController {
 
   @Post()
   create(@Body() body: any) {
-    const item = { ...ANNOUNCEMENTS[0], id: ANNOUNCEMENTS.length + 10, title: body.title ?? "[Mock] ìƒˆ ê³µì§€ì‚¬í•­", createdAt: new Date(), updatedAt: new Date() };
+    const item = { ...ANNOUNCEMENTS[0], id: ANNOUNCEMENTS.length + 10, title: body.title ?? "[Mock] ??ê³µì??¬í•­", createdAt: new Date(), updatedAt: new Date() };
     ANNOUNCEMENTS.push(item);
     return item;
   }
@@ -43,7 +44,7 @@ export class MockAnnouncementsController {
   }
 }
 
-// â”€â”€â”€ Images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Images ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("images")
 export class MockImagesController {
@@ -55,7 +56,7 @@ export class MockImagesController {
 
   @Post()
   create(@Body() body: any) {
-    const item = { ...IMAGES[0], id: IMAGES.length + 10, title: body.title ?? "[Mock] ìƒˆ ì´ë¯¸ì§€", createdAt: new Date(), updatedAt: new Date() };
+    const item = { ...IMAGES[0], id: IMAGES.length + 10, title: body.title ?? "[Mock] ???´ë?ì§€", createdAt: new Date(), updatedAt: new Date() };
     IMAGES.push(item);
     return item;
   }
@@ -75,7 +76,7 @@ export class MockImagesController {
   }
 }
 
-// â”€â”€â”€ Videos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Videos ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("videos")
 export class MockVideosController {
@@ -101,7 +102,7 @@ export class MockVideosController {
   create(@Body() body: any) {
     const newVideo = {
       ...VIDEOS[0], id: VIDEOS.length + 10,
-      title: body.title ?? "[Mock] ìƒˆ ì˜ìƒ",
+      title: body.title ?? "[Mock] ???ìƒ",
       category: body.category ?? null,
       status: body.status ?? "draft",
       createdAt: new Date(), updatedAt: new Date(),
@@ -128,7 +129,7 @@ export class MockVideosController {
   }
 }
 
-// â”€â”€â”€ Floating Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Floating Messages ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("floating-messages")
 export class MockFloatingMessagesController {
@@ -140,7 +141,7 @@ export class MockFloatingMessagesController {
 
   @Post()
   create(@Body() body: any) {
-    const item = { ...FLOATING_MESSAGES[0], id: FLOATING_MESSAGES.length + 10, title: body.title ?? "[Mock] ìƒˆ ë©”ì‹œì§€", createdAt: new Date(), updatedAt: new Date() };
+    const item = { ...FLOATING_MESSAGES[0], id: FLOATING_MESSAGES.length + 10, title: body.title ?? "[Mock] ??ë©”ì‹œì§€", createdAt: new Date(), updatedAt: new Date() };
     FLOATING_MESSAGES.push(item);
     return item;
   }
@@ -160,7 +161,7 @@ export class MockFloatingMessagesController {
   }
 }
 
-// â”€â”€â”€ Layout Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Layout Settings ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("layout-settings")
 export class MockLayoutSettingsController {
@@ -204,17 +205,17 @@ export class MockLayoutSettingsController {
   }
 }
 
-// â”€â”€â”€ AI Assistant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ AI Assistant ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("ai-assistant")
 export class MockAiAssistantController {
   @Post("improve-text")
   improveText() {
-    return { result: "[Mock] AI ì–´ì‹œìŠ¤í„´íŠ¸ëŠ” DB ì—°ê²° í›„ ì‚¬ìš© ê°€ëŠ¥í•©ë‹ˆë‹¤." };
+    return { result: "[Mock] AI ?´ì‹œ?¤í„´?¸ëŠ” DB ?°ê²° ???¬ìš© ê°€?¥í•©?ˆë‹¤." };
   }
 }
 
-// â”€â”€â”€ Popups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Popups ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("popups")
 export class MockPopupsController {
@@ -238,7 +239,7 @@ export class MockPopupsController {
   create(@Body() body: any) {
     const popup = {
       id: POPUPS.length + 10, churchId: null,
-      title: body.title ?? "[Mock] ìƒˆ íŒì—…",
+      title: body.title ?? "[Mock] ???ì—…",
       imageKey: null,
       imageUrl: body.imageUrl ?? "https://picsum.photos/seed/new/800/600",
       linkUrl: body.linkUrl ?? null,
@@ -276,7 +277,7 @@ export class MockPopupsController {
   }
 }
 
-// â”€â”€â”€ Churches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Churches ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("churches")
 export class MockChurchesController {
@@ -303,7 +304,7 @@ export class MockChurchesController {
   apply(@Body() body: any) {
     const newChurch = {
       id: CHURCHES.length + 10,
-      name: body.name ?? "[Mock] ì‹ ê·œ êµíšŒ", slug: body.slug ?? "new-church",
+      name: body.name ?? "[Mock] ? ê·œ êµíšŒ", slug: body.slug ?? "new-church",
       status: "pending", description: body.description ?? null,
       email: body.email ?? null, phone: body.phone ?? null, address: body.address ?? null,
       logoUrl: null, customDomain: null,
@@ -388,12 +389,12 @@ export class MockChurchesController {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     INVITATIONS.push({ id: INVITATIONS.length + 1, churchId, email, token, expiresAt, usedAt: null, createdAt: new Date() });
     const inviteUrl = `/admin/invite?token=${token}`;
-    console.log(`[Mock] ì´ˆëŒ€ ë©”ì¼ â†’ ${email} : ${inviteUrl}`);
+    console.log(`[Mock] ì´ˆë? ë©”ì¼ ??${email} : ${inviteUrl}`);
     return { token, inviteUrl };
   }
 }
 
-// â”€â”€â”€ Video Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Video Categories ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("video-categories")
 export class MockVideoCategoriesController {
@@ -417,14 +418,14 @@ export class MockVideoCategoriesController {
   @Delete(":id")
   remove(@Param("id") id: string) {
     const item = VIDEO_CATEGORIES.find((c) => c.id === Number(id));
-    if (item?.isBuiltIn) return { success: false, message: "ê¸°ë³¸ ì¹´í…Œê³ ë¦¬ëŠ” ì‚­ì œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤." };
+    if (item?.isBuiltIn) return { success: false, message: "ê¸°ë³¸ ì¹´í…Œê³ ë¦¬???? œ?????†ìŠµ?ˆë‹¤." };
     const idx = VIDEO_CATEGORIES.findIndex((c) => c.id === Number(id));
     if (idx !== -1) VIDEO_CATEGORIES.splice(idx, 1);
     return { success: true };
   }
 }
 
-// â”€â”€â”€ Page Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Page Groups ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("page-groups")
 export class MockPageGroupsController {
@@ -464,7 +465,7 @@ export class MockPageGroupsController {
   }
 }
 
-// â”€â”€â”€ Form Fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Form Fields ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("form-fields")
 export class MockFormFieldsController {
@@ -495,7 +496,7 @@ export class MockFormFieldsController {
   }
 }
 
-// â”€â”€â”€ Form Submissions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Form Submissions ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("form-submissions")
 export class MockFormSubmissionsController {
@@ -510,7 +511,7 @@ export class MockFormSubmissionsController {
   }
 }
 
-// â”€â”€â”€ Admin Permissions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Admin Permissions ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("admins")
 export class MockAdminPermissionsController {
@@ -543,7 +544,7 @@ export class MockAdminPermissionsController {
   }
 }
 
-// â”€â”€â”€ Site Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Site Config ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("site-config")
 export class MockSiteConfigController {
@@ -558,7 +559,7 @@ export class MockSiteConfigController {
   }
 }
 
-// â”€â”€â”€ Hero Slides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Hero Slides ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("hero-slides")
 export class MockHeroSlidesController {
@@ -608,7 +609,7 @@ export class MockHeroSlidesController {
   }
 }
 
-// â”€â”€â”€ Invitations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ?€?€?€ Invitations ?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€?€
 
 @Controller("invitations")
 export class MockInvitationsController {
@@ -631,12 +632,188 @@ export class MockInvitationsController {
   @HttpCode(200)
   accept(@Param("token") token: string) {
     const idx = INVITATIONS.findIndex((i) => i.token === token);
-    if (idx === -1) return { success: false, message: "ìœ íš¨í•˜ì§€ ì•Šì€ ì´ˆëŒ€ìž…ë‹ˆë‹¤" };
+    if (idx === -1) return { success: false, message: "Invalid invitation." };
     const inv = INVITATIONS[idx];
-    if (inv.usedAt) return { success: false, message: "ì´ë¯¸ ì‚¬ìš©ëœ ì´ˆëŒ€ìž…ë‹ˆë‹¤" };
-    if (new Date() > inv.expiresAt) return { success: false, message: "ë§Œë£Œëœ ì´ˆëŒ€ìž…ë‹ˆë‹¤" };
+    if (inv.usedAt) return { success: false, message: "Invitation already used." };
+    if (new Date() > inv.expiresAt) return { success: false, message: "Invitation expired." };
     INVITATIONS[idx] = { ...inv, usedAt: new Date() };
-    ADMINS.push({ id: ADMINS.length + 10, churchId: inv.churchId, name: "ì´ˆëŒ€ëœ ê´€ë¦¬ìž", email: inv.email, role: "church_admin" });
+    ADMINS.push({ id: ADMINS.length + 10, churchId: inv.churchId, name: "ì´ˆë???ê´€ë¦¬ìž", email: inv.email, role: "church_admin" });
     return { success: true };
   }
 }
+
+@Controller("content-pages")
+export class MockContentPagesController {
+  @Get("categories")
+  findCategories(@Query("rootSlug") rootSlug?: string) {
+    if (!rootSlug) {
+      return [...CONTENT_CATEGORIES].sort((a, b) => a.depth - b.depth || a.sortOrder - b.sortOrder || a.id - b.id);
+    }
+
+    const all = [...CONTENT_CATEGORIES].sort((a, b) => a.depth - b.depth || a.sortOrder - b.sortOrder || a.id - b.id);
+    const root = all.find((item) => item.parentId === null && item.slug === rootSlug);
+    if (!root) return [];
+
+    const allowed = new Set<number>([root.id]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const category of all) {
+        if (category.parentId && allowed.has(category.parentId) && !allowed.has(category.id)) {
+          allowed.add(category.id);
+          changed = true;
+        }
+      }
+    }
+
+    return all.filter((item) => allowed.has(item.id));
+  }
+
+  @Get("categories/tree/:rootSlug")
+  findCategoryTree(@Param("rootSlug") rootSlug: string) {
+    const categories = this.findCategories(rootSlug);
+    const pageByCategory = new Map(CONTENT_PAGES.map((page) => [page.categoryId, page] as const));
+    const nodes = new Map(categories.map((category) => [category.id, { ...category, page: pageByCategory.get(category.id) ?? null, children: [] as any[] }]));
+
+    let root: any = null;
+    for (const node of Array.from(nodes.values())) {
+      if (node.parentId === null) {
+        if (node.slug === rootSlug) root = node;
+        continue;
+      }
+      nodes.get(node.parentId)?.children.push(node);
+    }
+    return root;
+  }
+
+  @Post("categories")
+  createCategory(@Body() body: any) {
+    const parent = body.parentId ? CONTENT_CATEGORIES.find((item) => item.id === Number(body.parentId)) : null;
+    const depth = (parent?.depth ?? 0) + 1;
+    const category = {
+      id: CONTENT_CATEGORIES.length ? Math.max(...CONTENT_CATEGORIES.map((item) => item.id)) + 1 : 1,
+      churchId: null,
+      parentId: parent?.id ?? null,
+      name: body.name,
+      slug: body.slug,
+      depth,
+      sortOrder: body.sortOrder ?? 0,
+      status: body.status ?? "active",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    CONTENT_CATEGORIES.push(category);
+
+    const page = {
+      id: CONTENT_PAGES.length ? Math.max(...CONTENT_PAGES.map((item) => item.id)) + 1 : 1,
+      categoryId: category.id,
+      churchId: null,
+      templateCode: body.templateCode ?? "content",
+      title: body.name,
+      content: "",
+      status: "draft",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    CONTENT_PAGES.push(page);
+    return { category, page };
+  }
+
+  @Patch("categories/:id")
+  updateCategory(@Param("id") id: string, @Body() body: any) {
+    const idx = CONTENT_CATEGORIES.findIndex((item) => item.id === Number(id));
+    if (idx !== -1) {
+      CONTENT_CATEGORIES[idx] = { ...CONTENT_CATEGORIES[idx], ...body, updatedAt: new Date() };
+    }
+    return CONTENT_CATEGORIES[idx] ?? null;
+  }
+
+  @Delete("categories/:id")
+  removeCategory(@Param("id") id: string) {
+    const categoryId = Number(id);
+    if (CONTENT_CATEGORIES.some((item) => item.parentId === categoryId)) {
+      return { success: false, message: "Delete child categories first" };
+    }
+    const categoryIdx = CONTENT_CATEGORIES.findIndex((item) => item.id === categoryId);
+    if (categoryIdx !== -1) CONTENT_CATEGORIES.splice(categoryIdx, 1);
+    const pageIdx = CONTENT_PAGES.findIndex((item) => item.categoryId === categoryId);
+    if (pageIdx !== -1) {
+      const pageId = CONTENT_PAGES[pageIdx].id;
+      CONTENT_PAGES.splice(pageIdx, 1);
+      for (let i = CONTENT_PAGE_MEDIA.length - 1; i >= 0; i--) {
+        if (CONTENT_PAGE_MEDIA[i].pageId === pageId) CONTENT_PAGE_MEDIA.splice(i, 1);
+      }
+    }
+    return { success: true };
+  }
+
+  @Get(":id")
+  findPage(@Param("id") id: string) {
+    const page = CONTENT_PAGES.find((item) => item.id === Number(id));
+    if (!page) return null;
+    return {
+      ...page,
+      media: CONTENT_PAGE_MEDIA.filter((item) => item.pageId === page.id).sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
+    };
+  }
+
+  @Patch(":id")
+  updatePage(@Param("id") id: string, @Body() body: any) {
+    const pageIdx = CONTENT_PAGES.findIndex((item) => item.id === Number(id));
+    if (pageIdx === -1) return null;
+
+    CONTENT_PAGES[pageIdx] = {
+      ...CONTENT_PAGES[pageIdx],
+      ...(body.title !== undefined && { title: body.title }),
+      ...(body.content !== undefined && { content: body.content }),
+      ...(body.templateCode !== undefined && { templateCode: body.templateCode }),
+      ...(body.status !== undefined && { status: body.status }),
+      updatedAt: new Date(),
+    };
+
+    if (Array.isArray(body.media)) {
+      for (let i = CONTENT_PAGE_MEDIA.length - 1; i >= 0; i--) {
+        if (CONTENT_PAGE_MEDIA[i].pageId === Number(id)) CONTENT_PAGE_MEDIA.splice(i, 1);
+      }
+      const maxId = CONTENT_PAGE_MEDIA.length ? Math.max(...CONTENT_PAGE_MEDIA.map((item) => item.id)) : 0;
+      body.media.forEach((item: any, offset: number) => {
+        CONTENT_PAGE_MEDIA.push({
+          id: maxId + offset + 1,
+          pageId: Number(id),
+          slotKey: item.slotKey,
+          mediaType: item.mediaType,
+          url: item.url,
+          thumbnailUrl: item.thumbnailUrl ?? null,
+          altText: item.altText ?? null,
+          sortOrder: item.sortOrder ?? 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      });
+    }
+
+    return this.findPage(id);
+  }
+
+  @Get("public/:rootSlug/:slug")
+  findPublicPage(@Param("rootSlug") rootSlug: string, @Param("slug") slug: string) {
+    const root = CONTENT_CATEGORIES.find((item) => item.parentId === null && item.slug === rootSlug && item.status === "active");
+    if (!root) return null;
+
+    const category = CONTENT_CATEGORIES.find((item) => item.parentId === root.id && item.slug === slug && item.status === "active");
+    if (!category) return null;
+
+    const page = CONTENT_PAGES.find((item) => item.categoryId === category.id && item.status === "published");
+    if (!page) return null;
+
+    return {
+      ...page,
+      media: CONTENT_PAGE_MEDIA.filter((item) => item.pageId === page.id).sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
+      category,
+      rootCategory: root,
+      siblings: CONTENT_CATEGORIES.filter((item) => item.parentId === root.id && item.status === "active").sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id),
+    };
+  }
+}
+
+

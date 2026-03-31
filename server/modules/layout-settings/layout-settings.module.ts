@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+﻿import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "../auth/auth.module";
 import { ChurchesModule } from "../churches/churches.module";
@@ -16,5 +16,6 @@ import { LayoutSettingsService } from "./layout-settings.service";
   ],
   controllers: [LayoutSettingsController],
   providers: [LayoutSettingsService],
+  exports: [LayoutSettingsService],
 })
 export class LayoutSettingsModule {}

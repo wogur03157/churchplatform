@@ -1,28 +1,19 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Image } from "./entities/image.entity";
+import { Inject, Injectable } from "@nestjs/common";
+import { MediaService } from "../media/media.service";
 
 @Injectable()
 export class ImagesService {
   constructor(
-    @InjectRepository(Image)
-    private readonly repo: Repository<Image>
+    @Inject(MediaService)
+    private readonly mediaService: MediaService,
   ) {}
 
-  async findAll(publishedOnly = false): Promise<Image[]> {
-    const query = this.repo.createQueryBuilder("i");
-    if (publishedOnly) {
-      query.where("i.status = 'published'");
-    }
-    return query
-      .orderBy("i.displayOrder", "ASC")
-      .addOrderBy("i.createdAt", "DESC")
-      .getMany();
+  async findAll(publishedOnly = false, categorySlug?: string | null) {
+    return this.mediaService.findImages(publishedOnly, categorySlug ?? null);
   }
 
-  async findOne(id: number): Promise<Image | null> {
-    return this.repo.findOne({ where: { id } });
+  async findOne(id: number) {
+    return this.mediaService.findImage(id);
   }
 
   async create(data: {
@@ -35,9 +26,10 @@ export class ImagesService {
     uploadedBy: number;
     status: "published" | "draft";
     displayOrder: number;
-  }): Promise<Image> {
-    const entity = this.repo.create(data);
-    return this.repo.save(entity);
+    showOnHome?: boolean;
+    category?: string | null;
+  }) {
+    return this.mediaService.createImage(data);
   }
 
   async update(
@@ -50,10 +42,10 @@ export class ImagesService {
       showOnHome: boolean;
     }>
   ): Promise<void> {
-    await this.repo.update(id, data);
+    await this.mediaService.updateImage(id, data as Record<string, unknown>);
   }
 
   async remove(id: number): Promise<void> {
-    await this.repo.delete(id);
+    await this.mediaService.removeImage(id);
   }
 }

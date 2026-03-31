@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+﻿import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { HealthController } from "./modules/health/health.controller";
 import { MockModule } from "./modules/mock/mock.module";
@@ -38,9 +38,13 @@ import { Invitation } from "./modules/invitations/entities/invitation.entity";
 import { InvitationsModule } from "./modules/invitations/invitations.module";
 import { HeroSlide } from "./modules/hero-slides/entities/hero-slide.entity";
 import { HeroSlidesModule } from "./modules/hero-slides/hero-slides.module";
+import { ContentPagesModule } from "./modules/content-pages/content-pages.module";
+import { ContentCategory } from "./modules/content-pages/entities/content-category.entity";
+import { ContentPage } from "./modules/content-pages/entities/content-page.entity";
+import { ContentPageMedia } from "./modules/content-pages/entities/content-page-media.entity";
+import { Media } from "./modules/media/entities/media.entity";
+import { PublicHomeModule } from "./modules/public-home/public-home.module";
 
-// DB가 설정되지 않았거나 SKIP_DB=true 이면 DB 관련 모듈 전체 스킵
-// (AuthModule이 UserRepository에 의존하므로 AuthModule을 쓰는 모든 모듈 함께 제외)
 const dbUrl = process.env.DATABASE_URL ?? "";
 const isDbEnabled =
   process.env.SKIP_DB !== "true" &&
@@ -48,9 +52,7 @@ const isDbEnabled =
   !dbUrl.includes("user:password@host");
 
 if (!isDbEnabled) {
-  console.warn(
-    "[AppModule] DB disabled — running in no-db mode (health endpoint only)"
-  );
+  console.warn("[AppModule] DB disabled - running in no-db mode (health endpoint only)");
 }
 
 const dbModules = isDbEnabled
@@ -76,6 +78,10 @@ const dbModules = isDbEnabled
           SiteConfig,
           Invitation,
           HeroSlide,
+          ContentCategory,
+          ContentPage,
+          ContentPageMedia,
+          Media,
         ],
         synchronize: true,
         logging: process.env.NODE_ENV === "development",
@@ -99,6 +105,8 @@ const dbModules = isDbEnabled
       FormSubmissionsModule,
       SiteConfigModule,
       HeroSlidesModule,
+      ContentPagesModule,
+      PublicHomeModule,
     ]
   : [];
 
@@ -107,3 +115,6 @@ const dbModules = isDbEnabled
   imports: [...dbModules, ...(!isDbEnabled ? [MockModule] : [])],
 })
 export class AppModule {}
+
+
+

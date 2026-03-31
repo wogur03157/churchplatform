@@ -32,8 +32,11 @@ export class ImagesController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
-  findAll(@Query("publishedOnly") publishedOnly?: string) {
-    return this.service.findAll(publishedOnly === "true");
+  findAll(
+    @Query("publishedOnly") publishedOnly?: string,
+    @Query("category") category?: string,
+  ) {
+    return this.service.findAll(publishedOnly === "true", category);
   }
 
   @Get(":id")
@@ -56,6 +59,8 @@ export class ImagesController {
       fileSize: number;
       status?: "published" | "draft";
       displayOrder?: number;
+      showOnHome?: boolean;
+      category?: string | null;
     },
     @CurrentUser() user: User
   ) {
@@ -78,6 +83,8 @@ export class ImagesController {
       uploadedBy: user.id,
       status: body.status ?? "draft",
       displayOrder: body.displayOrder ?? 0,
+      showOnHome: body.showOnHome ?? false,
+      category: body.category ?? null,
     });
 
     return { success: true, id: result.id, url };
@@ -94,6 +101,7 @@ export class ImagesController {
       status?: "published" | "draft";
       displayOrder?: number;
       showOnHome?: boolean;
+      category?: string | null;
     }
   ) {
     const updateData: Record<string, unknown> = {};
@@ -102,6 +110,7 @@ export class ImagesController {
     if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder;
     if (body.showOnHome !== undefined) updateData.showOnHome = body.showOnHome;
+    if (body.category !== undefined) updateData.category = body.category;
 
     await this.service.update(id, updateData as any);
     return { success: true };

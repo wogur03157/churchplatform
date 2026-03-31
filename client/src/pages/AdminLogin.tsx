@@ -1,9 +1,9 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+﻿import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, Lock, FlaskConical } from "lucide-react";
+import { FlaskConical, Lock, LogIn } from "lucide-react";
 
 async function handleDevLogin() {
   await api.post("/auth/dev-login");
@@ -22,13 +22,18 @@ export default function AdminLogin() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-background">
         <div className="text-center">
-          <p className="text-muted-foreground">로딩 중...</p>
+          <p className="text-muted-foreground">로그인 상태를 확인하는 중입니다.</p>
         </div>
       </div>
     );
   }
 
-  if (isAuthenticated && user?.role === "admin") {
+  if (isAuthenticated && user?.role === "super_admin") {
+    window.location.href = "/super-admin";
+    return null;
+  }
+
+  if (isAuthenticated && user?.role === "church_admin") {
     window.location.href = "/admin";
     return null;
   }
@@ -45,14 +50,16 @@ export default function AdminLogin() {
             </div>
             <CardTitle className="text-2xl">관리자 로그인</CardTitle>
             <CardDescription>
-              관리 시스템에 접근하려면 로그인하세요
+              관리자 대시보드 접근을 위해 로그인하세요.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <Button
-                onClick={() => { window.location.href = getLoginUrl(); }}
+                onClick={() => {
+                  window.location.href = getLoginUrl();
+                }}
                 className="w-full h-11 rounded-lg"
                 size="lg"
               >
@@ -60,37 +67,36 @@ export default function AdminLogin() {
                 Google로 로그인
               </Button>
               <p className="text-xs text-muted-foreground text-center">
-                Google 계정으로 안전하게 로그인하세요
+                로컬 개발 중이면 아래 개발용 로그인 버튼을 사용하면 됩니다.
               </p>
             </div>
 
             {import.meta.env.DEV && (
-              <div className="border-t pt-4">
-                <p className="text-xs text-muted-foreground text-center mb-3">
-                  🛠 개발 환경 전용
+              <div className="border-t pt-4 space-y-3">
+                <p className="text-xs text-muted-foreground text-center">
+                  개발 환경 전용 로그인
                 </p>
                 <Button
                   variant="outline"
                   onClick={handleDevLogin}
-                  className="w-full h-10 rounded-lg border-dashed border-orange-400 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+                  className="w-full h-10 rounded-lg border-dashed border-orange-400 text-orange-600 hover:bg-orange-50"
                 >
                   <FlaskConical className="mr-2 h-4 w-4" />
-                  Dev Super Admin (테스트용)
+                  Dev Super Admin
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleDevChurchLogin}
-                  className="w-full h-10 rounded-lg border-dashed border-blue-400 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                  className="w-full h-10 rounded-lg border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
                 >
                   <FlaskConical className="mr-2 h-4 w-4" />
-                  Dev Church Admin (테스트용)
+                  Dev Church Admin
                 </Button>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-sm text-muted-foreground">
             <a href="/" className="text-primary hover:underline">

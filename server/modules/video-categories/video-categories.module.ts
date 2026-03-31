@@ -1,12 +1,11 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { VideoCategory } from "./entities/video-category.entity";
+import { AuthModule } from "../auth/auth.module";
+import { MediaModule } from "../media/media.module";
 import { VideoCategoriesController } from "./video-categories.controller";
 import { VideoCategoriesService } from "./video-categories.service";
-import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([VideoCategory]), AuthModule],
+  imports: [MediaModule, AuthModule],
   controllers: [VideoCategoriesController],
   providers: [VideoCategoriesService],
   exports: [VideoCategoriesService],

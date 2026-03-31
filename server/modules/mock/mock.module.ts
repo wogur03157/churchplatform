@@ -17,6 +17,7 @@ import {
   MockAdminPermissionsController,
   MockInvitationsController,
   MockHeroSlidesController,
+  MockContentPagesController,
 } from "./mock-data.controller";
 
 @Module({
@@ -38,6 +39,7 @@ import {
     MockAdminPermissionsController,
     MockInvitationsController,
     MockHeroSlidesController,
+    MockContentPagesController,
   ],
 })
 export class MockModule {}

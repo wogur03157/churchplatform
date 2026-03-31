@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 
-// 이미지 갤러리 데스크탑 열 수 → Tailwind 클래스
+// ?대?吏 媛ㅻ윭由??곗뒪?ы깙 ??????Tailwind ?대옒??
 const GALLERY_COLS_CLASS: Record<number, string> = {
   2: "sm:grid-cols-2",
   3: "sm:grid-cols-3",
@@ -35,7 +35,7 @@ const GALLERY_COLS_CLASS: Record<number, string> = {
   6: "sm:grid-cols-6",
 };
 
-// colSpan(12열 기준) → Tailwind col-span 클래스
+// colSpan(12??湲곗?) ??Tailwind col-span ?대옒??
 const COL_SPAN_CLASS: Record<number, string> = {
   3: "lg:col-span-3",
   4: "lg:col-span-4",
@@ -45,7 +45,7 @@ const COL_SPAN_CLASS: Record<number, string> = {
   12: "lg:col-span-12",
 };
 
-// ─── 히어로 캐러셀 ────────────────────────────────────────────────────────────
+// ??? ?덉뼱濡?罹먮윭? ????????????????????????????????????????????????????????????
 
 function HeroCarousel({ slides }: { slides: any[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -75,7 +75,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
           {slides.map((slide, i) => (
             <div key={slide.id ?? i} className="flex-none w-full">
 
-              {/* ── 텍스트만 ── */}
+              {/* ?? ?띿뒪?몃쭔 ?? */}
               {slide.type === "text" && (
                 <div className="relative py-24 lg:py-32">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_25%)] opacity-[0.03]" />
@@ -98,7 +98,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
                 </div>
               )}
 
-              {/* ── 좌우 분할: 이미지 왼쪽 / 텍스트 오른쪽 ── */}
+              {/* ?? 醫뚯슦 遺꾪븷: ?대?吏 ?쇱そ / ?띿뒪???ㅻⅨ履??? */}
               {slide.type === "image_split" && (
                 <div className="flex flex-col md:flex-row min-h-[480px] lg:min-h-[520px]">
                   <div className="flex-1 relative overflow-hidden min-h-[240px]">
@@ -126,7 +126,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
                 </div>
               )}
 
-              {/* ── 텍스트 하단: 이미지 전체 + 그라디언트 + 텍스트 하단 고정 ── */}
+              {/* ?? ?띿뒪???섎떒: ?대?吏 ?꾩껜 + 洹몃씪?붿뼵??+ ?띿뒪???섎떒 怨좎젙 ?? */}
               {slide.type === "image_bottom" && (
                 <div className="relative min-h-[480px] lg:min-h-[520px] flex items-end">
                   {slide.imageUrl && (
@@ -148,7 +148,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
                 </div>
               )}
 
-              {/* ── 이미지 (텍스트 선택적 오버레이) ── */}
+              {/* ?? ?대?吏 (?띿뒪???좏깮???ㅻ쾭?덉씠) ?? */}
               {slide.type === "image" && slide.imageUrl && (
                 <div className="relative">
                   <img src={slide.imageUrl} alt={slide.title || ""} className="w-full object-cover max-h-[580px]" />
@@ -177,7 +177,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
         </div>
       </div>
 
-      {/* 도트 인디케이터 */}
+      {/* ?꾪듃 ?몃뵒耳?댄꽣 */}
       {slides.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
           {slides.map((_, i) => (
@@ -193,7 +193,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
   );
 }
 
-// ─── 이미지 갤러리 캐러셀 (모바일 전용) ──────────────────────────────────────
+// ??? ?대?吏 媛ㅻ윭由?罹먮윭? (紐⑤컮???꾩슜) ??????????????????????????????????????
 
 function GalleryCarousel({ images }: { images: any[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -239,7 +239,7 @@ function GalleryCarousel({ images }: { images: any[] }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 
 export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
@@ -247,45 +247,24 @@ export default function PublicView() {
   const [popup, setPopup] = useState<any>(null);
   const [showPopup, setShowPopup] = useState(false);
 
-  const { data: layoutSettings } = useQuery({
-    queryKey: ["layout-settings"],
-    queryFn: () => api.get<any[]>("/layout-settings"),
+  const { data: homeData } = useQuery({
+    queryKey: ["public", "home-data"],
+    queryFn: () => api.get<any>("/public/home-data"),
+    staleTime: 60 * 1000,
   });
 
-  const { data: announcements } = useQuery({
-    queryKey: ["announcements", { publishedOnly: true }],
-    queryFn: () => api.get<any[]>("/announcements?publishedOnly=true"),
-  });
-  const { data: images } = useQuery({
-    queryKey: ["images", { publishedOnly: true }],
-    queryFn: () => api.get<any[]>("/images?publishedOnly=true"),
-  });
-  const { data: videos } = useQuery({
-    queryKey: ["videos", { publishedOnly: true }],
-    queryFn: () => api.get<any[]>("/videos?publishedOnly=true"),
-  });
-  const { data: siteConfigs } = useQuery({
-    queryKey: ["site-config"],
-    queryFn: () => api.get<any[]>("/site-config"),
-    staleTime: 5 * 60 * 1000,
-  });
-  const { data: heroSlides } = useQuery({
-    queryKey: ["hero-slides"],
-    queryFn: () => api.get<any[]>("/hero-slides"),
-    staleTime: 5 * 60 * 1000,
-  });
+  const layoutSettings: any[] = homeData?.layoutSettings ?? [];
+  const announcements: any[] = homeData?.announcements ?? [];
+  const images: any[] = homeData?.images ?? [];
+  const videos: any[] = homeData?.videos ?? [];
+  const siteConfigs: any[] = homeData?.siteConfigs ?? [];
+  const heroSlides: any[] = homeData?.heroSlides ?? [];
+  const floatingMessages: any[] = homeData?.floatingMessages ?? [];
+  const popups: any[] = homeData?.popups ?? [];
+  const categoryForest: any[] = homeData?.categoryForest ?? [];
+
   const cfg = (key: string) =>
-    (siteConfigs ?? []).find((c: any) => c.key === key)?.value ?? "";
-
-  const { data: floatingMessages } = useQuery({
-    queryKey: ["floating-messages", { activeOnly: true }],
-    queryFn: () => api.get<any[]>("/floating-messages?activeOnly=true"),
-  });
-  const { data: popups } = useQuery({
-    queryKey: ["popups", { activeOnly: true }],
-    queryFn: () => api.get<any[]>("/popups?activeOnly=true"),
-  });
-
+    siteConfigs.find((c: any) => c.key === key)?.value ?? "";
   useEffect(() => {
     if (floatingMessages && floatingMessages.length > 0) {
       setFloatingMessage(floatingMessages[0]);
@@ -309,7 +288,7 @@ export default function PublicView() {
 
   const handleClosePopup = (dontShowToday: boolean = false) => {
     if (dontShowToday && popup) {
-      // 24시간 뒤의 타임스탬프 저장
+      // 24?쒓컙 ?ㅼ쓽 ??꾩뒪?ы봽 ???
       const expiry = new Date().getTime() + 24 * 60 * 60 * 1000;
       localStorage.setItem(`popup_hide_${popup.id}`, expiry.toString());
     }
@@ -324,7 +303,7 @@ export default function PublicView() {
   const heroSection = visibleSections.find(s => s.sectionType === "hero");
   const dataSections = visibleSections.filter(s => s.sectionType !== "hero");
 
-  // 섹션 → 행 인덱스 매핑 (colSpan 합이 12 되면 다음 행)
+  // ?뱀뀡 ?????몃뜳??留ㅽ븨 (colSpan ?⑹씠 12 ?섎㈃ ?ㅼ쓬 ??
   const sectionRowIndex: Record<string, number> = {};
   let rowIdx = 0,
     rowSum = 0;
@@ -339,7 +318,7 @@ export default function PublicView() {
 
   const ROW_BG = ["bg-white", "bg-secondary/40"] as const;
 
-  // ── 렌더러 ──────────────────────────────────────────────────────────────────
+  // ?? ?뚮뜑????????????????????????????????????????????????????????????????????
 
   const renderHero = (section: any) => {
     const slides =
@@ -358,7 +337,7 @@ export default function PublicView() {
       <section key="hero" className="bg-white overflow-hidden">
         <HeroCarousel slides={slides} />
 
-        {/* 퀵 메뉴 */}
+        {/* ??硫붾돱 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickMenuItems.map((item, idx) => (
@@ -385,11 +364,11 @@ export default function PublicView() {
 
   const renderSection = (section: any, rowBg: string) => {
     const span: number = section.colSpan ?? 12;
-    const narrow = span <= 4; // ≤ 1/3
-    const mid = span <= 6; // ≤ 1/2
+    const narrow = span <= 4; // ??1/3
+    const mid = span <= 6; // ??1/2
     const full = span >= 12;
 
-    // 배경은 section(풀블리드), 콘텐츠는 inner div에서 패딩으로 정렬
+    // 諛곌꼍? section(?釉붾━??, 肄섑뀗痢좊뒗 inner div?먯꽌 ?⑤뵫?쇰줈 ?뺣젹
     const innerCls = full
       ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       : "px-4 sm:px-6 lg:px-8";
@@ -404,14 +383,14 @@ export default function PublicView() {
             className={`py-12 lg:py-16 h-full ${rowBg}`}
           >
             <div className={innerCls}>
-              {/* 헤더 */}
+              {/* ?ㅻ뜑 */}
               <div
                 className={`flex items-center justify-between gap-3 ${narrow ? "mb-4" : "mb-8"}`}
               >
                 <h2
                   className={`font-bold leading-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
-                  {section.title || "교회 소식"}
+                  {section.title || "援먰쉶 ?뚯떇"}
                 </h2>
                 <Link href="/news/announcements">
                   <Button
@@ -419,13 +398,13 @@ export default function PublicView() {
                     size="sm"
                     className="group text-primary font-bold shrink-0 text-xs"
                   >
-                    전체보기{" "}
+                    ?꾩껜蹂닿린{" "}
                     <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </div>
 
-              {/* narrow: 컴팩트 리스트 */}
+              {/* narrow: 而댄뙥??由ъ뒪??*/}
               {narrow && (
                 <ul className="divide-y divide-border">
                   {announcements.slice(0, 5).map(item => (
@@ -449,7 +428,7 @@ export default function PublicView() {
                 </ul>
               )}
 
-              {/* mid: 타이틀+날짜 카드, 1열 */}
+              {/* mid: ??댄?+?좎쭨 移대뱶, 1??*/}
               {!narrow && mid && (
                 <div className="grid gap-2">
                   {announcements.slice(0, 4).map(item => (
@@ -472,7 +451,7 @@ export default function PublicView() {
                 </div>
               )}
 
-              {/* full: 풀 카드, auto-fit (항목 수에 따라 크기 조정) */}
+              {/* full: ? 移대뱶, auto-fit (??ぉ ?섏뿉 ?곕씪 ?ш린 議곗젙) */}
               {!narrow && !mid && (
                 <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
                   {announcements.slice(0, 6).map(item => (
@@ -494,7 +473,7 @@ export default function PublicView() {
                             {stripHtml(item.content)}
                           </p>
                           <div className="flex items-center text-primary text-xs font-bold uppercase tracking-wider">
-                            자세히 보기{" "}
+                            ?먯꽭??蹂닿린{" "}
                             <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </CardContent>
@@ -525,12 +504,12 @@ export default function PublicView() {
                 )}
               </div>
 
-              {/* 모바일: 캐러셀 */}
+              {/* 紐⑤컮?? 罹먮윭? */}
               <div className="sm:hidden">
                 <GalleryCarousel images={toShow} />
               </div>
 
-              {/* 데스크탑: 그리드 */}
+              {/* ?곗뒪?ы깙: 洹몃━??*/}
               <div className={`hidden sm:grid gap-2 grid-cols-2 ${desktopCols}`}>
                 {toShow.map((item: any) => (
                   <div key={item.id}
@@ -560,7 +539,7 @@ export default function PublicView() {
                 <h2
                   className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
-                  {section.title || "최신 설교"}
+                  {section.title || "理쒖떊 ?ㅺ탳"}
                 </h2>
                 {section.subtitle && !narrow && (
                   <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -662,12 +641,12 @@ export default function PublicView() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicHeader />
+      <PublicHeader preloadedSiteConfigs={siteConfigs} preloadedCategoryForest={categoryForest} />
 
       <main>
         {heroSection && renderHero(heroSection)}
 
-        {/* 데이터 섹션 그리드 - 12열 기준 colSpan */}
+        {/* ?곗씠???뱀뀡 洹몃━??- 12??湲곗? colSpan */}
         <div className="grid lg:grid-cols-12">
           {dataSections.map((section, idx) => {
             const rowBg = ROW_BG[sectionRowIndex[section.sectionType] % 2];
@@ -698,12 +677,12 @@ export default function PublicView() {
                   영신교회
                 </span>
                 <span className="text-sm font-medium text-muted-foreground tracking-tighter">
-                  하나님사랑 이웃사랑
+                  하나님 사랑 이웃 사랑
                 </span>
               </div>
               <p className="text-muted-foreground max-w-sm">
-                영신교회는 하나님을 향한 뜨거운 예배와 이웃을 향한 따뜻한 섬김이
-                있는 행복한 공동체입니다.
+                영신교회는 하나님을 향한 바른 예배와 이웃을 향한 사랑의 실천을 추구하는
+                믿음의 공동체입니다.
               </p>
             </div>
             <div className="space-y-6">
@@ -724,7 +703,7 @@ export default function PublicView() {
               <h3 className="font-bold text-lg">연락처</h3>
               <ul className="space-y-4 text-muted-foreground">
                 <li className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" /> 주소: 경기도 어디시 무엇동 123
+                  <MapPin className="h-4 w-4" /> 주소: 서울특별시 양천구 목동로 19길 28
                 </li>
                 <li className="flex items-center gap-2">
                   <Clock className="h-4 w-4" /> 전화: 02-123-4567
@@ -742,7 +721,7 @@ export default function PublicView() {
         </div>
       </footer>
 
-      {/* 팝업 모달 */}
+      {/* ?앹뾽 紐⑤떖 */}
       {showPopup && popup && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -788,7 +767,7 @@ export default function PublicView() {
                   className="text-xs text-muted-foreground hover:text-primary transition-colors text-left font-medium"
                   onClick={() => handleClosePopup(true)}
                 >
-                  오늘 하루 보지 않기
+                  ?ㅻ뒛 ?섎（ 蹂댁? ?딄린
                 </button>
               </div>
               <div className="flex items-center gap-4">
@@ -800,14 +779,14 @@ export default function PublicView() {
                     className="text-sm font-bold text-primary hover:underline flex items-center gap-1"
                     onClick={() => handleClosePopup()}
                   >
-                    자세히 보기 <ExternalLink className="h-3 w-3" />
+                    ?먯꽭??蹂닿린 <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
                 <button
                   className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => handleClosePopup()}
                 >
-                  닫기
+                  ?リ린
                 </button>
               </div>
             </div>
@@ -815,7 +794,7 @@ export default function PublicView() {
         </div>
       )}
 
-      {/* 플로팅 메시지 */}
+      {/* ?뚮줈??硫붿떆吏 */}
       {showFloating && floatingMessage && (
         <div
           className={`fixed ${getFloatingPosition()} right-4 z-50 max-w-sm w-full animate-in slide-in-from-right duration-500`}
@@ -845,3 +824,7 @@ export default function PublicView() {
     </div>
   );
 }
+
+
+
+

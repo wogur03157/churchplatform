@@ -1,10 +1,11 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+﻿import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response } from "express";
 import { Repository } from "typeorm";
+import { ChurchAdmin } from "../churches/entities/church-admin.entity";
 import { User } from "../users/entities/user.entity";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -14,7 +15,9 @@ const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(ChurchAdmin)
+    private readonly churchAdminRepository: Repository<ChurchAdmin>
   ) {}
 
   private getSecretKey(): Uint8Array {
@@ -152,6 +155,44 @@ export class AuthService {
       { conflictPaths: ["openId"] }
     );
     return this.createSessionToken(devOpenId, "Dev Admin");
+  }
+
+  async devChurchLogin(): Promise<string> {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error("Dev login is only available in development mode");
+    }
+
+    const devOpenId = "__dev_church_admin__";
+    await this.userRepository.upsert(
+      {
+        openId: devOpenId,
+        name: "Dev Church Admin",
+        email: "dev@church.local",
+        loginMethod: "dev",
+        role: "church_admin",
+        lastSignedIn: new Date(),
+      },
+      { conflictPaths: ["openId"] }
+    );
+
+    const user = await this.userRepository.findOneOrFail({
+      where: { openId: devOpenId },
+    });
+
+    const existingAdminLink = await this.churchAdminRepository.findOne({
+      where: { churchId: 1, userId: user.id },
+    });
+
+    if (!existingAdminLink) {
+      await this.churchAdminRepository.save(
+        this.churchAdminRepository.create({
+          churchId: 1,
+          userId: user.id,
+        })
+      );
+    }
+
+    return this.createSessionToken(devOpenId, "Dev Church Admin");
   }
 
   async authenticateRequest(req: Request): Promise<User | null> {

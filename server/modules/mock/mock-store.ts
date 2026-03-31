@@ -281,3 +281,22 @@ export let SITE_CONFIG: any[] = [
   { id: 7, churchId: null, key: "hero_icon_3_url",value: "",                                 description: "í™ˆ í€µë©”ë‰´ ì•„ì´ì½˜ 3 (ìƒˆê°€ì¡± ì•ˆë‚´)" },
   { id: 8, churchId: null, key: "hero_icon_4_url",value: "",                                 description: "í™ˆ í€µë©”ë‰´ ì•„ì´ì½˜ 4 (ì˜¨ë¼ì¸ ì˜ˆë°°)" },
 ];
+
+// Content pages mock data
+export let CONTENT_CATEGORIES: any[] = [
+  { id: 1, churchId: null, parentId: null, name: "±³È¸¼Ò°³", slug: "church", depth: 1, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 2, churchId: null, parentId: 1, name: "±³È¸ ¼Ò°³", slug: "about", depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 3, churchId: null, parentId: 1, name: "¿¹¹è ¾È³»", slug: "worship", depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 4, churchId: null, parentId: 1, name: "¿À½Ã´Â ±æ", slug: "directions", depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+];
+
+export let CONTENT_PAGES: any[] = [
+  { id: 1, categoryId: 2, churchId: null, templateCode: "content", title: "±³È¸ ¼Ò°³", content: "<h2>±³È¸ ¼Ò°³</h2><p>¿µ½Å±³È¸´Â ¿¹¹è¿Í µ¹º½, ÈÆ·ÃÀ» ÅëÇØ ÇÔ²² ¼ºÀåÇÏ´Â °øµ¿Ã¼ÀÔ´Ï´Ù.</p><h2>ºñÀü</h2><p>ÇÏ³ª´Ô »ç¶û°ú ÀÌ¿ô »ç¶ûÀ» ½ÇÁ¦ »ç¿ªÀ¸·Î ¿¬°áÇÕ´Ï´Ù.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+  { id: 2, categoryId: 3, churchId: null, templateCode: "hero", title: "¿¹¹è ¾È³»", content: "<h2>ÁÖÀÏ ¿¹¹è</h2><p>1ºÎ 09:00, 2ºÎ 11:00</p><h2>ÁÖÁß ¿¹¹è</h2><p>¼ö¿äÀÏ 19:30, ±İ¿äÀÏ 19:30</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+  { id: 3, categoryId: 4, churchId: null, templateCode: "content", title: "¿À½Ã´Â ±æ", content: "<h2>ÁÖ¼Ò</h2><p>¼­¿ïÆ¯º°½Ã ¾çÃµ±¸ ¸ñµ¿·Î 19±æ 28</p><p>Ä«Ä«¿À¸Ê°ú ³×ÀÌ¹öÁöµµ·Î ½±°Ô Ã£À» ¼ö ÀÖ½À´Ï´Ù.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+];
+
+export let CONTENT_PAGE_MEDIA: any[] = [
+  { id: 1, pageId: 1, slotKey: "side_img", mediaType: "image", url: "https://picsum.photos/seed/church-about/1200/800", thumbnailUrl: null, altText: "±³È¸ ¼Ò°³", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
+  { id: 2, pageId: 2, slotKey: "hero", mediaType: "image", url: "https://picsum.photos/seed/church-worship/1400/700", thumbnailUrl: null, altText: "¿¹¹è ¾È³»", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
+];
