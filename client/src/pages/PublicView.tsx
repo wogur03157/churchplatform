@@ -262,6 +262,7 @@ export default function PublicView() {
   const floatingMessages: any[] = homeData?.floatingMessages ?? [];
   const popups: any[] = homeData?.popups ?? [];
   const categoryForest: any[] = homeData?.categoryForest ?? [];
+  const sectionDataById: Record<string, any> = homeData?.sectionDataById ?? {};
 
   const cfg = (key: string) =>
     siteConfigs.find((c: any) => c.key === key)?.value ?? "";
@@ -302,13 +303,14 @@ export default function PublicView() {
 
   const heroSection = visibleSections.find(s => s.sectionType === "hero");
   const dataSections = visibleSections.filter(s => s.sectionType !== "hero");
+  const getSectionKey = (section: any) => String(section.id ?? section.sectionType);
 
   // ?뱀뀡 ?????몃뜳??留ㅽ븨 (colSpan ?⑹씠 12 ?섎㈃ ?ㅼ쓬 ??
   const sectionRowIndex: Record<string, number> = {};
   let rowIdx = 0,
     rowSum = 0;
   for (const s of dataSections) {
-    sectionRowIndex[s.sectionType] = rowIdx;
+    sectionRowIndex[getSectionKey(s)] = rowIdx;
     rowSum += s.colSpan ?? 12;
     if (rowSum >= 12) {
       rowIdx++;
@@ -334,7 +336,7 @@ export default function PublicView() {
     ];
 
     return (
-      <section key="hero" className="bg-white overflow-hidden">
+      <section key={getSectionKey(section)} className="bg-white overflow-hidden">
         <HeroCarousel slides={slides} />
 
         {/* ??硫붾돱 */}
@@ -357,6 +359,200 @@ export default function PublicView() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderContentCategorySection = (section: any, innerCls: string, narrow: boolean, mid: boolean, full: boolean, rowBg: string) => {
+    const data = sectionDataById[String(section.id)];
+    if (!data || data.kind !== "content_category") return null;
+
+    const title = section.title || data.category?.name || "카테고리";
+    const subtitle = section.subtitle || null;
+    const categoryHref = data.category?.href;
+    const children: any[] = data.children ?? [];
+    const page = data.page;
+    const variant = section.displayVariant ?? (narrow ? "links" : "grid");
+
+    return (
+      <section key={getSectionKey(section)} className={`py-12 lg:py-16 h-full ${rowBg}`}>
+        <div className={innerCls}>
+          <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                {title}
+              </h2>
+              {categoryHref && (
+                <Link href={categoryHref}>
+                  <Button variant="ghost" size="sm" className="shrink-0 text-primary font-bold">
+                    전체보기
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+            {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+          </div>
+
+          {children.length > 0 ? (
+            variant === "links" ? (
+              <div className="divide-y divide-border rounded-2xl border bg-white">
+                {children.map((item) => (
+                  <Link key={item.id} href={item.href ?? "#"}>
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
+                      <div>
+                        <p className="font-semibold">{item.name}</p>
+                        {item.pageTitle && (
+                          <p className="text-sm text-muted-foreground">{item.pageTitle}</p>
+                        )}
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={`grid gap-4 ${narrow ? "grid-cols-1" : mid ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
+                {children.map((item) => (
+                  <Link key={item.id} href={item.href ?? "#"}>
+                    <Card className="h-full border-none shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">{item.name}</CardTitle>
+                        {item.pageTitle && (
+                          <CardDescription>{item.pageTitle}</CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center text-primary text-sm font-semibold">
+                          페이지 보기
+                          <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )
+          ) : page?.href ? (
+            <Link href={page.href}>
+              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle>{page.title}</CardTitle>
+                  <CardDescription>{title} 페이지로 이동합니다.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center text-primary text-sm font-semibold">
+                    페이지 열기
+                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : null}
+        </div>
+      </section>
+    );
+  };
+
+  const renderMediaCategorySection = (section: any, innerCls: string, narrow: boolean, mid: boolean, full: boolean, rowBg: string) => {
+    const data = sectionDataById[String(section.id)];
+    if (!data || data.kind !== "media_category" || !data.items?.length) return null;
+
+    const title = section.title || data.category?.name || "미디어";
+    const subtitle = section.subtitle || null;
+    const moreHref = data.category?.href;
+    const variant = section.displayVariant ?? (narrow ? "list" : "featured");
+    const items: any[] = data.items;
+
+    const getEmbedUrl = (item: any) => {
+      if (item.videoType === "youtube") {
+        const id = item.url.includes("youtu.be")
+          ? item.url.split("/").pop()
+          : new URL(item.url).searchParams.get("v");
+        return id ? `https://www.youtube.com/embed/${id}` : item.url;
+      }
+      if (item.videoType === "vimeo") {
+        const id = item.url.split("/").pop();
+        return id ? `https://player.vimeo.com/video/${id}` : item.url;
+      }
+      return item.url;
+    };
+
+    return (
+      <section key={getSectionKey(section)} className={`py-12 lg:py-16 h-full ${rowBg}`}>
+        <div className={innerCls}>
+          <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                {title}
+              </h2>
+              {moreHref && (
+                <Link href={moreHref}>
+                  <Button variant="ghost" size="sm" className="shrink-0 text-primary font-bold">
+                    전체보기
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+            {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+          </div>
+
+          {variant === "featured" && items[0]?.mediaType === "video" ? (
+            <div className="space-y-4">
+              <div className="aspect-video overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
+                <iframe
+                  src={getEmbedUrl(items[0])}
+                  className="h-full w-full"
+                  allowFullScreen
+                  title={items[0].title}
+                />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold">{items[0].title}</h3>
+                {items[0].description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{items[0].description}</p>
+                )}
+              </div>
+              {items.length > 1 && (
+                <div className={`grid gap-3 ${mid ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+                  {items.slice(1).map((item) => (
+                    <Card key={item.id} className="border-none shadow-sm">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                        {item.description && (
+                          <CardDescription className="line-clamp-2">{item.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={`grid gap-4 ${narrow ? "grid-cols-1" : mid ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
+              {items.map((item) => (
+                <Card key={item.id} className="overflow-hidden border-none shadow-sm">
+                  {item.mediaType === "image" ? (
+                    <div className="aspect-square overflow-hidden bg-muted">
+                      <img src={item.url} alt={item.title} className="h-full w-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="aspect-video overflow-hidden bg-muted">
+                      <iframe src={getEmbedUrl(item)} className="h-full w-full" allowFullScreen title={item.title} />
+                    </div>
+                  )}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                    {item.description && (
+                      <CardDescription className="line-clamp-2">{item.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     );
@@ -595,7 +791,7 @@ export default function PublicView() {
         if (!section.imageUrl) return null;
         return (
           <section
-            key={section.sectionType}
+            key={getSectionKey(section)}
             className={`py-8 lg:py-12 h-full ${rowBg}`}
           >
             <div className={innerCls}>
@@ -607,6 +803,12 @@ export default function PublicView() {
             </div>
           </section>
         );
+
+      case "content_category":
+        return renderContentCategorySection(section, innerCls, narrow, mid, full, rowBg);
+
+      case "media_category":
+        return renderMediaCategorySection(section, innerCls, narrow, mid, full, rowBg);
 
       default:
         return null;
@@ -649,16 +851,17 @@ export default function PublicView() {
         {/* ?곗씠???뱀뀡 洹몃━??- 12??湲곗? colSpan */}
         <div className="grid lg:grid-cols-12">
           {dataSections.map((section, idx) => {
-            const rowBg = ROW_BG[sectionRowIndex[section.sectionType] % 2];
+            const sectionKey = getSectionKey(section);
+            const rowBg = ROW_BG[sectionRowIndex[sectionKey] % 2];
             const content = renderSection(section, rowBg);
             if (!content) return null;
             const prevSection = dataSections[idx - 1];
             const isFirstInRow =
               !prevSection ||
-              sectionRowIndex[prevSection.sectionType] !== sectionRowIndex[section.sectionType];
+              sectionRowIndex[getSectionKey(prevSection)] !== sectionRowIndex[sectionKey];
             return (
               <div
-                key={section.sectionType}
+                key={sectionKey}
                 className={`${COL_SPAN_CLASS[section.colSpan] ?? "lg:col-span-12"} ${!isFirstInRow ? "lg:border-l border-border/30" : ""}`}
               >
                 {content}

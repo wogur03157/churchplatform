@@ -204,7 +204,6 @@ export class AuthService {
     const user = await this.getUserByOpenId(session.openId);
     if (!user) return null;
 
-    await this.upsertUser({ openId: user.openId, lastSignedIn: new Date() });
 
     return user;
   }
@@ -229,3 +228,4 @@ export class AuthService {
     res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
   }
 }
+

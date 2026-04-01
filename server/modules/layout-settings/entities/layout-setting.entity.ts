@@ -5,6 +5,28 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
+export const LAYOUT_SECTION_TYPES = [
+  "announcements",
+  "images",
+  "videos",
+  "hero",
+  "image_a",
+  "image_b",
+  "content_category",
+  "media_category",
+] as const;
+
+export type LayoutSectionType = (typeof LAYOUT_SECTION_TYPES)[number];
+
+export const LAYOUT_DISPLAY_VARIANTS = [
+  "grid",
+  "list",
+  "featured",
+  "links",
+] as const;
+
+export type LayoutDisplayVariant = (typeof LAYOUT_DISPLAY_VARIANTS)[number];
+
 @Entity("layout_settings")
 export class LayoutSetting {
   @PrimaryGeneratedColumn()
@@ -12,9 +34,9 @@ export class LayoutSetting {
 
   @Column({
     type: "enum",
-    enum: ["announcements", "images", "videos", "hero", "image_a", "image_b"],
+    enum: LAYOUT_SECTION_TYPES,
   })
-  sectionType!: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
+  sectionType!: LayoutSectionType;
 
   @Column({ type: "enum", enum: ["visible", "hidden"], default: "visible" })
   status!: "visible" | "hidden";
@@ -39,6 +61,20 @@ export class LayoutSetting {
 
   @Column({ type: "int", nullable: true, default: null })
   gridCols!: number | null;
+
+  @Column({ type: "int", nullable: true, default: null })
+  sourceCategoryId!: number | null;
+
+  @Column({ type: "int", nullable: true, default: null })
+  itemLimit!: number | null;
+
+  @Column({
+    type: "enum",
+    enum: LAYOUT_DISPLAY_VARIANTS,
+    nullable: true,
+    default: null,
+  })
+  displayVariant!: LayoutDisplayVariant | null;
 
   @Column({ type: "int", nullable: true })
   churchId!: number | null;

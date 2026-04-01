@@ -19,6 +19,10 @@ import { LayoutSettingsService } from "./layout-settings.service";
 import { ChurchesService } from "../churches/churches.service";
 import { StorageService } from "../storage/storage.service";
 import type { Request } from "express";
+import type {
+  LayoutDisplayVariant,
+  LayoutSectionType,
+} from "./entities/layout-setting.entity";
 
 @Controller("layout-settings")
 export class LayoutSettingsController {
@@ -85,7 +89,8 @@ export class LayoutSettingsController {
   async saveAll(
     @Body()
     body: Array<{
-      sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
+      id?: number;
+      sectionType: LayoutSectionType;
       status: "visible" | "hidden";
       displayOrder: number;
       colSpan: number;
@@ -94,12 +99,16 @@ export class LayoutSettingsController {
       subtitle?: string;
       imageKey?: string;
       imageUrl?: string;
+      sourceCategoryId?: number | null;
+      itemLimit?: number | null;
+      displayVariant?: LayoutDisplayVariant | null;
     }>,
     @CurrentUser() user: User,
   ) {
     const churchId = await this.getChurchIdForAdmin(user);
     await this.service.saveAll(
       body.map((item) => ({
+        id: item.id,
         sectionType: item.sectionType,
         status: item.status,
         displayOrder: item.displayOrder,
@@ -109,6 +118,9 @@ export class LayoutSettingsController {
         subtitle: item.subtitle,
         imageKey: item.imageKey,
         imageUrl: item.imageUrl,
+        sourceCategoryId: item.sourceCategoryId ?? null,
+        itemLimit: item.itemLimit ?? null,
+        displayVariant: item.displayVariant ?? null,
       })),
       churchId,
       user.id,
@@ -121,27 +133,37 @@ export class LayoutSettingsController {
   async upsert(
     @Body()
     body: {
-      sectionType: "announcements" | "images" | "videos" | "hero" | "image_a" | "image_b";
+      id?: number;
+      sectionType: LayoutSectionType;
       status: "visible" | "hidden";
       displayOrder: number;
       colSpan?: number;
+      gridCols?: number | null;
       title?: string;
       subtitle?: string;
       imageKey?: string;
       imageUrl?: string;
+      sourceCategoryId?: number | null;
+      itemLimit?: number | null;
+      displayVariant?: LayoutDisplayVariant | null;
     },
     @CurrentUser() user: User
   ) {
     const churchId = await this.getChurchIdForAdmin(user);
     await this.service.upsert({
+      id: body.id,
       sectionType: body.sectionType,
       status: body.status,
       displayOrder: body.displayOrder,
       colSpan: body.colSpan ?? 1,
+      gridCols: body.gridCols ?? null,
       title: body.title,
       subtitle: body.subtitle,
       imageKey: body.imageKey,
       imageUrl: body.imageUrl,
+      sourceCategoryId: body.sourceCategoryId ?? null,
+      itemLimit: body.itemLimit ?? null,
+      displayVariant: body.displayVariant ?? null,
       churchId,
       updatedBy: user.id,
     });
@@ -154,20 +176,34 @@ export class LayoutSettingsController {
     @Param("id", ParseIntPipe) id: number,
     @Body()
     body: {
+      sectionType?: LayoutSectionType;
       status?: "visible" | "hidden";
       displayOrder?: number;
       colSpan?: number;
+      gridCols?: number | null;
       title?: string;
       subtitle?: string;
+      imageKey?: string | null;
+      imageUrl?: string | null;
+      sourceCategoryId?: number | null;
+      itemLimit?: number | null;
+      displayVariant?: LayoutDisplayVariant | null;
     },
     @CurrentUser() user: User
   ) {
     const updateData: Record<string, unknown> = {};
+    if (body.sectionType !== undefined) updateData.sectionType = body.sectionType;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined) updateData.displayOrder = body.displayOrder;
     if (body.colSpan !== undefined) updateData.colSpan = body.colSpan;
+    if (body.gridCols !== undefined) updateData.gridCols = body.gridCols;
     if (body.title !== undefined) updateData.title = body.title;
     if (body.subtitle !== undefined) updateData.subtitle = body.subtitle;
+    if (body.imageKey !== undefined) updateData.imageKey = body.imageKey;
+    if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl;
+    if (body.sourceCategoryId !== undefined) updateData.sourceCategoryId = body.sourceCategoryId;
+    if (body.itemLimit !== undefined) updateData.itemLimit = body.itemLimit;
+    if (body.displayVariant !== undefined) updateData.displayVariant = body.displayVariant;
     updateData.updatedBy = user.id;
 
     await this.service.update(id, updateData);

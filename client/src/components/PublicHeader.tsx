@@ -20,6 +20,7 @@ type PublicHeaderProps = {
 };
 
 const DROPDOWN_STYLE: "full" | "nav" = "nav";
+const MENU_COLUMN_WIDTH_REM = 11.5;
 
 function buildNavigationMenu(roots: CategoryNode[] | undefined): NavItem[] {
   return (roots ?? [])
@@ -75,8 +76,7 @@ export default function PublicHeader({
   const churchName = cfg("church_name") || "영신교회";
   const logoUrl = cfg("church_logo_url");
   const navMenu = useMemo(() => buildNavigationMenu(categoryForest), [categoryForest]);
-  const selectedMenu = openMenu !== null ? navMenu[openMenu] ?? null : null;
-
+  const menuWidthRem = navMenu.length * MENU_COLUMN_WIDTH_REM + 4;
   const cancelClose = () => {
     if (closeTimer.current) {
       clearTimeout(closeTimer.current);
@@ -98,36 +98,50 @@ export default function PublicHeader({
 
   useEffect(() => () => cancelClose(), []);
 
-  const dropdownContent = selectedMenu ? (
-    <div className="px-6 py-6 lg:px-8 lg:py-7">
-      <div className="mb-5 border-b border-border/60 pb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">{selectedMenu.label}</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {selectedMenu.children.map((child) => (
-          <div key={`${selectedMenu.label}-${child.href}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40">
-            <Link href={child.href}>
-              <a className="block text-base font-semibold transition-colors hover:text-primary">
-                {child.label}
-              </a>
-            </Link>
-            {child.children.length > 0 && (
-              <div className="mt-3 space-y-1.5 border-t border-border/50 pt-3">
-                {child.children.map((grandChild) => (
-                  <Link key={grandChild.href} href={grandChild.href}>
-                    <a className="flex items-center gap-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                      {grandChild.label}
+  const megaContent = (
+    <div className="grid gap-8 px-8 py-6" style={{ gridTemplateColumns: `repeat(${navMenu.length}, ${MENU_COLUMN_WIDTH_REM}rem)` }}>
+      {navMenu.map((menuItem, menuIndex) => {
+        const isActive = openMenu === menuIndex;
+
+        return (
+          <div
+            key={menuItem.label}
+            onMouseEnter={() => {
+              cancelClose();
+              setOpenMenu(menuIndex);
+            }}
+          >
+            <p className={`mb-3 text-sm font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
+              {menuItem.label}
+            </p>
+            <div className="space-y-4">
+              {menuItem.children.map((child) => (
+                <div key={`${menuItem.label}-${child.href}`} className="space-y-2">
+                  <Link href={child.href}>
+                    <a className="block py-1 text-sm font-medium transition-colors hover:text-primary">
+                      {child.label}
                     </a>
                   </Link>
-                ))}
-              </div>
-            )}
+                  {child.children.length > 0 && (
+                    <div className="space-y-1 pl-3">
+                      {child.children.map((grandChild) => (
+                        <Link key={grandChild.href} href={grandChild.href}>
+                          <a className="flex items-center gap-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                            <span className="h-1 w-1 rounded-full bg-current opacity-60" />
+                            {grandChild.label}
+                          </a>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
-  ) : null;
+  );
 
   return (
     <header className="sticky top-0 z-50 relative w-full">
@@ -140,7 +154,7 @@ export default function PublicHeader({
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-bold text-transparent">
                   {churchName}
                 </span>
-                <span className="text-[10px] font-medium tracking-tighter text-muted-foreground transition-colors group-hover:text-primary">
+                <span className="text-[0.625rem] font-medium tracking-tighter text-muted-foreground transition-colors group-hover:text-primary">
                   하나님 사랑 이웃 사랑
                 </span>
               </div>
@@ -148,15 +162,16 @@ export default function PublicHeader({
           </Link>
 
           {DROPDOWN_STYLE === "nav" ? (
-            <div className="relative hidden items-center gap-2 lg:gap-3 md:flex" onMouseLeave={scheduleClose}>
+            <div className="relative hidden items-center gap-6 lg:gap-8 md:flex" onMouseLeave={scheduleClose}>
               {navMenu.map((item, index) => (
                 <button
                   key={item.label}
-                  className={`flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 lg:px-6 ${
+                  className={`flex items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     openMenu === index
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "hover:bg-accent hover:text-accent-foreground"
                   }`}
+                  style={{ minWidth: `${MENU_COLUMN_WIDTH_REM}rem` }}
                   onMouseEnter={() => {
                     cancelClose();
                     setOpenMenu(index);
@@ -167,10 +182,10 @@ export default function PublicHeader({
                 </button>
               ))}
 
-              {selectedMenu && (
-                <div className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-3 duration-200" onMouseEnter={cancelClose}>
-                  <div className="w-[760px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-3xl border border-border/50 bg-white/95 shadow-xl backdrop-blur-md">
-                    {dropdownContent}
+              {openMenu !== null && (
+                <div className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-2 duration-200" onMouseEnter={cancelClose}>
+                  <div className="max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-border/50 bg-white/95 shadow-xl backdrop-blur-md" style={{ width: `${menuWidthRem}rem` }}>
+                    {megaContent}
                   </div>
                 </div>
               )}
@@ -226,3 +241,6 @@ export default function PublicHeader({
     </header>
   );
 }
+
+
+

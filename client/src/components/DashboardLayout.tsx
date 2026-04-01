@@ -65,12 +65,21 @@ const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
 
+type DashboardUser = {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  role?: string;
+  enabledFeatures?: string[];
+  permissions?: string[];
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading, user, logout } = useAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -108,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <SidebarProvider
       style={{ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties}
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
+      <DashboardLayoutContent user={user as DashboardUser} logout={logout} setSidebarWidth={setSidebarWidth}>
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -117,11 +126,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 type DashboardLayoutContentProps = {
   children: React.ReactNode;
+  user: DashboardUser;
+  logout: () => Promise<void>;
   setSidebarWidth: (width: number) => void;
 };
 
-function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
+function DashboardLayoutContent({ children, user, logout, setSidebarWidth }: DashboardLayoutContentProps) {
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -133,8 +143,8 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
   const getNavState = (permKey: string | null): NavState => {
     if (!permKey || user?.role === "super_admin") return "visible";
 
-    const enabledFeatures = Array.isArray(user?.enabledFeatures) ? (user.enabledFeatures as string[]) : null;
-    const permissions = Array.isArray(user?.permissions) ? (user.permissions as string[]) : null;
+    const enabledFeatures = Array.isArray(user?.enabledFeatures) ? user.enabledFeatures : null;
+    const permissions = Array.isArray(user?.permissions) ? user.permissions : null;
 
     if (enabledFeatures === null && permissions === null) {
       return "visible";
@@ -240,52 +250,53 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          <SidebarFooter className="mt-auto border-t border-sidebar-border/70 p-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring group-data-[collapsible=icon]:justify-center">
-                  <Avatar className="h-9 w-9 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
+                <button className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-sidebar-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+                      {user?.name?.slice(0, 1) || user?.email?.slice(0, 1) || "A"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                    <p className="truncate text-sm font-medium leading-none">{user?.name || "-"}</p>
-                    <p className="mt-1.5 truncate text-xs text-muted-foreground">{user?.email || "-"}</p>
-                  </div>
+                  {!isCollapsed && (
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium leading-none">{user?.name || "Admin"}</p>
+                      <p className="truncate text-xs text-muted-foreground mt-1">{user?.email || "admin@church.local"}</p>
+                    </div>
+                  )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  로그아웃
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarFooter>
         </Sidebar>
-        <div
-          className={`absolute right-0 top-0 h-full w-1 cursor-col-resize transition-colors hover:bg-primary/20 ${isCollapsed ? "hidden" : ""}`}
-          onMouseDown={() => {
-            if (!isCollapsed) setIsResizing(true);
-          }}
-          style={{ zIndex: 50 }}
-        />
+
+        {!isCollapsed && !isMobile && (
+          <button
+            type="button"
+            aria-label="Resize sidebar"
+            className="absolute inset-y-0 right-0 hidden w-1 cursor-col-resize bg-transparent transition hover:bg-border/70 lg:block"
+            onMouseDown={() => setIsResizing(true)}
+          />
+        )}
       </div>
 
       <SidebarInset>
-        {isMobile && (
-          <div className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
-              <span className="tracking-tight text-foreground">{activeMenuItem?.label ?? "Menu"}</span>
-            </div>
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur-md lg:px-6">
+          <SidebarTrigger className="md:hidden" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-muted-foreground">
+              {activeMenuItem?.label ?? "Dashboard"}
+            </p>
           </div>
-        )}
-        <main className="flex-1 p-4">{children}</main>
+        </header>
+        <main className="min-h-[calc(100vh-4rem)] bg-muted/20 p-4 lg:p-6">{children}</main>
       </SidebarInset>
     </>
   );

@@ -1,6 +1,8 @@
 ﻿import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Announcement } from "../announcements/entities/announcement.entity";
+import { ContentCategory } from "../content-pages/entities/content-category.entity";
+import { ContentPage } from "../content-pages/entities/content-page.entity";
 import { ContentPagesModule } from "../content-pages/content-pages.module";
 import { FloatingMessage } from "../floating-messages/entities/floating-message.entity";
 import { HeroSlide } from "../hero-slides/entities/hero-slide.entity";
@@ -15,6 +17,8 @@ import { PublicHomeService } from "./public-home.service";
   imports: [
     TypeOrmModule.forFeature([
       Announcement,
+      ContentCategory,
+      ContentPage,
       Media,
       SiteConfig,
       HeroSlide,

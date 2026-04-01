@@ -1,233 +1,193 @@
-﻿import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { LayoutSetting } from "./entities/layout-setting.entity";
+import {
+  type LayoutDisplayVariant,
+  LayoutSetting,
+  type LayoutSectionType,
+} from "./entities/layout-setting.entity";
 
-type LayoutSectionType =
-  | "announcements"
-  | "images"
-  | "videos"
-  | "hero"
-  | "image_a"
-  | "image_b";
-
-const ALL_SECTION_TYPES: LayoutSectionType[] = [
-  "hero",
-  "announcements",
-  "images",
-  "videos",
-  "image_a",
-  "image_b",
-];
-
-const FALLBACK_SECTION_ORDER: LayoutSectionType[] = [
-  "hero",
-  "videos",
-  "image_a",
-  "announcements",
-  "images",
-  "image_b",
-];
+type LayoutSettingInput = {
+  id?: number;
+  sectionType: LayoutSectionType;
+  status: "visible" | "hidden";
+  displayOrder: number;
+  colSpan?: number;
+  gridCols?: number | null;
+  title?: string;
+  subtitle?: string;
+  imageKey?: string;
+  imageUrl?: string;
+  sourceCategoryId?: number | null;
+  itemLimit?: number | null;
+  displayVariant?: LayoutDisplayVariant | null;
+};
 
 @Injectable()
 export class LayoutSettingsService {
   constructor(
     @InjectRepository(LayoutSetting)
-    private readonly repo: Repository<LayoutSetting>
+    private readonly repo: Repository<LayoutSetting>,
   ) {}
 
   async findAll(churchId?: number): Promise<LayoutSetting[]> {
     const where = churchId ? { churchId } : {};
-    const items = await this.repo.find({ where, order: { displayOrder: "ASC" } });
-
-    if (!churchId) {
-      return items;
-    }
-
-    return this.repairCorruptedSectionTypes(churchId, items);
-  }
-
-  private inferSectionType(
-    item: LayoutSetting,
-    remaining: LayoutSectionType[]
-  ): LayoutSectionType | null {
-    const text = `${item.title ?? ""} ${item.subtitle ?? ""}`.toLowerCase();
-    const match = (type: LayoutSectionType, patterns: string[]) =>
-      remaining.includes(type) && patterns.some((pattern) => text.includes(pattern));
-
-    if (match("hero", ["환영", "welcome", "오신", "메인", "배너"])) return "hero";
-    if (match("videos", ["설교", "영상", "예배", "youtube", "유튜브"])) return "videos";
-    if (match("announcements", ["공지", "소식", "알림", "notice"])) return "announcements";
-    if (match("images", ["갤러리", "사진", "포토", "gallery"])) return "images";
-
-    if (!item.title?.trim()) {
-      if (remaining.includes("image_a")) return "image_a";
-      if (remaining.includes("image_b")) return "image_b";
-    }
-
-    if (item.status === "hidden" && remaining.includes("image_b")) {
-      return "image_b";
-    }
-
-    return FALLBACK_SECTION_ORDER.find((type) => remaining.includes(type)) ?? null;
-  }
-
-  private async repairCorruptedSectionTypes(
-    churchId: number,
-    items: LayoutSetting[]
-  ): Promise<LayoutSetting[]> {
-    const counts = new Map<LayoutSectionType, number>();
-    for (const item of items) {
-      counts.set(item.sectionType, (counts.get(item.sectionType) ?? 0) + 1);
-    }
-
-    const hasDuplicates = Array.from(counts.values()).some((count) => count > 1);
-    if (!hasDuplicates) {
-      return items;
-    }
-
-    const sorted = [...items].sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id);
-    const assigned = new Set<LayoutSectionType>();
-    const duplicates: LayoutSetting[] = [];
-
-    for (const item of sorted) {
-      if ((counts.get(item.sectionType) ?? 0) === 1 && !assigned.has(item.sectionType)) {
-        assigned.add(item.sectionType);
-      } else {
-        duplicates.push(item);
-      }
-    }
-
-    const changed: LayoutSetting[] = [];
-    for (const item of duplicates) {
-      const remaining = ALL_SECTION_TYPES.filter((type) => !assigned.has(type));
-      if (remaining.length === 0) {
-        break;
-      }
-
-      const nextType = this.inferSectionType(item, remaining);
-      if (!nextType) {
-        continue;
-      }
-
-      assigned.add(nextType);
-      if (item.sectionType !== nextType) {
-        item.sectionType = nextType;
-        changed.push(item);
-      }
-    }
-
-    if (changed.length > 0) {
-      await this.repo.save(changed);
-      console.warn(
-        `[LayoutSettingsService] repaired duplicated section types for church ${churchId}: ${changed
-          .map((item) => `${item.id}:${item.sectionType}`)
-          .join(", ")}`
-      );
-    }
-
-    return sorted;
-  }
-
-  private async upsertOne(data: {
-    sectionType: LayoutSectionType;
-    status: "visible" | "hidden";
-    displayOrder: number;
-    colSpan?: number;
-    gridCols?: number | null;
-    title?: string;
-    subtitle?: string;
-    imageKey?: string;
-    imageUrl?: string;
-    churchId: number;
-    updatedBy: number;
-  }): Promise<void> {
-    let entity = await this.repo.findOne({
-      where: {
-        churchId: data.churchId,
-        sectionType: data.sectionType,
-      },
-    });
-
-    if (entity) {
-      Object.assign(entity, data);
-    } else {
-      entity = this.repo.create(data);
-    }
-    await this.repo.save(entity);
-  }
-
-  async upsert(data: {
-    sectionType: LayoutSectionType;
-    status: "visible" | "hidden";
-    displayOrder: number;
-    colSpan?: number;
-    gridCols?: number | null;
-    title?: string;
-    subtitle?: string;
-    imageKey?: string;
-    imageUrl?: string;
-    churchId: number;
-    updatedBy: number;
-  }): Promise<void> {
-    await this.upsertOne(data);
+    return this.repo.find({ where, order: { displayOrder: "ASC", id: "ASC" } });
   }
 
   async saveAll(
-    items: Array<{
-      sectionType: LayoutSectionType;
-      status: "visible" | "hidden";
-      displayOrder: number;
-      colSpan: number;
-      gridCols?: number | null;
-      title?: string;
-      subtitle?: string;
-      imageKey?: string;
-      imageUrl?: string;
-    }>,
+    items: LayoutSettingInput[],
     churchId: number,
     updatedBy: number,
-  ): Promise<void> {
-    const existing = await this.repo.find({ where: { churchId } });
-    const existingByType = new Map<LayoutSectionType, LayoutSetting[]>();
+  ): Promise<LayoutSetting[]> {
+    const existing = await this.repo.find({
+      where: { churchId },
+      order: { displayOrder: "ASC", id: "ASC" },
+    });
+    const existingById = new Map(existing.map((item) => [item.id, item] as const));
+    const keepIds = new Set<number>();
+    const toSave: LayoutSetting[] = [];
 
-    for (const entity of existing) {
-      const bucket = existingByType.get(entity.sectionType) ?? [];
-      bucket.push(entity);
-      existingByType.set(entity.sectionType, bucket);
-    }
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      this.validateSectionInput(item);
 
-    const usedIds = new Set<number>();
-    const toSave = items.map((item) => {
-      const matches = existingByType.get(item.sectionType) ?? [];
-      const entity = matches.shift() ?? this.repo.create();
+      const entity =
+        item.id && existingById.has(item.id)
+          ? existingById.get(item.id)!
+          : this.repo.create();
 
       if (entity.id) {
-        usedIds.add(entity.id);
+        keepIds.add(entity.id);
       }
 
       Object.assign(entity, {
-        ...item,
+        sectionType: item.sectionType,
+        status: item.status,
+        displayOrder: index + 1,
+        colSpan: item.colSpan ?? 12,
+        gridCols: item.gridCols ?? null,
+        title: item.title?.trim() || null,
+        subtitle: item.subtitle?.trim() || null,
+        imageKey: item.imageKey?.trim() || null,
+        imageUrl: item.imageUrl?.trim() || null,
+        sourceCategoryId: item.sourceCategoryId ?? null,
+        itemLimit: item.itemLimit ?? null,
+        displayVariant: item.displayVariant ?? null,
         churchId,
         updatedBy,
       });
 
-      return entity;
-    });
-
-    const duplicateIds = existing
-      .filter((entity) => !usedIds.has(entity.id))
-      .map((entity) => entity.id);
-
-    if (duplicateIds.length > 0) {
-      await this.repo.delete(duplicateIds);
+      toSave.push(entity);
     }
 
-    await this.repo.save(toSave);
+    const staleIds = existing
+      .filter((item) => !keepIds.has(item.id) && !toSave.some((saved) => saved.id === item.id))
+      .map((item) => item.id);
+
+    if (staleIds.length > 0) {
+      await this.repo.delete(staleIds);
+    }
+
+    return this.repo.save(toSave);
   }
 
-  async update(id: number, data: Record<string, unknown>): Promise<void> {
-    await this.repo.update(id, data);
+  async upsert(
+    data: LayoutSettingInput & {
+      churchId: number;
+      updatedBy: number;
+    },
+  ): Promise<LayoutSetting> {
+    this.validateSectionInput(data);
+
+    const entity =
+      data.id
+        ? (await this.repo.findOne({ where: { id: data.id, churchId: data.churchId } })) ?? this.repo.create()
+        : this.repo.create();
+
+    Object.assign(entity, {
+      sectionType: data.sectionType,
+      status: data.status,
+      displayOrder: data.displayOrder,
+      colSpan: data.colSpan ?? 12,
+      gridCols: data.gridCols ?? null,
+      title: data.title?.trim() || null,
+      subtitle: data.subtitle?.trim() || null,
+      imageKey: data.imageKey?.trim() || null,
+      imageUrl: data.imageUrl?.trim() || null,
+      sourceCategoryId: data.sourceCategoryId ?? null,
+      itemLimit: data.itemLimit ?? null,
+      displayVariant: data.displayVariant ?? null,
+      churchId: data.churchId,
+      updatedBy: data.updatedBy,
+    });
+
+    return this.repo.save(entity);
+  }
+
+  async update(id: number, data: Partial<LayoutSettingInput> & { updatedBy?: number }): Promise<void> {
+    const entity = await this.repo.findOne({ where: { id } });
+    if (!entity) {
+      throw new BadRequestException("Layout section not found");
+    }
+
+    this.validateSectionInput({
+      sectionType: (data.sectionType ?? entity.sectionType) as LayoutSectionType,
+      status: (data.status ?? entity.status) as "visible" | "hidden",
+      displayOrder: data.displayOrder ?? entity.displayOrder,
+      colSpan: data.colSpan ?? entity.colSpan,
+      gridCols: data.gridCols ?? entity.gridCols,
+      title: data.title ?? entity.title ?? undefined,
+      subtitle: data.subtitle ?? entity.subtitle ?? undefined,
+      imageKey: data.imageKey ?? entity.imageKey ?? undefined,
+      imageUrl: data.imageUrl ?? entity.imageUrl ?? undefined,
+      sourceCategoryId: data.sourceCategoryId ?? entity.sourceCategoryId ?? undefined,
+      itemLimit: data.itemLimit ?? entity.itemLimit ?? undefined,
+      displayVariant: (data.displayVariant ?? entity.displayVariant ?? undefined) as LayoutDisplayVariant | undefined,
+    });
+
+    Object.assign(entity, {
+      ...(data.sectionType !== undefined && { sectionType: data.sectionType }),
+      ...(data.status !== undefined && { status: data.status }),
+      ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
+      ...(data.colSpan !== undefined && { colSpan: data.colSpan }),
+      ...(data.gridCols !== undefined && { gridCols: data.gridCols }),
+      ...(data.title !== undefined && { title: data.title?.trim() || null }),
+      ...(data.subtitle !== undefined && { subtitle: data.subtitle?.trim() || null }),
+      ...(data.imageKey !== undefined && { imageKey: data.imageKey?.trim() || null }),
+      ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl?.trim() || null }),
+      ...(data.sourceCategoryId !== undefined && { sourceCategoryId: data.sourceCategoryId }),
+      ...(data.itemLimit !== undefined && { itemLimit: data.itemLimit }),
+      ...(data.displayVariant !== undefined && { displayVariant: data.displayVariant }),
+      ...(data.updatedBy !== undefined && { updatedBy: data.updatedBy }),
+    });
+
+    await this.repo.save(entity);
+  }
+
+  private validateSectionInput(input: Partial<LayoutSettingInput>) {
+    const sectionType = input.sectionType;
+    if (!sectionType) {
+      throw new BadRequestException("sectionType is required");
+    }
+
+    const requiresCategory =
+      sectionType === "content_category" || sectionType === "media_category";
+
+    if (requiresCategory && !input.sourceCategoryId) {
+      throw new BadRequestException("sourceCategoryId is required for category sections");
+    }
+
+    if (!requiresCategory && input.sourceCategoryId) {
+      throw new BadRequestException("sourceCategoryId is only allowed for category sections");
+    }
+
+    if (
+      (sectionType === "image_a" || sectionType === "image_b") &&
+      input.status === "visible" &&
+      !input.imageUrl
+    ) {
+      throw new BadRequestException("imageUrl is required for image sections");
+    }
   }
 }
-
