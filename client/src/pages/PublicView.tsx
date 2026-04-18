@@ -241,11 +241,13 @@ function GalleryCarousel({ images }: { images: any[] }) {
 
 // --------------------------------------------------------------------------------------------------
 
+function AccentBar() {
+  return <span className="inline-block w-1 self-stretch min-h-[1em] rounded-full bg-accent-gold" />;
+}
+
 export default function PublicView() {
   const [floatingMessage, setFloatingMessage] = useState<any>(null);
-  const [showFloating, setShowFloating] = useState(false);
   const [popup, setPopup] = useState<any>(null);
-  const [showPopup, setShowPopup] = useState(false);
 
   const { data: homeData } = useQuery({
     queryKey: ["public", "home-data"],
@@ -268,33 +270,22 @@ export default function PublicView() {
     siteConfigs.find((c: any) => c.key === key)?.value ?? "";
 
   useEffect(() => {
-    if (floatingMessages && floatingMessages.length > 0) {
-      setFloatingMessage(floatingMessages[0]);
-      setShowFloating(true);
-    }
+    if (floatingMessages?.length > 0) setFloatingMessage(floatingMessages[0]);
   }, [floatingMessages]);
 
   useEffect(() => {
-    if (popups && popups.length > 0) {
-      const currentPopup = popups[0];
-      const dontShowUntil = localStorage.getItem(
-        `popup_hide_${currentPopup.id}`
-      );
-
-      if (!dontShowUntil || new Date().getTime() > parseInt(dontShowUntil)) {
-        setPopup(currentPopup);
-        setShowPopup(true);
-      }
+    if (popups?.length > 0) {
+      const current = popups[0];
+      const until = localStorage.getItem(`popup_hide_${current.id}`);
+      if (!until || Date.now() > parseInt(until)) setPopup(current);
     }
   }, [popups]);
 
-  const handleClosePopup = (dontShowToday: boolean = false) => {
+  const handleClosePopup = (dontShowToday = false) => {
     if (dontShowToday && popup) {
-      // 24시간 뒤의 타임스탬프 저장
-      const expiry = new Date().getTime() + 24 * 60 * 60 * 1000;
-      localStorage.setItem(`popup_hide_${popup.id}`, expiry.toString());
+      localStorage.setItem(`popup_hide_${popup.id}`, (Date.now() + 86400000).toString());
     }
-    setShowPopup(false);
+    setPopup(null);
   };
 
   const visibleSections =
@@ -382,7 +373,7 @@ export default function PublicView() {
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
-                <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
+                <AccentBar />
                 {title}
               </h2>
               {categoryHref && (
@@ -487,7 +478,7 @@ export default function PublicView() {
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
-                <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
+                <AccentBar />
                 {title}
               </h2>
               {moreHref && (
@@ -589,7 +580,7 @@ export default function PublicView() {
                 <h2
                   className={`font-bold text-foreground leading-tight flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
-                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
+                  <AccentBar />
                   {section.title || "교회 소식"}
                 </h2>
                 <Link href="/news/announcements">
@@ -697,7 +688,7 @@ export default function PublicView() {
             <div className={innerCls}>
               <div className={`${full ? "text-center" : ""} mb-6 lg:mb-8 space-y-1`}>
                 <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
-                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
+                  <AccentBar />
                   {section.title || "교회 갤러리"}
                 </h2>
                 {section.subtitle && !narrow && (
@@ -740,7 +731,7 @@ export default function PublicView() {
                 <h2
                   className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
-                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
+                  <AccentBar />
                   {section.title || "최신 설교"}
                 </h2>
                 {section.subtitle && !narrow && (
@@ -931,7 +922,7 @@ export default function PublicView() {
       </footer>
 
       {/* 팝업 모달 */}
-      {showPopup && popup && (
+      {popup && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={() => handleClosePopup()}
@@ -1004,7 +995,7 @@ export default function PublicView() {
       )}
 
       {/* 플로팅 메시지 */}
-      {showFloating && floatingMessage && (
+      {floatingMessage && (
         <div
           className={`fixed ${getFloatingPosition()} right-4 z-50 max-w-sm w-full animate-in slide-in-from-right duration-500`}
         >
@@ -1016,7 +1007,7 @@ export default function PublicView() {
                 variant="ghost"
                 size="sm"
                 className="absolute right-2 top-2 h-6 w-6 p-0 hover:bg-black/5"
-                onClick={() => setShowFloating(false)}
+                onClick={() => setFloatingMessage(null)}
               >
                 <X className="h-4 w-4" />
               </Button>

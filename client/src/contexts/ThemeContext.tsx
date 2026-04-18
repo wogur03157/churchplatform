@@ -48,6 +48,7 @@ export function ThemeProvider({
   const { data: configs } = useQuery({
     queryKey: ["site-config"],
     queryFn: () => api.get<any[]>("/site-config"),
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
