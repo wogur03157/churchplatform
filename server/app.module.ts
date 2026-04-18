@@ -1,4 +1,4 @@
-﻿import { Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { HealthController } from "./modules/health/health.controller";
 import { MockModule } from "./modules/mock/mock.module";

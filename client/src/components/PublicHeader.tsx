@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
@@ -117,19 +117,15 @@ export default function PublicHeader({
             <div className="space-y-4">
               {menuItem.children.map((child) => (
                 <div key={`${menuItem.label}-${child.href}`} className="space-y-2">
-                  <Link href={child.href}>
-                    <a className="block py-1 text-sm font-medium transition-colors hover:text-primary">
-                      {child.label}
-                    </a>
+                  <Link href={child.href} className="block py-1 text-sm font-medium transition-colors hover:text-primary">
+                    {child.label}
                   </Link>
                   {child.children.length > 0 && (
                     <div className="space-y-1 pl-3">
                       {child.children.map((grandChild) => (
-                        <Link key={grandChild.href} href={grandChild.href}>
-                          <a className="flex items-center gap-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
-                            <span className="h-1 w-1 rounded-full bg-current opacity-60" />
-                            {grandChild.label}
-                          </a>
+                        <Link key={grandChild.href} href={grandChild.href} className="flex items-center gap-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                          <span className="h-1 w-1 rounded-full bg-current opacity-60" />
+                          {grandChild.label}
                         </Link>
                       ))}
                     </div>
@@ -148,13 +144,13 @@ export default function PublicHeader({
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/">
-            <div className="group flex cursor-pointer items-center gap-2">
-              {logoUrl && <img src={logoUrl} alt={churchName} className="h-9 w-9 object-contain" />}
-              <div className="flex flex-col">
-                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-bold text-transparent">
+            <div className="group flex cursor-pointer items-center gap-2.5">
+              {logoUrl && <img src={logoUrl} alt={churchName} className="h-9 w-9 shrink-0 object-contain" />}
+              <div className="flex flex-col justify-center -space-y-0.5">
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-extrabold leading-tight text-transparent">
                   {churchName}
                 </span>
-                <span className="text-[0.625rem] font-medium tracking-tighter text-muted-foreground transition-colors group-hover:text-primary">
+                <span className="whitespace-nowrap text-[0.6rem] font-bold tracking-tight text-muted-foreground transition-colors group-hover:text-primary leading-tight">
                   하나님 사랑 이웃 사랑
                 </span>
               </div>
@@ -218,16 +214,12 @@ export default function PublicHeader({
                 <div className="bg-muted/30 pb-1">
                   {item.children.map((child) => (
                     <div key={`${item.label}-${child.href}`} className="border-t border-border/30 px-2 py-1 first:border-t-0">
-                      <Link href={child.href}>
-                        <a className="block px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                          {child.label}
-                        </a>
+                      <Link href={child.href} className="block px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                        {child.label}
                       </Link>
                       {child.children.map((grandChild) => (
-                        <Link key={grandChild.href} href={grandChild.href}>
-                          <a className="block py-1.5 pl-8 pr-4 text-xs text-muted-foreground transition-colors hover:text-foreground">
-                            {grandChild.label}
-                          </a>
+                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-8 pr-4 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                          {grandChild.label}
                         </Link>
                       ))}
                     </div>
@@ -241,6 +233,3 @@ export default function PublicHeader({
     </header>
   );
 }
-
-
-
