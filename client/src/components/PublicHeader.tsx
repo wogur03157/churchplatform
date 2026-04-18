@@ -117,7 +117,7 @@ export default function PublicHeader({
             <div className="space-y-4">
               {menuItem.children.map((child) => (
                 <div key={`${menuItem.label}-${child.href}`} className="space-y-2">
-                  <Link href={child.href} className="block py-1 text-sm font-medium transition-colors hover:text-primary">
+                  <Link href={child.href} className="block py-1 text-sm font-medium transition-colors hover:text-primary text-foreground">
                     {child.label}
                   </Link>
                   {child.children.length > 0 && (
@@ -140,70 +140,68 @@ export default function PublicHeader({
   );
 
   return (
-    <header className="sticky top-0 z-50 relative w-full">
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/">
-            <div className="group flex cursor-pointer items-center gap-2.5">
-              {logoUrl && <img src={logoUrl} alt={churchName} className="h-9 w-9 shrink-0 object-contain" />}
-              <div className="flex flex-col justify-center -space-y-0.5">
-                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-xl font-extrabold leading-tight text-transparent">
-                  {churchName}
-                </span>
-                <span className="whitespace-nowrap text-[0.6rem] font-bold tracking-tight text-muted-foreground transition-colors group-hover:text-primary leading-tight">
-                  하나님 사랑 이웃 사랑
-                </span>
-              </div>
+    <header className="sticky top-0 z-50 relative w-full bg-primary shadow-md">
+      <div className="container flex h-16 items-center justify-between">
+        <Link href="/">
+          <div className="group flex cursor-pointer items-center gap-2.5">
+            {logoUrl && <img src={logoUrl} alt={churchName} className="h-9 w-9 shrink-0 object-contain" />}
+            <div className="flex flex-col justify-center -space-y-0.5">
+              <span className="text-xl font-extrabold leading-tight text-primary-foreground">
+                {churchName}
+              </span>
+              <span className="whitespace-nowrap text-[0.6rem] font-bold tracking-tight text-accent-gold/80 leading-tight">
+                하나님 사랑 이웃 사랑
+              </span>
             </div>
-          </Link>
+          </div>
+        </Link>
 
-          {DROPDOWN_STYLE === "nav" ? (
-            <div className="relative hidden items-center gap-6 lg:gap-8 md:flex" onMouseLeave={scheduleClose}>
-              {navMenu.map((item, index) => (
-                <button
-                  key={item.label}
-                  className={`flex items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                    openMenu === index
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "hover:bg-accent hover:text-accent-foreground"
-                  }`}
-                  style={{ minWidth: `${MENU_COLUMN_WIDTH_REM}rem` }}
-                  onMouseEnter={() => {
-                    cancelClose();
-                    setOpenMenu(index);
-                  }}
-                >
-                  {item.label}
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === index ? "rotate-180" : ""}`} />
-                </button>
-              ))}
+        {DROPDOWN_STYLE === "nav" ? (
+          <div className="relative hidden items-center gap-6 lg:gap-8 lg:flex" onMouseLeave={scheduleClose}>
+            {navMenu.map((item, index) => (
+              <button
+                key={item.label}
+                className={`flex items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                  openMenu === index
+                    ? "bg-primary-foreground/20 text-primary-foreground shadow-md"
+                    : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                }`}
+                style={{ minWidth: `${MENU_COLUMN_WIDTH_REM}rem` }}
+                onMouseEnter={() => {
+                  cancelClose();
+                  setOpenMenu(index);
+                }}
+              >
+                {item.label}
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === index ? "rotate-180" : ""}`} />
+              </button>
+            ))}
 
-              {openMenu !== null && (
-                <div className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-2 duration-200" onMouseEnter={cancelClose}>
-                  <div className="max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-border/50 bg-white/95 shadow-xl backdrop-blur-md" style={{ width: `${menuWidthRem}rem` }}>
-                    {megaContent}
-                  </div>
+            {openMenu !== null && (
+              <div className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-2 duration-200" onMouseEnter={cancelClose}>
+                <div className="max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-border/50 bg-card/95 shadow-xl backdrop-blur-md" style={{ width: `${menuWidthRem}rem` }}>
+                  {megaContent}
                 </div>
-              )}
-            </div>
-          ) : null}
+              </div>
+            )}
+          </div>
+        ) : null}
 
-          <button
-            className="rounded-md p-2 transition-colors hover:bg-accent md:hidden"
-            onClick={() => setMobileOpen((prev) => !prev)}
-            aria-label="메뉴 열기"
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
+        <button
+          className="rounded-md p-2 transition-colors text-primary-foreground hover:bg-primary-foreground/10 lg:hidden"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label="메뉴 열기"
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
       {mobileOpen && (
-        <div className="max-h-[80vh] overflow-y-auto border-t bg-background md:hidden">
+        <div className="max-h-[80vh] overflow-y-auto border-t border-primary-foreground/20 bg-primary lg:hidden">
           {navMenu.map((item, index) => (
-            <div key={item.label} className="border-b last:border-b-0">
+            <div key={item.label} className="border-b border-border last:border-b-0">
               <button
-                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-accent/50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 onClick={() => setOpenAccordion(openAccordion === index ? null : index)}
               >
                 {item.label}
@@ -211,14 +209,14 @@ export default function PublicHeader({
               </button>
 
               {openAccordion === index && (
-                <div className="bg-muted/30 pb-1">
+                <div className="bg-primary-foreground/5 pb-1">
                   {item.children.map((child) => (
-                    <div key={`${item.label}-${child.href}`} className="border-t border-border/30 px-2 py-1 first:border-t-0">
-                      <Link href={child.href} className="block px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                    <div key={`${item.label}-${child.href}`} className="border-t border-primary-foreground/10 px-2 py-1 first:border-t-0">
+                      <Link href={child.href} className="block px-4 py-2 text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
                         {child.label}
                       </Link>
                       {child.children.map((grandChild) => (
-                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-8 pr-4 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-8 pr-4 text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground">
                           {grandChild.label}
                         </Link>
                       ))}

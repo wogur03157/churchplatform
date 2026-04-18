@@ -40,7 +40,7 @@ export default function CommunityDepartments() {
                 <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{group.description}</p>
               )}
               {group.content && (
-                <div className="prose prose-sm max-w-none text-muted-foreground">{group.content}</div>
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: group.content }} />
               )}
             </>
           ) : (

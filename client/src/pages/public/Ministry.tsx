@@ -1,7 +1,7 @@
 import PublicPageLayout from "@/components/PublicPageLayout";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link, useParams } from "wouter";
 import { ArrowLeft } from "lucide-react";
 
@@ -50,7 +50,7 @@ export default function Ministry({ groupKey }: MinistryProps) {
                 <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{group.description}</p>
               )}
               {group.content && (
-                <div className="prose prose-sm max-w-none text-muted-foreground">{group.content}</div>
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: group.content }} />
               )}
             </>
           ) : (

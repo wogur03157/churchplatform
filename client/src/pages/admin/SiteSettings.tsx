@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Upload, X, Clock, MapPin, UserPlus, Youtube, Globe } from "lucide-react";
+import { Upload, X, Clock, MapPin, UserPlus, Youtube, Globe, Palette } from "lucide-react";
 
 type SiteConfig = { id: number; key: string; value: string; description: string };
 
@@ -65,19 +65,105 @@ export default function SiteSettings() {
     e.target.value = "";
   };
 
-  const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
-    if (value && value !== cfg("church_name")) {
-      patchMutation.mutate({ key: "church_name", value });
+  const handleConfigChange = (key: string, value: string) => {
+    if (value !== cfg(key)) {
+      patchMutation.mutate({ key, value });
     }
   };
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-8 max-w-2xl pb-20">
       <div>
         <h1 className="text-3xl font-bold">사이트 설정</h1>
-        <p className="text-muted-foreground mt-2">교회 이름, 로고, 퀵메뉴 아이콘을 설정하세요</p>
+        <p className="text-muted-foreground mt-2">홈페이지의 전체적인 디자인과 정보를 관리합니다</p>
       </div>
+
+      {/* 테마 및 디자인 설정 */}
+      <Card className="elegant-shadow border-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5 text-primary" />
+            테마 및 디자인
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">홈페이지의 메인 색상과 배경을 설정하세요</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 메인 색상 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">메인 색상 (Navy 권장)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={cfg("theme_primary_color") || "#002147"}
+                  onChange={(e) => handleConfigChange("theme_primary_color", e.target.value)}
+                  className="h-10 w-20 rounded-lg cursor-pointer border-none p-0 overflow-hidden"
+                />
+                <Input
+                  value={cfg("theme_primary_color") || "#002147"}
+                  onChange={(e) => handleConfigChange("theme_primary_color", e.target.value)}
+                  className="font-mono text-xs uppercase"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">버튼, 포인트 텍스트, 헤더 강조 등에 사용됩니다</p>
+            </div>
+
+            {/* 강조 색상 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">강조 색상 (Yellow 권장)</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={cfg("theme_accent_color") || "#facc15"}
+                  onChange={(e) => handleConfigChange("theme_accent_color", e.target.value)}
+                  className="h-10 w-20 rounded-lg cursor-pointer border-none p-0 overflow-hidden"
+                />
+                <Input
+                  value={cfg("theme_accent_color") || "#facc15"}
+                  onChange={(e) => handleConfigChange("theme_accent_color", e.target.value)}
+                  className="font-mono text-xs uppercase"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">아이콘 배경, 배지, 주요 알림 포인트에 사용됩니다</p>
+            </div>
+
+            {/* 배경 색상 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">배경 색상</Label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={cfg("theme_background_color") || "#ffffff"}
+                  onChange={(e) => handleConfigChange("theme_background_color", e.target.value)}
+                  className="h-10 w-20 rounded-lg cursor-pointer border-none p-0 overflow-hidden"
+                />
+                <Input
+                  value={cfg("theme_background_color") || "#ffffff"}
+                  onChange={(e) => handleConfigChange("theme_background_color", e.target.value)}
+                  className="font-mono text-xs uppercase"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">홈페이지의 전체 배경색입니다. 화이트(#FFFFFF)를 권장합니다</p>
+            </div>
+
+            {/* 테마 초기화 */}
+            <div className="flex flex-col justify-end">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full text-xs"
+                onClick={() => {
+                   handleConfigChange("theme_primary_color", "#002147");
+                   handleConfigChange("theme_accent_color", "#facc15");
+                   handleConfigChange("theme_background_color", "#ffffff");
+                }}
+              >
+                기본 테마(네이비&옐로우)로 초기화
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 교회 기본 정보 */}
       <Card className="elegant-shadow">
@@ -95,7 +181,7 @@ export default function SiteSettings() {
               <Input
                 key={cfg("church_name")}
                 defaultValue={cfg("church_name")}
-                onBlur={handleNameBlur}
+                onBlur={(e) => handleConfigChange("church_name", e.target.value.trim())}
                 placeholder="교회 이름 입력"
               />
             </div>

@@ -77,12 +77,12 @@ function HeroCarousel({ slides }: { slides: any[] }) {
 
               {/* 타입: 텍스트만 표시 */}
               {slide.type === "text" && (
-                <div className="relative py-24 lg:py-32">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_25%)] opacity-[0.03]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--accent-gold)_0%,transparent_25%)] opacity-[0.05]" />
+                <div className="relative py-24 lg:py-32 bg-primary/5">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary)_0%,transparent_30%)] opacity-[0.08]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--color-accent-gold)_0%,transparent_30%)] opacity-[0.10]" />
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="max-w-4xl mx-auto text-center space-y-6">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-gold/20 border border-accent-gold/40 text-accent-gold text-xs font-bold tracking-widest uppercase">
                         Love God, Love Neighbors
                       </div>
                       <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1]">
@@ -106,9 +106,9 @@ function HeroCarousel({ slides }: { slides: any[] }) {
                       <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
                     )}
                   </div>
-                  <div className="flex-1 flex items-center justify-center bg-white px-8 py-12 md:py-0">
+                  <div className="flex-1 flex items-center justify-center bg-card px-8 py-12 md:py-0">
                     <div className="max-w-sm space-y-4">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold tracking-widest uppercase">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-gold/20 border border-accent-gold/40 text-accent-gold text-xs font-bold tracking-widest uppercase">
                         Love God, Love Neighbors
                       </div>
                       {slide.title && (
@@ -184,7 +184,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
             <button
               key={i}
               onClick={() => emblaApi?.scrollTo(i)}
-              className={`h-2 rounded-full transition-all duration-300 ${i === selectedIdx ? "bg-primary w-6" : "bg-primary/30 w-2"}`}
+              className={`h-2 rounded-full transition-all duration-300 ${i === selectedIdx ? "bg-accent-gold w-6" : "bg-accent-gold/40 w-2"}`}
             />
           ))}
         </div>
@@ -319,7 +319,7 @@ export default function PublicView() {
     }
   }
 
-  const ROW_BG = ["bg-white", "bg-secondary/40"] as const;
+  const ROW_BG = ["bg-background", "bg-muted/40"] as const;
 
   // --- 섹션 렌더러 함수들 ----------------------------------------------------------------------------------
 
@@ -337,7 +337,7 @@ export default function PublicView() {
     ];
 
     return (
-      <section key={getSectionKey(section)} className="bg-white overflow-hidden">
+      <section key={getSectionKey(section)} className="bg-background overflow-hidden border-b border-primary/10">
         <HeroCarousel slides={slides} />
 
         {/* 퀵 메뉴 */}
@@ -345,17 +345,17 @@ export default function PublicView() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickMenuItems.map((item, idx) => (
               <Link key={idx} href={item.href}>
-                <div className="group cursor-pointer flex flex-col items-center gap-4 p-6 rounded-3xl bg-white border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="group cursor-pointer flex flex-col items-center gap-4 p-6 rounded-3xl bg-card border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <div className="group-hover:scale-110 transition-transform duration-300">
                     {item.iconUrl ? (
                       <img src={item.iconUrl} alt={item.label} className="h-14 w-14 object-contain" />
                     ) : (
-                      <div className={`p-4 rounded-2xl ${item.color} text-white shadow-lg shadow-current/10`}>
+                      <div className={`p-4 rounded-2xl ${item.color} text-primary-foreground shadow-lg shadow-current/10`}>
                         <item.icon className="h-8 w-8" />
                       </div>
                     )}
                   </div>
-                  <span className="font-bold text-lg">{item.label}</span>
+                  <span className="font-bold text-lg text-card-foreground">{item.label}</span>
                 </div>
               </Link>
             ))}
@@ -381,7 +381,8 @@ export default function PublicView() {
         <div className={innerCls}>
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
-              <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+              <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
                 {title}
               </h2>
               {categoryHref && (
@@ -398,12 +399,12 @@ export default function PublicView() {
 
           {children.length > 0 ? (
             variant === "links" ? (
-              <div className="divide-y divide-border rounded-2xl border bg-white">
+              <div className="divide-y divide-border rounded-2xl border bg-card">
                 {children.map((item) => (
                   <Link key={item.id} href={item.href ?? "#"}>
                     <div className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
                       <div>
-                        <p className="font-semibold">{item.name}</p>
+                        <p className="font-semibold text-card-foreground">{item.name}</p>
                         {item.pageTitle && (
                           <p className="text-sm text-muted-foreground">{item.pageTitle}</p>
                         )}
@@ -417,11 +418,11 @@ export default function PublicView() {
               <div className={`grid gap-4 ${narrow ? "grid-cols-1" : mid ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
                 {children.map((item) => (
                   <Link key={item.id} href={item.href ?? "#"}>
-                    <Card className="h-full border-none shadow-sm hover:shadow-md transition-shadow">
+                    <Card className="h-full border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-lg">{item.name}</CardTitle>
+                        <CardTitle className="text-lg text-card-foreground">{item.name}</CardTitle>
                         {item.pageTitle && (
-                          <CardDescription>{item.pageTitle}</CardDescription>
+                          <CardDescription className="text-muted-foreground">{item.pageTitle}</CardDescription>
                         )}
                       </CardHeader>
                       <CardContent className="pt-0">
@@ -437,10 +438,10 @@ export default function PublicView() {
             )
           ) : page?.href ? (
             <Link href={page.href}>
-              <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
-                  <CardTitle>{page.title}</CardTitle>
-                  <CardDescription>{title} 페이지로 이동합니다.</CardDescription>
+                  <CardTitle className="text-card-foreground">{page.title}</CardTitle>
+                  <CardDescription className="text-muted-foreground">{title} 페이지로 이동합니다.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center text-primary text-sm font-semibold">
@@ -485,7 +486,8 @@ export default function PublicView() {
         <div className={innerCls}>
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
-              <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+              <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
                 {title}
               </h2>
               {moreHref && (
@@ -511,7 +513,7 @@ export default function PublicView() {
                 />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-bold">{items[0].title}</h3>
+                <h3 className="text-xl font-bold text-foreground">{items[0].title}</h3>
                 {items[0].description && (
                   <p className="text-sm text-muted-foreground line-clamp-2">{items[0].description}</p>
                 )}
@@ -519,11 +521,11 @@ export default function PublicView() {
               {items.length > 1 && (
                 <div className={`grid gap-3 ${mid ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
                   {items.slice(1).map((item) => (
-                    <Card key={item.id} className="border-none shadow-sm">
+                    <Card key={item.id} className="border border-border/50 bg-card shadow-sm">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                        <CardTitle className="text-base line-clamp-2 text-card-foreground">{item.title}</CardTitle>
                         {item.description && (
-                          <CardDescription className="line-clamp-2">{item.description}</CardDescription>
+                          <CardDescription className="line-clamp-2 text-muted-foreground">{item.description}</CardDescription>
                         )}
                       </CardHeader>
                     </Card>
@@ -534,7 +536,7 @@ export default function PublicView() {
           ) : (
             <div className={`grid gap-4 ${narrow ? "grid-cols-1" : mid ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
               {items.map((item) => (
-                <Card key={item.id} className="overflow-hidden border-none shadow-sm">
+                <Card key={item.id} className="overflow-hidden border border-border/50 bg-card shadow-sm">
                   {item.mediaType === "image" ? (
                     <div className="aspect-square overflow-hidden bg-muted">
                       <img src={item.url} alt={item.title} className="h-full w-full object-cover" />
@@ -545,9 +547,9 @@ export default function PublicView() {
                     </div>
                   )}
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                    <CardTitle className="text-base line-clamp-2 text-card-foreground">{item.title}</CardTitle>
                     {item.description && (
-                      <CardDescription className="line-clamp-2">{item.description}</CardDescription>
+                      <CardDescription className="line-clamp-2 text-muted-foreground">{item.description}</CardDescription>
                     )}
                   </CardHeader>
                 </Card>
@@ -585,8 +587,9 @@ export default function PublicView() {
                 className={`flex items-center justify-between gap-3 ${narrow ? "mb-4" : "mb-8"}`}
               >
                 <h2
-                  className={`font-bold leading-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
+                  className={`font-bold text-foreground leading-tight flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
+                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
                   {section.title || "교회 소식"}
                 </h2>
                 <Link href="/news/announcements">
@@ -614,7 +617,7 @@ export default function PublicView() {
                               { month: "2-digit", day: "2-digit" }
                             )}
                           </span>
-                          <span className="text-sm font-medium line-clamp-1 group-hover:text-primary">
+                          <span className="text-sm font-medium line-clamp-1 group-hover:text-primary text-foreground">
                             {item.title}
                           </span>
                           <ArrowRight className="h-3 w-3 shrink-0 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -630,9 +633,9 @@ export default function PublicView() {
                 <div className="grid gap-2">
                   {announcements.slice(0, 4).map(item => (
                     <Link key={item.id} href={`/announcements/${item.id}`}>
-                      <div className="flex items-center gap-3 p-3 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow group cursor-pointer">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                          <p className="text-sm font-semibold line-clamp-1 group-hover:text-primary transition-colors text-card-foreground">
                             {item.title}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
@@ -653,9 +656,9 @@ export default function PublicView() {
                 <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
                   {announcements.slice(0, 6).map(item => (
                     <Link key={item.id} href={`/announcements/${item.id}`}>
-                      <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer overflow-hidden rounded-2xl h-full">
-                        <CardHeader className="bg-white pb-3">
-                          <div className="flex items-center gap-2 text-xs font-bold text-primary mb-2">
+                      <Card className="border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer overflow-hidden rounded-2xl h-full bg-card">
+                        <CardHeader className="bg-transparent pb-3 text-card-foreground">
+                          <div className="flex items-center gap-2 text-xs font-bold text-accent-gold mb-2">
                             <Calendar className="h-3.5 w-3.5" />
                             {new Date(item.createdAt).toLocaleDateString(
                               "ko-KR"
@@ -665,7 +668,7 @@ export default function PublicView() {
                             {item.title}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="bg-white">
+                        <CardContent className="bg-transparent">
                           <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed mb-3">
                             {stripHtml(item.content)}
                           </p>
@@ -693,7 +696,8 @@ export default function PublicView() {
           <section key="images" className={`py-12 lg:py-16 h-full ${rowBg}`}>
             <div className={innerCls}>
               <div className={`${full ? "text-center" : ""} mb-6 lg:mb-8 space-y-1`}>
-                <h2 className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
+                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
                   {section.title || "교회 갤러리"}
                 </h2>
                 {section.subtitle && !narrow && (
@@ -710,7 +714,7 @@ export default function PublicView() {
               <div className={`hidden sm:grid gap-2 grid-cols-2 ${desktopCols}`}>
                 {toShow.map((item: any) => (
                   <div key={item.id}
-                    className="aspect-square relative overflow-hidden rounded-lg group cursor-pointer border border-border/50 elegant-shadow"
+                    className="aspect-square relative overflow-hidden rounded-lg group cursor-pointer border border-border/50 bg-card elegant-shadow"
                   >
                     <img src={item.url} alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -734,8 +738,9 @@ export default function PublicView() {
                 className={`${full ? "text-center" : ""} mb-6 lg:mb-10 space-y-1`}
               >
                 <h2
-                  className={`font-bold tracking-tight ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
+                  className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
+                  <span className="inline-block w-1 rounded-full bg-accent-gold self-stretch min-h-[1em]" />
                   {section.title || "최신 설교"}
                 </h2>
                 {section.subtitle && !narrow && (
@@ -769,7 +774,7 @@ export default function PublicView() {
                       </div>
                       <div className="space-y-1">
                         <h3
-                          className={`font-bold ${narrow ? "text-base" : "text-xl"}`}
+                          className={`font-bold text-foreground ${narrow ? "text-base" : "text-xl"}`}
                         >
                           {item.title}
                         </h3>
@@ -838,7 +843,7 @@ export default function PublicView() {
       case "announcement":
         return "bg-purple-50 border-purple-200 text-purple-900";
       default:
-        return "bg-white border-border";
+        return "bg-card border-border text-card-foreground";
     }
   };
 
@@ -872,40 +877,40 @@ export default function PublicView() {
         </div>
       </main>
 
-      <footer className="bg-white border-t py-20">
+      <footer className="bg-primary py-20">
         <div className="container">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-6 col-span-1 lg:col-span-2">
               <div className="flex flex-col">
-                <span className="text-2xl font-bold text-primary">
+                <span className="text-2xl font-bold text-primary-foreground">
                   영신교회
                 </span>
-                <span className="text-sm font-medium text-muted-foreground tracking-tighter">
+                <span className="text-sm font-medium text-primary-foreground/60 tracking-tighter">
                   하나님 사랑 이웃 사랑
                 </span>
               </div>
-              <p className="text-muted-foreground max-w-sm">
+              <p className="text-primary-foreground/60 max-w-sm">
                 영신교회는 하나님을 향한 바른 예배와 이웃을 향한 사랑의 실천을 추구하는
                 믿음의 공동체입니다.
               </p>
             </div>
             <div className="space-y-6">
-              <h3 className="font-bold text-lg">교회 안내</h3>
-              <ul className="space-y-4 text-muted-foreground">
+              <h3 className="font-bold text-lg text-primary-foreground">교회 안내</h3>
+              <ul className="space-y-4 text-primary-foreground/60">
                 <li>
-                  <Link href="/church/about">교회 소개</Link>
+                  <Link href="/church/about" className="hover:text-primary-foreground transition-colors">교회 소개</Link>
                 </li>
                 <li>
-                  <Link href="/church/worship">예배 안내</Link>
+                  <Link href="/church/worship" className="hover:text-primary-foreground transition-colors">예배 안내</Link>
                 </li>
                 <li>
-                  <Link href="/church/directions">오시는 길</Link>
+                  <Link href="/church/directions" className="hover:text-primary-foreground transition-colors">오시는 길</Link>
                 </li>
               </ul>
             </div>
             <div className="space-y-6">
-              <h3 className="font-bold text-lg">연락처</h3>
-              <ul className="space-y-4 text-muted-foreground">
+              <h3 className="font-bold text-lg text-primary-foreground">연락처</h3>
+              <ul className="space-y-4 text-primary-foreground/60">
                 <li className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" /> 주소: 서울특별시 양천구 목동로 19길 28
                 </li>
@@ -915,11 +920,11 @@ export default function PublicView() {
               </ul>
             </div>
           </div>
-          <div className="border-t mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground font-medium">
+          <div className="border-t border-primary-foreground/20 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/50 font-medium">
             <p>© 2026 영신교회. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <Link href="/privacy">개인정보처리방침</Link>
-              <Link href="/admin">관리자 로그인</Link>
+              <Link href="/privacy" className="hover:text-primary-foreground transition-colors">개인정보처리방침</Link>
+              <Link href="/admin" className="hover:text-primary-foreground transition-colors">관리자 로그인</Link>
             </div>
           </div>
         </div>
@@ -932,7 +937,7 @@ export default function PublicView() {
           onClick={() => handleClosePopup()}
         >
           <div
-            className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in duration-300"
+            className="relative bg-card rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in duration-300 border border-border/50"
             onClick={e => e.stopPropagation()}
           >
             <Button
@@ -941,7 +946,7 @@ export default function PublicView() {
               className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-black/10 hover:bg-black/20 rounded-full"
               onClick={() => handleClosePopup()}
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4 text-white" />
             </Button>
             {popup.imageUrl &&
               (popup.linkUrl ? (
@@ -964,9 +969,9 @@ export default function PublicView() {
                   className="w-full object-contain"
                 />
               ))}
-            <div className="p-6 flex items-center justify-between gap-4 bg-white border-t">
+            <div className="p-6 flex items-center justify-between gap-4 bg-card border-t border-border/50">
               <div className="flex flex-col gap-1">
-                <p className="font-bold">{popup.title}</p>
+                <p className="font-bold text-card-foreground">{popup.title}</p>
                 <button
                   className="text-xs text-muted-foreground hover:text-primary transition-colors text-left font-medium"
                   onClick={() => handleClosePopup(true)}
