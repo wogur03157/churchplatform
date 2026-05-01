@@ -392,7 +392,7 @@ function HeroSlidesPanel() {
                     <Button type="button" variant="outline" size="sm" onClick={() => { setEditingId(slide.id); setEditingForm({ ...slide }); }}>
                       수정
                     </Button>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => deleteMutation.mutate(slide.id)}>
+                    <Button type="button" variant="outline" size="sm" className="text-red-500 hover:text-red-600" onClick={() => deleteMutation.mutate(slide.id)}>
                       삭제
                     </Button>
                   </div>

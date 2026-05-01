@@ -24,14 +24,14 @@ function renderContent(html: string | null) {
   return <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-export default function DynamicContentPage() {
+export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?: string }) {
   const params = useParams<{ slug1?: string; slug2?: string; slug3?: string }>();
   const slugs = [params.slug1, params.slug2, params.slug3].filter(Boolean) as string[];
   const apiPath = slugs.join("/");
 
   const { data, isLoading } = useQuery<PublicContentPage | null>({
-    queryKey: ["content-pages", "public", ...slugs],
-    queryFn: () => api.get<PublicContentPage>(`/content-pages/public/church/${apiPath}`),
+    queryKey: ["content-pages", "public", rootSlug, ...slugs],
+    queryFn: () => api.get<PublicContentPage>(`/content-pages/public/${rootSlug}/${apiPath}`),
     enabled: slugs.length > 0,
   });
 
@@ -46,7 +46,7 @@ export default function DynamicContentPage() {
   }, [data?.media]);
 
   const parentTrail = (data?.ancestors ?? []).slice(0, -1);
-  const siblingBasePath = ["/church", ...parentTrail.map((item) => item.slug)].join("/");
+  const siblingBasePath = ["/" + rootSlug, ...parentTrail.map((item) => item.slug)].join("/");
 
   if (isLoading) {
     return (
