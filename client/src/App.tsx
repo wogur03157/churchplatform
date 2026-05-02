@@ -27,6 +27,8 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import ChurchDetail from "./pages/super-admin/ChurchDetail";
 import AdminInvite from "./pages/AdminInvite";
 import DynamicContentPage from "./pages/public/DynamicContentPage";
+import OnlineConsultation from "./pages/public/OnlineConsultation";
+import OnlineRegistration from "./pages/public/OnlineRegistration";
 import SundaySermons from "./pages/public/SundaySermons";
 import MidweekSermons from "./pages/public/MidweekSermons";
 import SpecialSermons from "./pages/public/SpecialSermons";
@@ -112,6 +114,19 @@ function Router() {
       <Route path="/ministry/:slug1">
         {() => <DynamicContentPage rootSlug="ministry" />}
       </Route>
+      <Route path="/canaan/online-consultation" component={OnlineConsultation} />
+      <Route path="/canaan/online-registration" component={OnlineRegistration} />
+
+      <Route path="/canaan/:slug1/:slug2/:slug3">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+      <Route path="/canaan/:slug1/:slug2">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+      <Route path="/canaan/:slug1">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+
       <Route path="/news/announcements" component={NewsAnnouncements} />
       <Route path="/news/ministry-board" component={MinistryBoard} />
 

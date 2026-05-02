@@ -417,4 +417,52 @@ export const DEFAULT_PAGE_CONTENTS: Record<string, { title: string; content: str
       </section>
     `,
   },
+  "canaan/online-consultation": {
+    title: "온라인 상담 신청",
+    content: `
+      <p class="text-lg text-muted-foreground">언제든지 편하게 상담을 신청해 주세요</p>
+      <section class="mt-10">
+        <h2>온라인 상담 안내</h2>
+        <p>영신교회는 삶의 여러 어려움 속에서 도움이 필요한 분들을 위해 온라인 상담을 운영하고 있습니다. 신앙 상담, 가정 문제, 삶의 위기 등 다양한 주제로 목사님 및 상담 전문 사역자와 연결해 드립니다.</p>
+      </section>
+      <section class="mt-10">
+        <h2>상담 신청 방법</h2>
+        <ul>
+          <li>아래 신청 양식을 작성해 주세요.</li>
+          <li>담당 사역자가 확인 후 2~3일 이내에 연락드립니다.</li>
+          <li>상담 내용은 철저히 비밀이 보장됩니다.</li>
+        </ul>
+      </section>
+      <section class="mt-10">
+        <h2>문의</h2>
+        <p>교회 사무실: 02-000-0000 | 이메일: info@youngshin.org</p>
+      </section>
+    `,
+  },
+  "canaan/online-registration": {
+    title: "온라인 성도 등록",
+    content: `
+      <p class="text-lg text-muted-foreground">영신교회 성도로 등록해 주세요</p>
+      <section class="mt-10">
+        <h2>성도 등록 안내</h2>
+        <p>온라인으로 간편하게 영신교회 성도로 등록하실 수 있습니다. 등록 후 담당 목사님과의 면담을 통해 공식 등록 절차를 안내해 드립니다.</p>
+      </section>
+      <section class="mt-10">
+        <h2>등록 대상</h2>
+        <ul>
+          <li>영신교회에서 신앙생활을 시작하려는 분</li>
+          <li>타 교회에서 이명하여 등록하려는 분</li>
+          <li>세례를 받고 정식 성도로 등록하려는 분</li>
+        </ul>
+      </section>
+      <section class="mt-10">
+        <h2>등록 절차</h2>
+        <ul>
+          <li>온라인 등록 신청서 작성</li>
+          <li>담당 목사님 면담 (주일 예배 후 또는 별도 일정)</li>
+          <li>공동체 소개 및 교육 안내</li>
+        </ul>
+      </section>
+    `,
+  },
 };

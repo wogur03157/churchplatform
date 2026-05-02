@@ -383,7 +383,7 @@ export class ContentPagesService implements OnModuleInit {
 
   async findPublicPage(rootSlug: string, slugs: string[]) {
     const root = await this.categoryRepo.findOne({
-      where: { parentId: IsNull() as any, slug: rootSlug, status: "active" },
+      where: { parentId: IsNull() as any, slug: rootSlug },
     });
     if (!root) {
       throw new NotFoundException("Root category not found");
@@ -400,7 +400,7 @@ export class ContentPagesService implements OnModuleInit {
 
     for (const slug of chain) {
       currentCategory = await this.categoryRepo.findOne({
-        where: { parentId, slug, status: "active" },
+        where: { parentId, slug },
       });
 
       if (!currentCategory) {
