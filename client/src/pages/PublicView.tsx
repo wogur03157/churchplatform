@@ -25,6 +25,7 @@ import {
   Youtube,
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
+import QuickActionFab from "@/components/QuickActionFab";
 
 // 이미지 갤러리 데스크탑 그리드 컬럼 Tailwind 클래스
 const GALLERY_COLS_CLASS: Record<number, string> = {
@@ -993,6 +994,8 @@ export default function PublicView() {
           </div>
         </div>
       )}
+
+      <QuickActionFab />
 
       {/* 플로팅 메시지 */}
       {floatingMessage && (

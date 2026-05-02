@@ -1,9 +1,11 @@
 import PublicHeader from "./PublicHeader";
+import QuickActionFab from "./QuickActionFab";
 
 export default function PublicPageLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <PublicHeader />
+      <QuickActionFab />
       <main className="flex-1">{children}</main>
       <footer className="py-10 bg-primary">
         <div className="container">
