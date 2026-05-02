@@ -4,6 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 export class FormField {
   @PrimaryGeneratedColumn() id!: number;
   @Column({ type: "int", nullable: true }) churchId!: number | null;
+  @Column({ type: "varchar", length: 50, default: "new-member" }) formType!: string;
   @Column({ type: "varchar", length: 50 }) fieldType!: "text" | "number" | "textarea" | "dropdown" | "checkbox" | "radio";
   @Column({ type: "varchar", length: 255 }) label!: string;
   @Column({ type: "varchar", length: 255, nullable: true }) placeholder!: string | null;

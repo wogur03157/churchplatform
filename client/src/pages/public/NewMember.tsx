@@ -21,7 +21,7 @@ export default function NewMember() {
 
   const { data: fields } = useQuery({
     queryKey: ["form-fields", "active"],
-    queryFn:  () => api.get<any[]>("/form-fields?activeOnly=true"),
+    queryFn:  () => api.get<any[]>("/form-fields?activeOnly=true&formType=new-member"),
   });
 
   const submitMutation = useMutation({

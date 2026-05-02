@@ -7,7 +7,9 @@ import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 export class FormFieldsController {
   constructor(@Inject(FormFieldsService) private readonly service: FormFieldsService) {}
 
-  @Get() findAll(@Query("activeOnly") activeOnly?: string) { return this.service.findAll(activeOnly === "true"); }
+  @Get() findAll(@Query("activeOnly") activeOnly?: string, @Query("formType") formType?: string) {
+    return this.service.findAll(activeOnly === "true", formType);
+  }
   @Get(":id") findOne(@Param("id", ParseIntPipe) id: number) { return this.service.findOne(id); }
   @Post() create(@Body() body: any) { return this.service.create(body); }
   @Patch(":id") update(@Param("id", ParseIntPipe) id: number, @Body() body: any) { return this.service.update(id, body); }
