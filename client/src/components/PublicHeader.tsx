@@ -140,6 +140,7 @@ export default function PublicHeader({
   );
 
   return (
+    <>
     <header className="sticky top-0 z-50 relative w-full bg-primary shadow-md">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/">
@@ -196,27 +197,48 @@ export default function PublicHeader({
         </button>
       </div>
 
-      {mobileOpen && (
-        <div className="max-h-[80vh] overflow-y-auto border-t border-primary-foreground/20 bg-primary lg:hidden">
+    </header>
+
+      {/* 모바일 사이드 드로어 */}
+      {/* 오버레이 */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-300 lg:hidden ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setMobileOpen(false)}
+      />
+      {/* 사이드 패널 */}
+      <div
+        className={`fixed top-0 right-0 z-50 h-full w-72 bg-primary shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${mobileOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-primary-foreground/20">
+          <span className="text-base font-bold text-primary-foreground">메뉴</span>
+          <button
+            className="rounded-md p-1.5 text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {/* 메뉴 목록 */}
+        <div className="flex-1 overflow-y-auto py-2">
           {navMenu.map((item, index) => (
-            <div key={item.label} className="border-b border-border last:border-b-0">
+            <div key={item.label} className="border-b border-primary-foreground/10 last:border-b-0">
               <button
-                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                className="flex w-full items-center justify-between px-5 py-3.5 text-left text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 onClick={() => setOpenAccordion(openAccordion === index ? null : index)}
               >
                 {item.label}
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openAccordion === index ? "rotate-180" : ""}`} />
               </button>
-
               {openAccordion === index && (
-                <div className="bg-primary-foreground/5 pb-1">
+                <div className="bg-primary-foreground/5 pb-2">
                   {item.children.map((child) => (
-                    <div key={`${item.label}-${child.href}`} className="border-t border-primary-foreground/10 px-2 py-1 first:border-t-0">
-                      <Link href={child.href} className="block px-4 py-2 text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                    <div key={`${item.label}-${child.href}`}>
+                      <Link href={child.href} className="block px-7 py-2.5 text-sm font-medium text-primary-foreground/80 transition-colors hover:text-primary-foreground">
                         {child.label}
                       </Link>
                       {child.children.map((grandChild) => (
-                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-8 pr-4 text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground">
+                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-10 pr-5 text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground">
                           {grandChild.label}
                         </Link>
                       ))}
@@ -227,7 +249,7 @@ export default function PublicHeader({
             </div>
           ))}
         </div>
-      )}
-    </header>
+      </div>
+    </>
   );
 }

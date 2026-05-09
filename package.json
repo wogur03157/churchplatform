@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node scripts/run-with-env.cjs NODE_ENV=development tsx watch server/main.ts",
     "dev:no-db": "node scripts/run-with-env.cjs NODE_ENV=development SKIP_DB=true tsx watch server/main.ts",
-    "build": "vite build && esbuild server/main.ts --platform=node --packages=external --bundle --format=esm --outdir=dist/server",
-    "start": "node scripts/run-with-env.cjs NODE_ENV=production node dist/server/main.js",
+    "build": "vite build && esbuild server/main.ts --platform=node --packages=external --bundle --format=cjs --out-extension:.js=.cjs --outdir=dist/server",
+    "start": "node scripts/run-with-env.cjs NODE_ENV=production node dist/server/main.cjs",
     "check": "tsc --noEmit",
     "format": "prettier --write ."
   },
