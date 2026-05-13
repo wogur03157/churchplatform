@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { ContentCategory, ContentPage } from "@shared/entities";
 import { ChevronDown, Menu, X } from "lucide-react";
+import FontSizePicker from "./FontSizePicker";
 
 type CategoryNode = ContentCategory & {
   page: Pick<ContentPage, "id" | "status" | "title" | "templateCode"> | null;
@@ -111,7 +112,7 @@ export default function PublicHeader({
               setOpenMenu(menuIndex);
             }}
           >
-            <p className={`mb-3 text-sm font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
+            <p className={`mb-3 text-base font-bold ${isActive ? "text-primary" : "text-foreground"}`}>
               {menuItem.label}
             </p>
             <div className="space-y-4">
@@ -158,16 +159,15 @@ export default function PublicHeader({
         </Link>
 
         {DROPDOWN_STYLE === "nav" ? (
-          <div className="relative hidden items-center gap-6 lg:gap-8 lg:flex" onMouseLeave={scheduleClose}>
+          <div className="relative hidden items-center gap-1 lg:gap-2 lg:flex" onMouseLeave={scheduleClose}>
             {navMenu.map((item, index) => (
               <button
                 key={item.label}
-                className={`flex items-center justify-center gap-1 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                className={`flex items-center justify-center gap-1 rounded-full px-3 py-2 text-base font-semibold transition-all duration-200 whitespace-nowrap ${
                   openMenu === index
                     ? "bg-primary-foreground/20 text-primary-foreground shadow-md"
                     : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
                 }`}
-                style={{ minWidth: `${MENU_COLUMN_WIDTH_REM}rem` }}
                 onMouseEnter={() => {
                   cancelClose();
                   setOpenMenu(index);
@@ -224,7 +224,7 @@ export default function PublicHeader({
           {navMenu.map((item, index) => (
             <div key={item.label} className="border-b border-primary-foreground/10 last:border-b-0">
               <button
-                className="flex w-full items-center justify-between px-5 py-3.5 text-left text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                className="flex w-full items-center justify-between px-5 py-3.5 text-left text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 onClick={() => setOpenAccordion(openAccordion === index ? null : index)}
               >
                 {item.label}
@@ -234,11 +234,11 @@ export default function PublicHeader({
                 <div className="bg-primary-foreground/5 pb-2">
                   {item.children.map((child) => (
                     <div key={`${item.label}-${child.href}`}>
-                      <Link href={child.href} className="block px-7 py-2.5 text-sm font-medium text-primary-foreground/80 transition-colors hover:text-primary-foreground">
+                      <Link href={child.href} className="block px-7 py-2.5 text-base font-medium text-primary-foreground/80 transition-colors hover:text-primary-foreground">
                         {child.label}
                       </Link>
                       {child.children.map((grandChild) => (
-                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-10 pr-5 text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground">
+                        <Link key={grandChild.href} href={grandChild.href} className="block py-1.5 pl-10 pr-5 text-sm text-primary-foreground/50 transition-colors hover:text-primary-foreground">
                           {grandChild.label}
                         </Link>
                       ))}
@@ -248,6 +248,10 @@ export default function PublicHeader({
               )}
             </div>
           ))}
+          {/* 글씨 크기 */}
+          <div className="border-t border-primary-foreground/10 px-5 py-4">
+            <FontSizePicker dark />
+          </div>
         </div>
       </div>
     </>

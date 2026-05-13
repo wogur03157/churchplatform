@@ -16,6 +16,8 @@
   --color-foreground: #020617;
   --color-card: #ffffff;
   --color-card-foreground: #020617;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #020617;
   --color-primary: #002147;
   --color-primary-foreground: #ffffff;
   --color-muted: #f8fafc;
@@ -36,6 +38,8 @@
   --color-foreground: #f8fafc;
   --color-card: #0f172a;
   --color-card-foreground: #f8fafc;
+  --color-popover: #0f172a;
+  --color-popover-foreground: #f8fafc;
   --color-primary: #facc15;
   --color-primary-foreground: #020617;
   --color-accent-gold: #fbbf24;

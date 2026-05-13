@@ -416,11 +416,13 @@ function CanvasItem({
   isSelected,
   sourceLabel,
   onSelect,
+  onRemove,
 }: {
   item: LayoutItem;
   isSelected: boolean;
   sourceLabel?: string | null;
   onSelect: () => void;
+  onRemove: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: getSectionKey(item),
@@ -432,6 +434,8 @@ function CanvasItem({
     opacity: isDragging ? 0.6 : 1,
     gridColumn: `span ${item.colSpan}`,
   };
+
+  const isCategory = item.sectionType === "content_category" || item.sectionType === "media_category";
 
   return (
     <button
@@ -448,6 +452,13 @@ function CanvasItem({
         <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.title || TYPE_LABEL[item.sectionType]}</span>
         <span className="rounded-full bg-background px-2 py-1 text-[0.6875rem] text-muted-foreground">
           {SPAN_OPTIONS.find((option) => option.value === item.colSpan)?.label ?? item.colSpan}
+        </span>
+        <span
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          title={isCategory ? "삭제" : "숨기기"}
+          className="ml-1 flex items-center rounded p-0.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          {isCategory ? <Trash2 className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
         </span>
       </div>
       <div className="flex min-h-[5.5rem] flex-col justify-between gap-3 p-3">
@@ -567,15 +578,20 @@ export default function AdminLayoutSettings() {
     setSelectedKey(getSectionKey(created));
   };
 
-  const removeSelected = () => {
-    if (!selectedItem) return;
-    const key = getSectionKey(selectedItem);
-    if (selectedItem.sectionType === "content_category" || selectedItem.sectionType === "media_category") {
+  const removeItem = (key: string) => {
+    const target = items.find((item) => getSectionKey(item) === key);
+    if (!target) return;
+    if (target.sectionType === "content_category" || target.sectionType === "media_category") {
       setItems((prev) => prev.filter((item) => getSectionKey(item) !== key));
     } else {
       updateItem(key, { status: "hidden" });
     }
-    setSelectedKey(null);
+    setSelectedKey((prev) => (prev === key ? null : prev));
+  };
+
+  const removeSelected = () => {
+    if (!selectedItem) return;
+    removeItem(getSectionKey(selectedItem));
   };
 
   const uploadSectionImage = async (file: File) => {
@@ -660,7 +676,7 @@ export default function AdminLayoutSettings() {
                           : item.sectionType === "media_category"
                             ? mediaCategoryLabelById.get(item.sourceCategoryId ?? -1)
                             : null;
-                        return <CanvasItem key={key} item={item} isSelected={selectedKey === key} sourceLabel={sourceLabel} onSelect={() => setSelectedKey(key)} />;
+                        return <CanvasItem key={key} item={item} isSelected={selectedKey === key} sourceLabel={sourceLabel} onSelect={() => setSelectedKey(key)} onRemove={() => removeItem(key)} />;
                       })}
                     </div>
                   </SortableContext>

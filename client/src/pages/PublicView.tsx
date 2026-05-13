@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import PublicHeader from "@/components/PublicHeader";
 import QuickActionFab from "@/components/QuickActionFab";
+import FontSizePicker from "@/components/FontSizePicker";
 
 // 이미지 갤러리 데스크탑 그리드 컬럼 Tailwind 클래스
 const GALLERY_COLS_CLASS: Record<number, string> = {
@@ -726,9 +727,7 @@ export default function PublicView() {
         return (
           <section key="videos" className={`py-12 lg:py-16 h-full ${rowBg}`}>
             <div className={innerCls}>
-              <div
-                className={`${full ? "text-center" : ""} mb-6 lg:mb-10 space-y-1`}
-              >
+              <div className="mb-6 lg:mb-8 space-y-1">
                 <h2
                   className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}
                 >
@@ -741,7 +740,7 @@ export default function PublicView() {
                   </p>
                 )}
               </div>
-              <div className={full ? "max-w-2xl mx-auto w-full" : "w-full"}>
+              <div className="w-full">
                 {videos.slice(0, 1).map(item => {
                   const getEmbed = () => {
                     if (item.videoType === "youtube") {
@@ -913,7 +912,12 @@ export default function PublicView() {
             </div>
           </div>
           <div className="border-t border-primary-foreground/20 mt-20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/50 font-medium">
-            <p>© 2026 영신교회. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <div className="hidden sm:block">
+                <FontSizePicker dark />
+              </div>
+              <p>© 2026 영신교회. All rights reserved.</p>
+            </div>
             <div className="flex items-center gap-6">
               <Link href="/privacy" className="hover:text-primary-foreground transition-colors">개인정보처리방침</Link>
               <Link href="/admin" className="hover:text-primary-foreground transition-colors">관리자 로그인</Link>
