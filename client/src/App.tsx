@@ -27,13 +27,12 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import ChurchDetail from "./pages/super-admin/ChurchDetail";
 import AdminInvite from "./pages/AdminInvite";
 import DynamicContentPage from "./pages/public/DynamicContentPage";
+import OnlineConsultation from "./pages/public/OnlineConsultation";
+import OnlineRegistration from "./pages/public/OnlineRegistration";
 import SundaySermons from "./pages/public/SundaySermons";
 import MidweekSermons from "./pages/public/MidweekSermons";
 import SpecialSermons from "./pages/public/SpecialSermons";
-import CommunityDepartments from "./pages/public/CommunityDepartments";
-import SmallChurch from "./pages/public/SmallChurch";
 import NewMember from "./pages/public/NewMember";
-import Ministry from "./pages/public/Ministry";
 import NewsAnnouncements from "./pages/public/NewsAnnouncements";
 import MinistryBoard from "./pages/public/MinistryBoard";
 
@@ -96,22 +95,38 @@ function Router() {
       <Route path="/sermons/sunday" component={SundaySermons} />
       <Route path="/sermons/midweek" component={MidweekSermons} />
       <Route path="/sermons/special" component={SpecialSermons} />
-      <Route path="/community/departments/:slug" component={CommunityDepartments} />
-      <Route path="/community/departments" component={CommunityDepartments} />
-      <Route path="/community/small-church" component={SmallChurch} />
       <Route path="/community/new-member" component={NewMember} />
-      <Route path="/ministry/god-love/:slug">
-        {() => <Ministry groupKey="god-love" />}
+      <Route path="/community/:slug1/:slug2/:slug3">
+        {() => <DynamicContentPage rootSlug="community" />}
       </Route>
-      <Route path="/ministry/god-love">
-        {() => <Ministry groupKey="god-love" />}
+      <Route path="/community/:slug1/:slug2">
+        {() => <DynamicContentPage rootSlug="community" />}
       </Route>
-      <Route path="/ministry/neighbor-love/:slug">
-        {() => <Ministry groupKey="neighbor-love" />}
+      <Route path="/community/:slug1">
+        {() => <DynamicContentPage rootSlug="community" />}
       </Route>
-      <Route path="/ministry/neighbor-love">
-        {() => <Ministry groupKey="neighbor-love" />}
+      <Route path="/ministry/:slug1/:slug2/:slug3">
+        {() => <DynamicContentPage rootSlug="ministry" />}
       </Route>
+      <Route path="/ministry/:slug1/:slug2">
+        {() => <DynamicContentPage rootSlug="ministry" />}
+      </Route>
+      <Route path="/ministry/:slug1">
+        {() => <DynamicContentPage rootSlug="ministry" />}
+      </Route>
+      <Route path="/canaan/online-consultation" component={OnlineConsultation} />
+      <Route path="/canaan/online-registration" component={OnlineRegistration} />
+
+      <Route path="/canaan/:slug1/:slug2/:slug3">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+      <Route path="/canaan/:slug1/:slug2">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+      <Route path="/canaan/:slug1">
+        {() => <DynamicContentPage rootSlug="canaan" />}
+      </Route>
+
       <Route path="/news/announcements" component={NewsAnnouncements} />
       <Route path="/news/ministry-board" component={MinistryBoard} />
 

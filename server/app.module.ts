@@ -52,7 +52,9 @@ const isDbEnabled =
   !dbUrl.includes("user:password@host");
 
 if (!isDbEnabled) {
-  console.warn("[AppModule] DB disabled - running in no-db mode (health endpoint only)");
+  console.warn(
+    "[AppModule] DB disabled - running in no-db mode (health endpoint only)"
+  );
 }
 
 const dbModules = isDbEnabled
@@ -83,7 +85,7 @@ const dbModules = isDbEnabled
           ContentPageMedia,
           Media,
         ],
-        synchronize: true,
+        synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
       AuthModule,
@@ -115,6 +117,3 @@ const dbModules = isDbEnabled
   imports: [...dbModules, ...(!isDbEnabled ? [MockModule] : [])],
 })
 export class AppModule {}
-
-
-

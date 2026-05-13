@@ -10,7 +10,7 @@ import net from "net";
 import { join } from "path";
 
 function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const server = net.createServer();
     server.listen(port, () => {
       server.close(() => resolve(true));
@@ -65,10 +65,21 @@ async function bootstrap() {
     });
   } else {
     // Production: serve static files
-    const { serveStatic } = await import("./vite");
+    // const { serveStatic } = await import("./vite");
     const httpAdapter = app.getHttpAdapter();
     const expressApp = httpAdapter.getInstance();
-    serveStatic(expressApp);
+    // serveStatic(expressApp);
+
+    const publicPath = join(__dirname, "public");
+
+    console.log("publicPath:", publicPath); // 디버깅
+
+    expressApp.use(express.static(publicPath));
+
+    expressApp.use("*", (req: any, res: any, next: any) => {
+      if (req.originalUrl.startsWith("/api/")) return next();
+      res.sendFile(join(publicPath, "index.html"));
+    });
 
     const preferredPort = parseInt(process.env.PORT || "4000");
     const port = await findAvailablePort(preferredPort);
