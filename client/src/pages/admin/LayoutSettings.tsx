@@ -502,6 +502,7 @@ export default function AdminLayoutSettings() {
   const contentCategoryLabelById = useMemo(() => new Map(contentCategoryOptions.map((option) => [option.id, option.label] as const)), [contentCategoryOptions]);
   const mediaCategoryLabelById = useMemo(() => new Map(mediaCategories.map((category) => [category.id, category.name] as const)), [mediaCategories]);
   const visibleItems = useMemo(() => items.filter((item) => item.status === "visible").sort((a, b) => a.displayOrder - b.displayOrder), [items]);
+  const sortableIds = useMemo(() => visibleItems.map((item) => getSectionKey(item)), [visibleItems]);
   const hiddenPresetSections = useMemo(() => {
     const hiddenItems = items.filter((item) => item.status === "hidden");
     const byType = new Map(hiddenItems.map((item) => [item.sectionType, item] as const));
@@ -650,7 +651,7 @@ export default function AdminLayoutSettings() {
                 <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">오른쪽에서 섹션을 추가하면 이곳에 배치됩니다.</div>
               ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={visibleItems.map((item) => getSectionKey(item))} strategy={rectSortingStrategy}>
+                  <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
                     <div className="grid grid-cols-12 gap-3 rounded-xl border border-dashed bg-muted/20 p-3">
                       {visibleItems.map((item) => {
                         const key = getSectionKey(item);
