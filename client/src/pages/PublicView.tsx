@@ -48,7 +48,7 @@ const COL_SPAN_CLASS: Record<number, string> = {
 
 // --- 히어로 캐러셀 --------------------------------------------------------------------------------
 
-function HeroCarousel({ slides }: { slides: any[] }) {
+function HeroCarousel({ slides, minHeight = 480 }: { slides: any[]; minHeight?: number }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIdx, setSelectedIdx] = useState(0);
 
@@ -101,7 +101,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
 
               {/* 타입: 좌우 분할 (이미지 왼쪽 / 텍스트 오른쪽) */}
               {slide.type === "image_split" && (
-                <div className="flex flex-col md:flex-row min-h-[480px] lg:min-h-[520px]">
+                <div className="flex flex-col md:flex-row" style={{ minHeight }}>
                   <div className="flex-1 relative overflow-hidden min-h-[240px]">
                     {slide.imageUrl && (
                       <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -129,7 +129,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
 
               {/* 타입: 이미지 배경 + 하단 텍스트 고정 */}
               {slide.type === "image_bottom" && (
-                <div className="relative min-h-[480px] lg:min-h-[520px] flex items-end">
+                <div className="relative flex items-end" style={{ minHeight }}>
                   {slide.imageUrl && (
                     <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
                   )}
@@ -152,7 +152,7 @@ function HeroCarousel({ slides }: { slides: any[] }) {
               {/* 타입: 전체 이미지 배경 (텍스트 중앙 오버레이) */}
               {slide.type === "image" && slide.imageUrl && (
                 <div className="relative">
-                  <img src={slide.imageUrl} alt={slide.title || ""} className="w-full object-cover max-h-[580px]" />
+                  <img src={slide.imageUrl} alt={slide.title || ""} className="w-full object-cover" style={{ maxHeight: minHeight }} />
                   {(slide.title || slide.subtitle) && (
                     <>
                       <div className="absolute inset-0 bg-black/40" />
@@ -322,32 +322,47 @@ export default function PublicView() {
         : [{ id: 0, type: "text", title: section.title, subtitle: section.subtitle, imageUrl: null }];
 
     const quickMenuItems = [
-      { icon: Clock,    label: "예배 안내",   color: "bg-primary",    href: "/church/worship",      iconUrl: cfg("hero_icon_1_url") },
-      { icon: MapPin,   label: "오시는 길",   color: "bg-accent-gold", href: "/church/directions",   iconUrl: cfg("hero_icon_2_url") },
-      { icon: UserPlus, label: "새가족 안내", color: "bg-primary/80", href: "/community/new-member", iconUrl: cfg("hero_icon_3_url") },
-      { icon: Youtube,  label: "온라인 예배", color: "bg-red-500",    href: "/sermons/sunday",       iconUrl: cfg("hero_icon_4_url") },
+      { icon: Clock,    label: "예배 안내",   color: "bg-primary",    href: "/church/worship",      iconUrl: cfg("hero_icon_1_url"), bgUrl: cfg("hero_icon_1_bg_url") },
+      { icon: MapPin,   label: "오시는 길",   color: "bg-accent-gold", href: "/church/directions",   iconUrl: cfg("hero_icon_2_url"), bgUrl: cfg("hero_icon_2_bg_url") },
+      { icon: UserPlus, label: "새가족 안내", color: "bg-primary/80", href: "/community/new-member", iconUrl: cfg("hero_icon_3_url"), bgUrl: cfg("hero_icon_3_bg_url") },
+      { icon: Youtube,  label: "온라인 예배", color: "bg-red-500",    href: "/sermons/sunday",       iconUrl: cfg("hero_icon_4_url"), bgUrl: cfg("hero_icon_4_bg_url") },
     ];
+
+    const heroHeight = Number(cfg("hero_height") || 480);
+    const qSize = cfg("quick_menu_size") || "md";
+    const qStyle = {
+      sm: { card: "p-5", iconWrap: "p-4", icon: "h-9 w-9", label: "text-base" },
+      md: { card: "p-7", iconWrap: "p-5", icon: "h-11 w-11", label: "text-lg" },
+      lg: { card: "p-9", iconWrap: "p-6", icon: "h-14 w-14", label: "text-xl" },
+    }[qSize] ?? { card: "p-7", iconWrap: "p-5", icon: "h-11 w-11", label: "text-lg" };
 
     return (
       <section key={getSectionKey(section)} className="bg-background overflow-hidden border-b border-primary/10">
-        <HeroCarousel slides={slides} />
+        <HeroCarousel slides={slides} minHeight={heroHeight} />
 
         {/* 퀵 메뉴 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickMenuItems.map((item, idx) => (
               <Link key={idx} href={item.href}>
-                <div className="group cursor-pointer flex flex-col items-center gap-4 p-6 rounded-3xl bg-card border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div
+                  className={`group cursor-pointer flex flex-col items-center gap-4 ${qStyle.card} rounded-3xl border border-border/50 elegant-shadow hover:elegant-shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden ${!item.bgUrl ? "bg-card" : ""}`}
+                  style={item.bgUrl
+                    ? { backgroundImage: `url(${item.bgUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                    : undefined}
+                >
                   <div className="group-hover:scale-110 transition-transform duration-300">
                     {item.iconUrl ? (
-                      <img src={item.iconUrl} alt={item.label} className="h-14 w-14 object-contain" />
+                      <div className={`${qStyle.iconWrap} rounded-2xl ${item.color} text-primary-foreground shadow-lg shadow-current/10`}>
+                        <img src={item.iconUrl} alt={item.label} className={`${qStyle.icon} object-contain`} />
+                      </div>
                     ) : (
-                      <div className={`p-4 rounded-2xl ${item.color} text-primary-foreground shadow-lg shadow-current/10`}>
-                        <item.icon className="h-8 w-8" />
+                      <div className={`${qStyle.iconWrap} rounded-2xl ${item.color} text-primary-foreground shadow-lg shadow-current/10`}>
+                        <item.icon className={qStyle.icon} />
                       </div>
                     )}
                   </div>
-                  <span className="font-bold text-lg text-card-foreground">{item.label}</span>
+                  <span className={`font-bold ${qStyle.label} ${item.bgUrl ? "text-white drop-shadow" : "text-card-foreground"}`}>{item.label}</span>
                 </div>
               </Link>
             ))}
