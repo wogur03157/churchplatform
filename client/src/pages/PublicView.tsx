@@ -330,11 +330,11 @@ export default function PublicView() {
 
     const heroHeight = Number(cfg("hero_height") || 480);
     const qSize = cfg("quick_menu_size") || "md";
-    const qStyle = {
+    const qStyle = ({
       sm: { card: "p-5", iconWrap: "p-4", icon: "h-9 w-9", label: "text-base" },
       md: { card: "p-7", iconWrap: "p-5", icon: "h-11 w-11", label: "text-lg" },
       lg: { card: "p-9", iconWrap: "p-6", icon: "h-14 w-14", label: "text-xl" },
-    }[qSize] ?? { card: "p-7", iconWrap: "p-5", icon: "h-11 w-11", label: "text-lg" };
+    } as Record<string, { card: string; iconWrap: string; icon: string; label: string }>)[qSize] ?? { card: "p-7", iconWrap: "p-5", icon: "h-11 w-11", label: "text-lg" };
 
     return (
       <section key={getSectionKey(section)} className="bg-background overflow-hidden border-b border-primary/10">
@@ -383,9 +383,39 @@ export default function PublicView() {
     const page = data.page;
     const variant = section.displayVariant ?? (narrow ? "links" : "grid");
 
+    if (section.itemLimit === 0) {
+      return (
+        <section key={getSectionKey(section)} className={`py-6 lg:py-8 h-full ${rowBg}`}>
+          <div className={innerCls}>
+            <Link href={categoryHref ?? "#"}>
+              <div className="relative rounded-3xl overflow-hidden min-h-[320px] group cursor-pointer elegant-shadow">
+                {section.imageUrl ? (
+                  <img src={section.imageUrl} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 bg-primary/30" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
+                <div className="relative z-10 p-7 flex flex-col justify-between min-h-[320px] text-white">
+                  <div className="space-y-2">
+                    {subtitle && <p className="text-sm font-medium opacity-75">{subtitle}</p>}
+                    <h3 className="text-2xl font-bold leading-tight drop-shadow">{title}</h3>
+                  </div>
+                  <div className="w-9 h-9 rounded-full border-2 border-white/80 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
+      );
+    }
+
     return (
-      <section key={getSectionKey(section)} className={`py-12 lg:py-16 h-full ${rowBg}`}>
-        <div className={innerCls}>
+      <section key={getSectionKey(section)} className={`relative py-12 lg:py-16 h-full ${section.imageUrl ? "" : rowBg}`}
+        style={section.imageUrl ? { backgroundImage: `url(${section.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+        {section.imageUrl && <div className="absolute inset-0 bg-black/50" />}
+        <div className={`relative z-10 ${innerCls}`}>
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
@@ -404,7 +434,7 @@ export default function PublicView() {
             {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
           </div>
 
-          {children.length > 0 ? (
+          {section.itemLimit === 0 ? null : children.length > 0 ? (
             variant === "links" ? (
               <div className="divide-y divide-border rounded-2xl border bg-card">
                 {children.map((item) => (
@@ -466,7 +496,8 @@ export default function PublicView() {
 
   const renderMediaCategorySection = (section: any, innerCls: string, narrow: boolean, mid: boolean, full: boolean, rowBg: string) => {
     const data = sectionDataById[String(section.id)];
-    if (!data || data.kind !== "media_category" || !data.items?.length) return null;
+    if (!data || data.kind !== "media_category") return null;
+    if (section.itemLimit !== 0 && !data.items?.length) return null;
 
     const title = section.title || data.category?.name || "미디어";
     const subtitle = section.subtitle || null;
@@ -488,9 +519,39 @@ export default function PublicView() {
       return item.url;
     };
 
+    if (section.itemLimit === 0) {
+      return (
+        <section key={getSectionKey(section)} className={`py-6 lg:py-8 h-full ${rowBg}`}>
+          <div className={innerCls}>
+            <Link href={moreHref ?? "#"}>
+              <div className="relative rounded-3xl overflow-hidden min-h-[320px] group cursor-pointer elegant-shadow">
+                {section.imageUrl ? (
+                  <img src={section.imageUrl} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="absolute inset-0 bg-primary/30" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
+                <div className="relative z-10 p-7 flex flex-col justify-between min-h-[320px] text-white">
+                  <div className="space-y-2">
+                    {subtitle && <p className="text-sm font-medium opacity-75">{subtitle}</p>}
+                    <h3 className="text-2xl font-bold leading-tight drop-shadow">{title}</h3>
+                  </div>
+                  <div className="w-9 h-9 rounded-full border-2 border-white/80 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
+      );
+    }
+
     return (
-      <section key={getSectionKey(section)} className={`py-12 lg:py-16 h-full ${rowBg}`}>
-        <div className={innerCls}>
+      <section key={getSectionKey(section)} className={`relative py-12 lg:py-16 h-full ${section.imageUrl ? "" : rowBg}`}
+        style={section.imageUrl ? { backgroundImage: `url(${section.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+        {section.imageUrl && <div className="absolute inset-0 bg-black/50" />}
+        <div className={`relative z-10 ${innerCls}`}>
           <div className={`mb-6 lg:mb-8 space-y-2 ${full ? "text-center" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
@@ -509,7 +570,7 @@ export default function PublicView() {
             {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
           </div>
 
-          {variant === "featured" && items[0]?.mediaType === "video" ? (
+          {section.itemLimit === 0 ? null : variant === "featured" && items[0]?.mediaType === "video" ? (
             <div className="space-y-4">
               <div className="aspect-video overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/10">
                 <iframe
@@ -586,9 +647,11 @@ export default function PublicView() {
           <section
             key="announcements"
             id="announcements"
-            className={`py-12 lg:py-16 h-full ${rowBg}`}
+            className={`relative py-12 lg:py-16 h-full ${section.imageUrl ? "" : rowBg}`}
+            style={section.imageUrl ? { backgroundImage: `url(${section.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
           >
-            <div className={innerCls}>
+            {section.imageUrl && <div className="absolute inset-0 bg-black/50" />}
+            <div className={`relative z-10 ${innerCls}`}>
               {/* 헤더 */}
               <div
                 className={`flex items-center justify-between gap-3 ${narrow ? "mb-4" : "mb-8"}`}
@@ -700,8 +763,10 @@ export default function PublicView() {
         const toShow = displayImages;
         const desktopCols = narrow ? "sm:grid-cols-2" : mid ? "sm:grid-cols-3" : (GALLERY_COLS_CLASS[gridCols] ?? "sm:grid-cols-4");
         return (
-          <section key="images" className={`py-12 lg:py-16 h-full ${rowBg}`}>
-            <div className={innerCls}>
+          <section key="images" className={`relative py-12 lg:py-16 h-full ${section.imageUrl ? "" : rowBg}`}
+            style={section.imageUrl ? { backgroundImage: `url(${section.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+            {section.imageUrl && <div className="absolute inset-0 bg-black/50" />}
+            <div className={`relative z-10 ${innerCls}`}>
               <div className={`${full ? "text-center" : ""} mb-6 lg:mb-8 space-y-1`}>
                 <h2 className={`font-bold tracking-tight text-foreground flex items-center gap-2 ${narrow ? "text-lg" : mid ? "text-xl" : "text-3xl md:text-4xl"}`}>
                   <AccentBar />
@@ -739,8 +804,10 @@ export default function PublicView() {
       case "videos":
         if (!videos || videos.length === 0) return null;
         return (
-          <section key="videos" className={`py-12 lg:py-16 h-full ${rowBg}`}>
-            <div className={innerCls}>
+          <section key="videos" className={`relative py-12 lg:py-16 h-full ${section.imageUrl ? "" : rowBg}`}
+            style={section.imageUrl ? { backgroundImage: `url(${section.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+            {section.imageUrl && <div className="absolute inset-0 bg-black/50" />}
+            <div className={`relative z-10 ${innerCls}`}>
               <div
                 className={`${full ? "text-center" : ""} mb-6 lg:mb-10 space-y-1`}
               >
