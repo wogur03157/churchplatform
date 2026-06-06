@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,21 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Upload, X, Clock, MapPin, UserPlus, Youtube, Globe, Palette } from "lucide-react";
+import { Upload, X, Clock, MapPin, UserPlus, Youtube, Globe, Palette, LayoutTemplate } from "lucide-react";
 
 type SiteConfig = { id: number; key: string; value: string; description: string };
 
 const QUICK_MENU_META = [
-  { key: "hero_icon_1_url", label: "예배 안내", FallbackIcon: Clock,    color: "bg-primary" },
-  { key: "hero_icon_2_url", label: "오시는 길", FallbackIcon: MapPin,   color: "bg-accent-gold" },
-  { key: "hero_icon_3_url", label: "새가족 안내", FallbackIcon: UserPlus, color: "bg-primary/80" },
-  { key: "hero_icon_4_url", label: "온라인 예배", FallbackIcon: Youtube,  color: "bg-red-500" },
+  { key: "hero_icon_1_url", bgKey: "hero_icon_1_bg_url", label: "예배 안내", FallbackIcon: Clock,    color: "bg-primary" },
+  { key: "hero_icon_2_url", bgKey: "hero_icon_2_bg_url", label: "오시는 길", FallbackIcon: MapPin,   color: "bg-accent-gold" },
+  { key: "hero_icon_3_url", bgKey: "hero_icon_3_bg_url", label: "새가족 안내", FallbackIcon: UserPlus, color: "bg-primary/80" },
+  { key: "hero_icon_4_url", bgKey: "hero_icon_4_bg_url", label: "온라인 예배", FallbackIcon: Youtube,  color: "bg-red-500" },
 ] as const;
 
 export default function SiteSettings() {
   const qc = useQueryClient();
+  const [heroHeightLocal, setHeroHeightLocal] = useState<number | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const iconRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+  const iconBgRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -233,6 +240,67 @@ export default function SiteSettings() {
         </CardContent>
       </Card>
 
+      {/* 레이아웃 크기 설정 */}
+      <Card className="elegant-shadow border-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LayoutTemplate className="h-5 w-5 text-primary" />
+            레이아웃 크기
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">배너와 퀵메뉴 아이콘의 크기를 조절하세요</p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* 배너 높이 */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">배너 높이</Label>
+              <span className="text-sm font-mono text-muted-foreground">{heroHeightLocal ?? (cfg("hero_height") || "480")}px</span>
+            </div>
+            <input
+              type="range"
+              min={280}
+              max={750}
+              step={10}
+              value={heroHeightLocal ?? Number(cfg("hero_height") || 480)}
+              onChange={(e) => setHeroHeightLocal(Number(e.target.value))}
+              onPointerUp={(e) => {
+                const val = (e.target as HTMLInputElement).value;
+                patchMutation.mutate({ key: "hero_height", value: val });
+                setHeroHeightLocal(null);
+              }}
+              className="w-full accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>280px</span>
+              <span>750px</span>
+            </div>
+          </div>
+
+          {/* 퀵메뉴 크기 */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">퀵메뉴 아이콘 크기</Label>
+            <div className="flex gap-2">
+              {[
+                { value: "sm", label: "소" },
+                { value: "md", label: "중" },
+                { value: "lg", label: "대" },
+              ].map(({ value, label }) => {
+                const active = (cfg("quick_menu_size") || "md") === value;
+                return (
+                  <button
+                    key={value}
+                    onClick={() => patchMutation.mutate({ key: "quick_menu_size", value })}
+                    className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-muted"}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 홈 퀵메뉴 아이콘 */}
       <Card className="elegant-shadow">
         <CardHeader>
@@ -243,50 +311,90 @@ export default function SiteSettings() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            {QUICK_MENU_META.map(({ key, label, FallbackIcon, color }, idx) => {
+            {QUICK_MENU_META.map(({ key, bgKey, label, FallbackIcon, color }, idx) => {
               const url = cfg(key);
+              const bgUrl = cfg(bgKey);
               return (
-                <div key={key} className="flex items-center gap-3 p-3 border rounded-xl bg-muted/20">
-                  {/* 아이콘 미리보기 */}
-                  <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group overflow-hidden ${url ? "bg-muted/40" : `${color}`}`}>
-                    {url ? (
-                      <>
-                        <img src={url} alt={label} className="w-10 h-10 object-contain" />
-                        <button
-                          className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                          onClick={() => patchMutation.mutate({ key, value: "" })}
-                        >
-                          <X className="h-4 w-4 text-white" />
-                        </button>
-                      </>
-                    ) : (
-                      <FallbackIcon className="h-6 w-6 text-white" />
+                <div key={key} className="flex flex-col gap-2 p-3 border rounded-xl bg-muted/20">
+                  <div className="flex items-center gap-3">
+                    {/* 아이콘 미리보기 */}
+                    <div
+                      className={`relative w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group overflow-hidden ${!bgUrl && !url ? color : "bg-muted/40"}`}
+                      style={bgUrl ? { backgroundImage: `url(${bgUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                    >
+                      {url ? (
+                        <>
+                          <img src={url} alt={label} className="w-10 h-10 object-contain" />
+                          <button
+                            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                            onClick={() => patchMutation.mutate({ key, value: "" })}
+                          >
+                            <X className="h-4 w-4 text-white" />
+                          </button>
+                        </>
+                      ) : (
+                        <FallbackIcon className="h-6 w-6 text-white" />
+                      )}
+                    </div>
+
+                    {/* 정보 */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{label}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {url ? "커스텀 아이콘 적용됨" : "기본 아이콘 사용 중"}
+                      </p>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 text-xs"
+                      onClick={() => iconRefs[idx].current?.click()}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1" />
+                      아이콘
+                    </Button>
+                    <input
+                      ref={iconRefs[idx]}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFile(e, key)}
+                    />
+                  </div>
+
+                  {/* 배경 이미지 */}
+                  <div className="flex items-center gap-2 pl-15">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground truncate">
+                        배경: {bgUrl ? "이미지 적용됨" : "단색 사용 중"}
+                      </p>
+                    </div>
+                    {bgUrl && (
+                      <button
+                        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                        onClick={() => patchMutation.mutate({ key: bgKey, value: "" })}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 text-xs"
+                      onClick={() => iconBgRefs[idx].current?.click()}
+                    >
+                      <Upload className="h-3.5 w-3.5 mr-1" />
+                      배경
+                    </Button>
+                    <input
+                      ref={iconBgRefs[idx]}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFile(e, bgKey)}
+                    />
                   </div>
-
-                  {/* 정보 + 업로드 */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {url ? "커스텀 이미지 적용됨" : "기본 아이콘 사용 중"}
-                    </p>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => iconRefs[idx].current?.click()}
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                  </Button>
-                  <input
-                    ref={iconRefs[idx]}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFile(e, key)}
-                  />
                 </div>
               );
             })}

@@ -611,10 +611,17 @@ export default function AdminLayoutSettings() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      api.post(
+    mutationFn: () => {
+      const allItems = [...visibleItems, ...items.filter((item) => item.status === "hidden")];
+      const validItems = allItems.filter((item) => {
+        const isCategory = item.sectionType === "content_category" || item.sectionType === "media_category";
+        return !isCategory || !!item.sourceCategoryId;
+      });
+      const skipped = allItems.length - validItems.length;
+      if (skipped > 0) toast.warning(`카테고리 미선택 섹션 ${skipped}개는 저장에서 제외됐습니다.`);
+      return api.post(
         "/layout-settings/save-all",
-        [...visibleItems, ...items.filter((item) => item.status === "hidden")].map((item, index) => ({
+        validItems.map((item, index) => ({
           id: item.id,
           sectionType: item.sectionType,
           status: item.status,
@@ -629,7 +636,8 @@ export default function AdminLayoutSettings() {
           itemLimit: item.itemLimit ?? undefined,
           displayVariant: item.displayVariant ?? undefined,
         })),
-      ),
+      );
+    },
     onSuccess: () => {
       toast.success("홈 레이아웃을 저장했습니다.");
       qc.invalidateQueries({ queryKey: ["layout-settings"] });
@@ -758,6 +766,29 @@ export default function AdminLayoutSettings() {
                   </div>
                 )}
 
+                {selectedItem.sectionType !== "hero" && selectedItem.sectionType !== "image_a" && selectedItem.sectionType !== "image_b" && (
+                  <div className="space-y-3">
+                    <Label>섹션 배경 이미지</Label>
+                    <p className="text-xs text-muted-foreground">섹션 전체 배경에 이미지가 깔립니다. 반투명 어두운 오버레이가 자동 적용됩니다.</p>
+                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) uploadSectionImage(file);
+                      event.target.value = "";
+                    }} />
+                    {selectedItem.imageUrl ? (
+                      <div className="relative overflow-hidden rounded-xl border">
+                        <img src={selectedItem.imageUrl} alt="" className="h-32 w-full object-cover" />
+                        <div className="absolute right-3 top-3 flex gap-2">
+                          <Button type="button" size="sm" variant="secondary" onClick={() => imageInputRef.current?.click()}>변경</Button>
+                          <Button type="button" size="sm" variant="destructive" onClick={() => updateItem(getSectionKey(selectedItem), { imageUrl: null, imageKey: null })}>제거</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()}><ImageIcon className="mr-2 h-4 w-4" />배경 이미지 업로드</Button>
+                    )}
+                  </div>
+                )}
+
                 {selectedItem.sectionType === "content_category" && (
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2 md:col-span-2">
@@ -771,7 +802,7 @@ export default function AdminLayoutSettings() {
                     </div>
                     <div className="space-y-2">
                       <Label>노출 개수</Label>
-                      <Input type="number" min={1} max={12} value={selectedItem.itemLimit ?? 6} onChange={(event) => updateItem(getSectionKey(selectedItem), { itemLimit: Number(event.target.value) || 6 })} />
+                      <Input type="number" min={0} max={12} value={selectedItem.itemLimit ?? 6} onChange={(event) => updateItem(getSectionKey(selectedItem), { itemLimit: Math.max(0, Number(event.target.value)) })} />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label>표시 방식</Label>
@@ -798,7 +829,7 @@ export default function AdminLayoutSettings() {
                     </div>
                     <div className="space-y-2">
                       <Label>노출 개수</Label>
-                      <Input type="number" min={1} max={12} value={selectedItem.itemLimit ?? 6} onChange={(event) => updateItem(getSectionKey(selectedItem), { itemLimit: Number(event.target.value) || 6 })} />
+                      <Input type="number" min={0} max={12} value={selectedItem.itemLimit ?? 6} onChange={(event) => updateItem(getSectionKey(selectedItem), { itemLimit: Math.max(0, Number(event.target.value)) })} />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label>표시 방식</Label>
