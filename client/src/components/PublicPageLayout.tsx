@@ -1,5 +1,6 @@
 import PublicHeader from "./PublicHeader";
 import QuickActionFab from "./QuickActionFab";
+import FontSizePicker from "./FontSizePicker";
 
 export default function PublicPageLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,7 +25,10 @@ export default function PublicPageLayout({ children }: { children: React.ReactNo
               <p className="text-sm text-primary-foreground/60">대표: 02-000-0000</p>
             </div>
           </div>
-          <div className="border-t border-primary-foreground/20 pt-6 text-center text-sm text-primary-foreground/50">
+          <div className="border-t border-primary-foreground/20 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-primary-foreground/50">
+            <div className="hidden sm:block">
+              <FontSizePicker dark />
+            </div>
             <p>© 2026 영신교회. All rights reserved.</p>
           </div>
         </div>
