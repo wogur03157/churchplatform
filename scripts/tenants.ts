@@ -21,6 +21,8 @@ import {
 } from "../packages/tenancy/src/tenant-db.util";
 import { TENANT_ENTITIES as WEB_TENANT_ENTITIES } from "../apps/web/server/tenant-entities";
 import { seedTenantDefaults as seedWebDefaults } from "../apps/web/server/tenant-seed";
+import { TENANT_ENTITIES as MEMBERS_TENANT_ENTITIES } from "../apps/members/server/tenant-entities";
+import { seedTenantDefaults as seedMembersDefaults } from "../apps/members/server/tenant-seed";
 
 interface AppManifest {
   name: string;
@@ -31,7 +33,7 @@ interface AppManifest {
 /** 테넌트 DB를 쓰는 앱 목록 — 앱별 엔티티가 같은 교회 DB에 함께 생성된다 */
 const APPS: AppManifest[] = [
   { name: "web", entities: [...WEB_TENANT_ENTITIES], seed: seedWebDefaults },
-  // { name: "members", entities: [...MEMBERS_TENANT_ENTITIES] },
+  { name: "members", entities: [...MEMBERS_TENANT_ENTITIES], seed: seedMembersDefaults },
   // { name: "finance", entities: [...FINANCE_TENANT_ENTITIES] },
 ];
 

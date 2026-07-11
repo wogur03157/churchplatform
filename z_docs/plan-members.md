@@ -1,6 +1,6 @@
 # 재적(교인 관리) 서비스 기획서
 
-> 상태: 기획 (구현 전) · 작성일: 2026-07-12
+> 상태: **1단계 구현 완료** (권한 기반 + 교인/가족/직분 CRUD, 2026-07-12) · 작성일: 2026-07-12
 > 전제: [tenant-db-routing.md](./tenant-db-routing.md)의 교회별 DB 구조 위에 구현.
 > 재정 기획서([plan-finance.md](./plan-finance.md))와 교인 데이터를 공유(헌금자 매칭).
 
@@ -249,8 +249,8 @@ UI는 기존 shadcn/ui + `useCRUD` 훅 패턴 재사용. 모바일 뷰가 1급 �
 
 | 순서 | 작업 | 비고 |
 |---|---|---|
-| 1 | `PermissionGuard(permKey)` + admin_permissions 심사 로직 | AdminGuard 확장. 재정 모듈도 같이 씀 |
-| 2 | members/families/positions 엔티티 + CRUD + 목록 화면 | `tenant-entities.ts` 등록, `TenantOrmModule.forFeature` |
+| 1 | ✅ `PermissionGuard(permKey)` + admin_permissions 심사 로직 | packages/auth 구현 완료 (기능플래그+개인권한) |
+| 2 | ✅(API) members/families/positions 엔티티 + CRUD | 연락처·주소 AES-GCM 암호화, 감사 로그 포함. 화면은 미구현 |
 | 3 | 엑셀 임포트/익스포트 | 진입 장벽 제거가 최우선이라 앞에 배치 |
 | 4 | 조직(member_groups) + 조직도 화면 | |
 | 5 | 출석 세션/기록 + 모바일 체크 화면 + 통계 | |

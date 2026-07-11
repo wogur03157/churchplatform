@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Church, ChurchAdmin, User } from "@platform/entities";
+import { AdminPermission, Church, ChurchAdmin, ChurchFeature, User } from "@platform/entities";
 import { AuthService } from "./auth.service";
 import { AdminGuard } from "./guards/admin.guard";
 import { OptionalAuthGuard } from "./guards/optional-auth.guard";
+import { PermissionGuard } from "./guards/permission.guard";
 
 /**
  * 플랫폼 공통 인증 모듈 (컨트롤러 없음).
@@ -12,8 +13,10 @@ import { OptionalAuthGuard } from "./guards/optional-auth.guard";
  * 로그인/로그아웃 HTTP 엔드포인트는 web 앱의 AuthModule에만 있다.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([User, ChurchAdmin, Church])],
-  providers: [AuthService, OptionalAuthGuard, AdminGuard],
-  exports: [AuthService, OptionalAuthGuard, AdminGuard],
+  imports: [
+    TypeOrmModule.forFeature([User, ChurchAdmin, Church, ChurchFeature, AdminPermission]),
+  ],
+  providers: [AuthService, OptionalAuthGuard, AdminGuard, PermissionGuard],
+  exports: [AuthService, OptionalAuthGuard, AdminGuard, PermissionGuard, TypeOrmModule],
 })
 export class PlatformAuthModule {}

@@ -6,7 +6,9 @@ export type FeatureKey =
   | "videos"
   | "floating_messages"
   | "layout_settings"
-  | "ai_assistant";
+  | "ai_assistant"
+  | "members"
+  | "finance";
 
 export const ALL_FEATURES: FeatureKey[] = [
   "announcements",
@@ -15,6 +17,8 @@ export const ALL_FEATURES: FeatureKey[] = [
   "floating_messages",
   "layout_settings",
   "ai_assistant",
+  "members",
+  "finance",
 ];
 
 @Entity("church_features")

@@ -4,7 +4,12 @@ import { PlatformAuthModule } from "@platform/auth";
 import { PLATFORM_ENTITIES } from "@platform/entities";
 import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
+import { AuditModule } from "./modules/audit/audit.module";
+import { FamiliesModule } from "./modules/families/families.module";
+import { MembersModule } from "./modules/members/members.module";
+import { PositionsModule } from "./modules/positions/positions.module";
 import { TENANT_ENTITIES } from "./tenant-entities";
+import { seedTenantDefaults } from "./tenant-seed";
 
 const dbUrl = process.env.DATABASE_URL ?? "";
 const isDbEnabled = process.env.SKIP_DB !== "true" && dbUrl.length > 0;
@@ -22,8 +27,16 @@ const dbModules = isDbEnabled
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
-      TenancyModule.forRoot({ tenantEntities: [...TENANT_ENTITIES] }),
+      TenancyModule.forRoot({
+        tenantEntities: [...TENANT_ENTITIES],
+        seedTenant: seedTenantDefaults,
+      }),
       PlatformAuthModule,
+      AuditModule,
+      PositionsModule,
+      FamiliesModule,
+      // MembersModule은 루트 경로(:id 와일드카드)를 쓰므로 마지막에 등록
+      MembersModule,
     ]
   : [];
 
