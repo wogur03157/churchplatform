@@ -89,9 +89,9 @@ function Router() {
         <DashboardLayout><Home /></DashboardLayout>
       </Route>
 
-      <Route path="/church/:slug1/:slug2/:slug3" component={DynamicContentPage} />
-      <Route path="/church/:slug1/:slug2" component={DynamicContentPage} />
-      <Route path="/church/:slug1" component={DynamicContentPage} />
+      <Route path="/church/:slug1/:slug2/:slug3">{() => <DynamicContentPage />}</Route>
+      <Route path="/church/:slug1/:slug2">{() => <DynamicContentPage />}</Route>
+      <Route path="/church/:slug1">{() => <DynamicContentPage />}</Route>
       <Route path="/sermons/sunday" component={SundaySermons} />
       <Route path="/sermons/midweek" component={MidweekSermons} />
       <Route path="/sermons/special" component={SpecialSermons} />

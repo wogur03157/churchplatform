@@ -7,27 +7,22 @@ import { SiteConfig } from "./entities/site-config.entity";
 export class SiteConfigService {
   constructor(@InjectRepository(SiteConfig) private readonly repo: Repository<SiteConfig>) {}
 
-  // 현재는 단일 교회 시스템이므로 churchId 1을 기본으로 처리
-  async findAll(): Promise<SiteConfig[]> { 
-    return this.repo.find({ 
-      where: [
-        { churchId: 1 },
-        { churchId: null as any }
-      ],
-      order: { churchId: "DESC" } // churchId 1인 것을 우선순위로
-    }); 
+  // 리포지토리가 이미 교회별 DB를 바라보므로 key 단위로만 조회
+  // (churchId DESC: 단일 DB 시절 churchId=1 행과 NULL 행이 공존하면 전자를 우선)
+  async findAll(): Promise<SiteConfig[]> {
+    return this.repo.find({ order: { key: "ASC", churchId: "DESC" } });
   }
 
-  findByKey(key: string): Promise<SiteConfig | null> { 
-    return this.repo.findOne({ where: { key, churchId: 1 } }); 
+  findByKey(key: string): Promise<SiteConfig | null> {
+    return this.repo.findOne({ where: { key }, order: { churchId: "DESC" } });
   }
 
   async upsert(key: string, value: string): Promise<SiteConfig> {
-    let record = await this.repo.findOne({ where: { key, churchId: 1 } });
+    let record = await this.repo.findOne({ where: { key } });
     if (record) {
       record.value = value;
     } else {
-      record = this.repo.create({ key, value, churchId: 1 });
+      record = this.repo.create({ key, value });
     }
     return this.repo.save(record);
   }

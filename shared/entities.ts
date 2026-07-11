@@ -205,6 +205,7 @@ export interface Church {
   address: string | null;
   logoUrl: string | null;
   customDomain: string | null;
+  dbName: string | null;
   appliedBy: number;
   approvedBy: number | null;
   approvedAt: string | Date | null;

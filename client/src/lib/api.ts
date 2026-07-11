@@ -8,6 +8,9 @@ class ApiError extends Error {
   }
 }
 
+// 로컬 개발에서 특정 교회로 접속할 때 사용 (운영에서는 도메인으로 교회를 식별)
+const CHURCH_SLUG = import.meta.env.VITE_CHURCH_SLUG as string | undefined;
+
 async function request<T>(
   path: string,
   options?: RequestInit
@@ -17,6 +20,7 @@ async function request<T>(
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(CHURCH_SLUG ? { "x-church-slug": CHURCH_SLUG } : {}),
       ...(options?.headers ?? {}),
     },
   });

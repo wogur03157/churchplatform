@@ -1,5 +1,5 @@
 ﻿import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TenantOrmModule } from "../tenancy/tenant-orm.module";
 import { AuthModule } from "../auth/auth.module";
 import { ChurchesModule } from "../churches/churches.module";
 import { StorageModule } from "../storage/storage.module";
@@ -9,7 +9,7 @@ import { LayoutSettingsService } from "./layout-settings.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LayoutSetting]),
+    TenantOrmModule.forFeature([LayoutSetting]),
     AuthModule,
     ChurchesModule,
     StorageModule,

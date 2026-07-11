@@ -5,6 +5,7 @@ import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response } from "express";
 import { Repository } from "typeorm";
+import { Church } from "../churches/entities/church.entity";
 import { ChurchAdmin } from "../churches/entities/church-admin.entity";
 import { User } from "../users/entities/user.entity";
 
@@ -17,8 +18,18 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(ChurchAdmin)
-    private readonly churchAdminRepository: Repository<ChurchAdmin>
+    private readonly churchAdminRepository: Repository<ChurchAdmin>,
+    @InjectRepository(Church)
+    private readonly churchRepository: Repository<Church>
   ) {}
+
+  /** 해당 유저가 특정 교회의 관리자로 등록되어 있는지 확인 */
+  async isChurchAdminOf(churchId: number, userId: number): Promise<boolean> {
+    const mapping = await this.churchAdminRepository.findOne({
+      where: { churchId, userId },
+    });
+    return mapping !== null;
+  }
 
   private getSecretKey(): Uint8Array {
     const secret = process.env.JWT_SECRET ?? "";
@@ -179,17 +190,28 @@ export class AuthService {
       where: { openId: devOpenId },
     });
 
-    const existingAdminLink = await this.churchAdminRepository.findOne({
-      where: { churchId: 1, userId: user.id },
-    });
+    // 개발용 계정을 기본 교회(DEFAULT_CHURCH_SLUG, 없으면 첫 active 교회)의 관리자로 연결
+    const defaultSlug = process.env.DEFAULT_CHURCH_SLUG ?? "";
+    const church = defaultSlug
+      ? await this.churchRepository.findOne({ where: { slug: defaultSlug } })
+      : await this.churchRepository.findOne({
+          where: { status: "active" },
+          order: { id: "ASC" },
+        });
 
-    if (!existingAdminLink) {
-      await this.churchAdminRepository.save(
-        this.churchAdminRepository.create({
-          churchId: 1,
-          userId: user.id,
-        })
-      );
+    if (church) {
+      const existingAdminLink = await this.churchAdminRepository.findOne({
+        where: { churchId: church.id, userId: user.id },
+      });
+
+      if (!existingAdminLink) {
+        await this.churchAdminRepository.save(
+          this.churchAdminRepository.create({
+            churchId: church.id,
+            userId: user.id,
+          })
+        );
+      }
     }
 
     return this.createSessionToken(devOpenId, "Dev Church Admin");

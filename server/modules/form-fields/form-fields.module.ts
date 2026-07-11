@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TenantOrmModule } from "../tenancy/tenant-orm.module";
 import { FormField } from "./entities/form-field.entity";
 import { FormFieldsController } from "./form-fields.controller";
 import { FormFieldsService } from "./form-fields.service";
 import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FormField]), AuthModule],
+  imports: [TenantOrmModule.forFeature([FormField]), AuthModule],
   controllers: [FormFieldsController],
   providers: [FormFieldsService],
   exports: [FormFieldsService],

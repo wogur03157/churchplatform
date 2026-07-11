@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Church } from "./entities/church.entity";
@@ -8,6 +8,8 @@ import { User } from "../users/entities/user.entity";
 import { ApplyChurchDto } from "./dto/apply-church.dto";
 import { ReviewChurchDto } from "./dto/review-church.dto";
 import { UpdateChurchDto } from "./dto/update-church.dto";
+import { TenancyService } from "../tenancy/tenancy.service";
+import { TenantProvisioningService } from "../tenancy/tenant-provisioning.service";
 
 @Injectable()
 export class ChurchesService {
@@ -20,6 +22,10 @@ export class ChurchesService {
     private readonly churchFeatureRepo: Repository<ChurchFeature>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @Inject(TenancyService)
+    private readonly tenancy: TenancyService,
+    @Inject(TenantProvisioningService)
+    private readonly provisioning: TenantProvisioningService,
   ) {}
 
   // ── 신청 ──────────────────────────────────────────────────────────────────
@@ -84,8 +90,11 @@ export class ChurchesService {
       }
       // 기본 기능 플래그 생성
       await this.initFeatures(id, reviewerId);
+      // 교회 전용 DB 생성 + 스키마/시드 세팅
+      await this.provisioning.provision(church);
     }
 
+    this.tenancy.invalidateChurchCache();
     return church;
   }
 
@@ -101,7 +110,9 @@ export class ChurchesService {
   async update(id: number, dto: UpdateChurchDto): Promise<Church> {
     const church = await this.findOne(id);
     Object.assign(church, dto);
-    return this.churchRepo.save(church);
+    const saved = await this.churchRepo.save(church);
+    this.tenancy.invalidateChurchCache(); // slug/customDomain 변경 반영
+    return saved;
   }
 
   // ── 관리자 지정 ───────────────────────────────────────────────────────────

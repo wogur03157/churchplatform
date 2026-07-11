@@ -31,6 +31,7 @@ CREATE TABLE `churches` (
   `phone`          VARCHAR(50)  NULL,
   `email`          VARCHAR(320) NULL,
   `customDomain`   VARCHAR(255) NULL,
+  `dbName`         VARCHAR(64)  NULL COMMENT '교회별 테넌트 DB 이름 (NULL이면 프로비저닝 전)',
   `appliedBy`      INT          NULL,
   `approvedBy`     INT          NULL,
   `approvedAt`     TIMESTAMP    NULL,

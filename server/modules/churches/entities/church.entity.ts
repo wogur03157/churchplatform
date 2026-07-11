@@ -34,6 +34,10 @@ export class Church {
   @Column({ type: "varchar", length: 255, nullable: true })
   customDomain!: string | null;
 
+  /** 교회별 테넌트 DB 이름. null이면 아직 프로비저닝 전(중앙 DB 사용) */
+  @Column({ type: "varchar", length: 64, nullable: true })
+  dbName!: string | null;
+
   @Column({ type: "int", nullable: true })
   appliedBy!: number | null;
 

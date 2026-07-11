@@ -44,6 +44,7 @@ import { ContentPage } from "./modules/content-pages/entities/content-page.entit
 import { ContentPageMedia } from "./modules/content-pages/entities/content-page-media.entity";
 import { Media } from "./modules/media/entities/media.entity";
 import { PublicHomeModule } from "./modules/public-home/public-home.module";
+import { TenancyModule } from "./modules/tenancy/tenancy.module";
 
 const dbUrl = process.env.DATABASE_URL ?? "";
 const isDbEnabled =
@@ -88,6 +89,7 @@ const dbModules = isDbEnabled
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
+      TenancyModule,
       AuthModule,
       OAuthModule,
       InvitationsModule,

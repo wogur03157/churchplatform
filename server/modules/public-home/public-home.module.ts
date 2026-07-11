@@ -1,5 +1,5 @@
 ﻿import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TenantOrmModule } from "../tenancy/tenant-orm.module";
 import { Announcement } from "../announcements/entities/announcement.entity";
 import { ContentCategory } from "../content-pages/entities/content-category.entity";
 import { ContentPage } from "../content-pages/entities/content-page.entity";
@@ -15,7 +15,7 @@ import { PublicHomeService } from "./public-home.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
+    TenantOrmModule.forFeature([
       Announcement,
       ContentCategory,
       ContentPage,

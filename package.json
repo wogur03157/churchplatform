@@ -9,7 +9,9 @@
     "build": "vite build && esbuild server/main.ts --platform=node --packages=external --bundle --format=cjs --out-extension:.js=.cjs --outdir=dist/server",
     "start": "node scripts/run-with-env.cjs NODE_ENV=production node dist/server/main.cjs",
     "check": "tsc --noEmit",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "tenant:provision": "tsx scripts/tenants.ts provision",
+    "tenant:migrate": "tsx scripts/tenants.ts migrate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
