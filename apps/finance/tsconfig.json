@@ -1,4 +1,6 @@
 {
+  "include": ["server/**/*", "../../packages/*/src/**/*"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "noEmit": true,
     "module": "ESNext",
@@ -12,8 +14,7 @@
     "baseUrl": ".",
     "types": ["node"],
     "paths": {
-      "@platform/*": ["packages/*/src"]
+      "@platform/*": ["../../packages/*/src"]
     }
-  },
-  "include": ["scripts/**/*", "packages/*/src/**/*", "apps/*/server/**/*", "apps/*/shared/**/*"]
+  }
 }

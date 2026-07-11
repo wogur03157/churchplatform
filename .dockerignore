@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+**/dist
+.git
+.env
+.env.docker
+**/.env
+apps/web/uploads
+apps/web/.manus-logs
+z_docs
+*.md
+dump.sql
+.claude
+.manus
+.DS_Store

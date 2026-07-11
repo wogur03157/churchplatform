@@ -5,18 +5,35 @@
  *   pnpm tenant:provision --all    active인데 아직 dbName 없는 교회 전부 프로비저닝
  *   pnpm tenant:migrate            프로비저닝된 모든 교회 DB에 스키마 동기화
  *
+ * 모든 앱(web/members/finance)의 테넌트 엔티티를 한 번에 반영한다 — 새 앱에
+ * 테넌트 엔티티가 생기면 아래 APPS 배열에 추가할 것.
+ *
  * 주의: 스키마 동기화는 TypeORM synchronize를 사용합니다. 컬럼 타입 변경·삭제가
  * 포함된 엔티티 수정은 데이터 손실이 가능하니, 반드시 백업 후 실행하세요.
  */
 import "reflect-metadata";
 import "dotenv/config";
-import { DataSource } from "typeorm";
-import { Church } from "../server/modules/churches/entities/church.entity";
-import { VideoCategory } from "../server/modules/video-categories/entities/video-category.entity";
+import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
+import { Church } from "../packages/entities/src";
 import {
   tenantDataSourceOptions,
   tenantDbNameFromSlug,
-} from "../server/modules/tenancy/tenant-db.util";
+} from "../packages/tenancy/src/tenant-db.util";
+import { TENANT_ENTITIES as WEB_TENANT_ENTITIES } from "../apps/web/server/tenant-entities";
+import { seedTenantDefaults as seedWebDefaults } from "../apps/web/server/tenant-seed";
+
+interface AppManifest {
+  name: string;
+  entities: EntityTarget<ObjectLiteral>[];
+  seed?: (ds: DataSource) => Promise<void>;
+}
+
+/** 테넌트 DB를 쓰는 앱 목록 — 앱별 엔티티가 같은 교회 DB에 함께 생성된다 */
+const APPS: AppManifest[] = [
+  { name: "web", entities: [...WEB_TENANT_ENTITIES], seed: seedWebDefaults },
+  // { name: "members", entities: [...MEMBERS_TENANT_ENTITIES] },
+  // { name: "finance", entities: [...FINANCE_TENANT_ENTITIES] },
+];
 
 function createPlatformDataSource(): DataSource {
   const url = process.env.DATABASE_URL ?? "";
@@ -28,24 +45,16 @@ function createPlatformDataSource(): DataSource {
 }
 
 async function syncTenantSchema(dbName: string): Promise<void> {
-  const ds = new DataSource(tenantDataSourceOptions(dbName));
-  await ds.initialize();
-  try {
-    await ds.synchronize();
-    await seedDefaults(ds);
-  } finally {
-    await ds.destroy();
+  for (const app of APPS) {
+    const ds = new DataSource(tenantDataSourceOptions(dbName, app.entities));
+    await ds.initialize();
+    try {
+      await ds.synchronize();
+      if (app.seed) await app.seed(ds);
+    } finally {
+      await ds.destroy();
+    }
   }
-}
-
-async function seedDefaults(ds: DataSource): Promise<void> {
-  const repo = ds.getRepository(VideoCategory);
-  if ((await repo.count()) > 0) return;
-  await repo.save([
-    repo.create({ name: "주일예배", slug: "sunday", isBuiltIn: 1, displayOrder: 1 }),
-    repo.create({ name: "수요예배", slug: "wednesday", isBuiltIn: 1, displayOrder: 2 }),
-    repo.create({ name: "금요예배", slug: "friday", isBuiltIn: 1, displayOrder: 3 }),
-  ]);
 }
 
 async function provisionChurch(platform: DataSource, church: Church): Promise<void> {
