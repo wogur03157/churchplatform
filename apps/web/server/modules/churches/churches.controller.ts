@@ -1,6 +1,6 @@
 import {
   Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseIntPipe,
-  Patch, Post, Query, UseGuards,
+  Patch, Post, Put, Query, UseGuards,
 } from "@nestjs/common";
 import { ChurchesService } from "./churches.service";
 import { ApplyChurchDto } from "./dto/apply-church.dto";
@@ -114,6 +114,27 @@ export class ChurchesController {
     @Param("userId", ParseIntPipe) userId: number,
   ) {
     return this.churchesService.removeAdmin(id, userId);
+  }
+
+  /** GET /api/churches/:id/admins/:userId/permissions */
+  @Get(":id/admins/:userId/permissions")
+  @UseGuards(SuperAdminGuard)
+  getAdminPermissions(
+    @Param("id", ParseIntPipe) id: number,
+    @Param("userId", ParseIntPipe) userId: number,
+  ) {
+    return this.churchesService.getAdminPermissions(id, userId);
+  }
+
+  /** PUT /api/churches/:id/admins/:userId/permissions — status null이면 기본값 복귀 */
+  @Put(":id/admins/:userId/permissions")
+  @UseGuards(SuperAdminGuard)
+  setAdminPermission(
+    @Param("id", ParseIntPipe) id: number,
+    @Param("userId", ParseIntPipe) userId: number,
+    @Body() body: { permKey: string; status: "allowed" | "denied" | null },
+  ) {
+    return this.churchesService.setAdminPermission(id, userId, body.permKey, body.status);
   }
 
   /** GET /api/churches/:id/features */

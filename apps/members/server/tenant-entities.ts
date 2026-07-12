@@ -1,6 +1,7 @@
 import type { EntitySchema } from "typeorm";
 import { AttendanceRecord, AttendanceSession } from "./modules/attendance/attendance.entity";
 import { MemberAuditLog } from "./modules/audit/member-audit-log.entity";
+import { PastoralNote, Visitation } from "./modules/care/care.entities";
 import { Family } from "./modules/families/family.entity";
 import { MemberGroup, MemberGroupMember } from "./modules/groups/member-group.entity";
 import { Member } from "./modules/members/member.entity";
@@ -22,4 +23,6 @@ export const TENANT_ENTITIES: (Function | EntitySchema)[] = [
   AttendanceRecord,
   NewcomerStage,
   NewcomerProgress,
+  Visitation,
+  PastoralNote,
 ];

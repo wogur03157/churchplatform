@@ -5,6 +5,7 @@ import { AuthService } from "./auth.service";
 import { AdminGuard } from "./guards/admin.guard";
 import { OptionalAuthGuard } from "./guards/optional-auth.guard";
 import { PermissionGuard } from "./guards/permission.guard";
+import { PermissionsService } from "./permissions.service";
 
 /**
  * 플랫폼 공통 인증 모듈 (컨트롤러 없음).
@@ -16,7 +17,14 @@ import { PermissionGuard } from "./guards/permission.guard";
   imports: [
     TypeOrmModule.forFeature([User, ChurchAdmin, Church, ChurchFeature, AdminPermission]),
   ],
-  providers: [AuthService, OptionalAuthGuard, AdminGuard, PermissionGuard],
-  exports: [AuthService, OptionalAuthGuard, AdminGuard, PermissionGuard, TypeOrmModule],
+  providers: [AuthService, OptionalAuthGuard, AdminGuard, PermissionGuard, PermissionsService],
+  exports: [
+    AuthService,
+    OptionalAuthGuard,
+    AdminGuard,
+    PermissionGuard,
+    PermissionsService,
+    TypeOrmModule,
+  ],
 })
 export class PlatformAuthModule {}

@@ -6,6 +6,7 @@ import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
 import { AttendanceModule } from "./modules/attendance/attendance.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { CareModule } from "./modules/care/care.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { FamiliesModule } from "./modules/families/families.module";
 import { GroupsModule } from "./modules/groups/groups.module";
@@ -43,6 +44,7 @@ const dbModules = isDbEnabled
       AttendanceModule,
       NewcomersModule,
       DashboardModule,
+      CareModule,
       // MembersModule은 루트 경로(:id 와일드카드)를 쓰므로 마지막에 등록
       MembersModule,
     ]

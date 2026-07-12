@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Church } from "@platform/entities";
 import { ChurchAdmin } from "@platform/entities";
 import { ChurchFeature, ALL_FEATURES } from "@platform/entities";
+import { AdminPermission } from "@platform/entities";
 import { User } from "@platform/entities";
 import { ApplyChurchDto } from "./dto/apply-church.dto";
 import { ReviewChurchDto } from "./dto/review-church.dto";
@@ -22,6 +23,8 @@ export class ChurchesService {
     private readonly churchFeatureRepo: Repository<ChurchFeature>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(AdminPermission)
+    private readonly adminPermissionRepo: Repository<AdminPermission>,
     @Inject(TenancyService)
     private readonly tenancy: TenancyService,
     @Inject(TenantProvisioningService)
@@ -133,6 +136,39 @@ export class ChurchesService {
 
   async removeAdmin(churchId: number, userId: number): Promise<void> {
     await this.churchAdminRepo.delete({ churchId, userId });
+    // 소속 해제 시 개인 권한도 정리
+    await this.adminPermissionRepo.delete({ adminId: userId });
+  }
+
+  // ── 관리자 개인 권한 (admin_permissions) ─────────────────────────────────
+
+  private async assertAdminOfChurch(churchId: number, userId: number): Promise<void> {
+    const mapping = await this.churchAdminRepo.findOne({ where: { churchId, userId } });
+    if (!mapping) throw new NotFoundException("해당 교회의 관리자가 아닙니다");
+  }
+
+  async getAdminPermissions(churchId: number, userId: number): Promise<AdminPermission[]> {
+    await this.assertAdminOfChurch(churchId, userId);
+    return this.adminPermissionRepo.find({ where: { adminId: userId } });
+  }
+
+  /** status null이면 행 삭제(기본값으로 복귀) */
+  async setAdminPermission(
+    churchId: number,
+    userId: number,
+    permKey: string,
+    status: "allowed" | "denied" | null,
+  ): Promise<AdminPermission[]> {
+    await this.assertAdminOfChurch(churchId, userId);
+    if (status === null) {
+      await this.adminPermissionRepo.delete({ adminId: userId, permKey });
+    } else {
+      await this.adminPermissionRepo.upsert(
+        { adminId: userId, permKey, status },
+        { conflictPaths: ["adminId", "permKey"] },
+      );
+    }
+    return this.adminPermissionRepo.find({ where: { adminId: userId } });
   }
 
   // ── 기능 플래그 ───────────────────────────────────────────────────────────
