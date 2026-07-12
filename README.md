@@ -10,7 +10,7 @@
 | **finance** | 재정 — 헌금 계수, 지출결의, 예산, 마감, 보고서, 기부금영수증 | 4200 |
 
 > 📖 문서: [기획서(재적)](z_docs/plan-members.md) · [기획서(재정)](z_docs/plan-finance.md) ·
-> [모노레포 구조·규칙](z_docs/monorepo.md) · [테넌트 DB 아키텍처](z_docs/tenant-db-routing.md) ·
+> [모노레포 구조·규칙](z_docs/monorepo.md) · [테넌트 DB 아키텍처](z_docs/tenant-db-routing.md) · [DB 역할 정리](z_docs/db-architecture.md) ·
 > [관리자 사용 설명서](z_docs/user-guide.md) · [2026-07 릴리스 노트](z_docs/release-2026-07.md)
 
 ---
