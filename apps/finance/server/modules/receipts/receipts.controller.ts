@@ -14,6 +14,7 @@ import {
 import type { Response } from "express";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
+import { parseIntParam } from "../../lib/validate";
 import { ReceiptsService } from "./receipts.service";
 
 /**
@@ -32,13 +33,13 @@ export class ReceiptsController {
   /** 교인별 연간 헌금 집계 + 발급 상태 */
   @Get("aggregate")
   aggregate(@Query("year") year: string) {
-    return this.service.aggregate(parseInt(year));
+    return this.service.aggregate(parseIntParam(year, "연도", 2000, 2100));
   }
 
   /** 발급 대장 */
   @Get()
   findAll(@Query("year") year: string) {
-    return this.service.findAll(parseInt(year));
+    return this.service.findAll(parseIntParam(year, "연도", 2000, 2100));
   }
 
   /** 단체 정보 (영수증 발급인란) */
@@ -65,7 +66,7 @@ export class ReceiptsController {
     @CurrentUser() user: User,
     @Res() res: Response
   ) {
-    const { csv } = await this.service.ntsFile(parseInt(year), user.id);
+    const { csv } = await this.service.ntsFile(parseIntParam(year, "연도", 2000, 2100), user.id);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",

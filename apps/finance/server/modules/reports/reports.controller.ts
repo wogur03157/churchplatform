@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import type { Request } from "express";
 import { PermissionGuard, RequirePermission } from "@platform/auth";
+import { assertDateString, parseIntParam } from "../../lib/validate";
 import { ReportsService } from "./reports.service";
 
 /** 재정 보고서 — 월간(제직회)·주간(주보) + 투명성 설정 */
@@ -26,14 +27,15 @@ export class ReportsController {
 
   @Get("monthly")
   monthly(@Query("year") year: string, @Query("month") month: string) {
-    if (!year || !month) throw new BadRequestException("year, month가 필요합니다");
-    return this.service.monthly(parseInt(year), parseInt(month));
+    return this.service.monthly(
+      parseIntParam(year, "연도", 2000, 2100),
+      parseIntParam(month, "월", 1, 12)
+    );
   }
 
   @Get("weekly")
   weekly(@Query("date") date: string) {
-    if (!date) throw new BadRequestException("date가 필요합니다");
-    return this.service.weekly(date);
+    return this.service.weekly(assertDateString(date));
   }
 
   @Get("transparency")

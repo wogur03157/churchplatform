@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Inject, Put, Query, UseGuards } from "@nestjs/common";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
+import { parseIntParam } from "../../lib/validate";
 import { BudgetsService } from "./budgets.service";
 
 @Controller("budgets")
@@ -15,7 +16,7 @@ export class BudgetsController {
   /** 편성 + 집행 현황 */
   @Get()
   status(@Query("year") year?: string) {
-    return this.service.status(year ? parseInt(year) : new Date().getFullYear());
+    return this.service.status(year ? parseIntParam(year, "연도", 2000, 2100) : new Date().getFullYear());
   }
 
   /** 편성 일괄 저장 — 승인 권한자 전용 */

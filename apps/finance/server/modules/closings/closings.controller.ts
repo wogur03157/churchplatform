@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
+import { parseIntParam } from "../../lib/validate";
 import { ClosingsService } from "./closings.service";
 
 /** 마감 — 잠금/해제는 finance_approve(재정부장·담임) 전용 */
@@ -26,7 +27,7 @@ export class ClosingsController {
 
   @Get()
   findByYear(@Query("year") year?: string) {
-    return this.service.findByYear(year ? parseInt(year) : new Date().getFullYear());
+    return this.service.findByYear(year ? parseIntParam(year, "연도", 2000, 2100) : new Date().getFullYear());
   }
 
   @Post()

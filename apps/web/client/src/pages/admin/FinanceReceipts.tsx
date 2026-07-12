@@ -45,21 +45,30 @@ type MemberOption = { id: number; name: string };
 
 const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
+/** raw HTML 삽입 전 이스케이프 — 교인 이름·단체명에 섞인 태그가 실행되는 것 방지 */
+function esc(value: string | null | undefined): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 /** 영수증 인쇄 — 새 창에 소득세법 서식 기반 간이 양식 렌더 */
 function printReceipt(detail: ReceiptDetail) {
   const rows = (detail.breakdown ?? [])
     .map(
       (b) =>
-        `<tr><td style="border:1px solid #999;padding:6px 10px;">${b.name}</td><td style="border:1px solid #999;padding:6px 10px;text-align:right;">${b.total.toLocaleString("ko-KR")}원</td></tr>`
+        `<tr><td style="border:1px solid #999;padding:6px 10px;">${esc(b.name)}</td><td style="border:1px solid #999;padding:6px 10px;text-align:right;">${b.total.toLocaleString("ko-KR")}원</td></tr>`
     )
     .join("");
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>기부금영수증 ${detail.receiptNo}</title></head>
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>기부금영수증 ${esc(detail.receiptNo)}</title></head>
 <body style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:40px auto;color:#111;">
   <h1 style="text-align:center;letter-spacing:8px;">기부금영수증</h1>
-  <p style="text-align:right;">일련번호: ${detail.receiptNo}</p>
+  <p style="text-align:right;">일련번호: ${esc(detail.receiptNo)}</p>
   <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-    <tr><td style="border:1px solid #999;padding:6px 10px;width:30%;background:#f5f5f5;">기부자 성명</td><td style="border:1px solid #999;padding:6px 10px;">${detail.donorName}</td></tr>
-    <tr><td style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">주민등록번호</td><td style="border:1px solid #999;padding:6px 10px;">${detail.donorRrnMasked ?? "(미기재)"}</td></tr>
+    <tr><td style="border:1px solid #999;padding:6px 10px;width:30%;background:#f5f5f5;">기부자 성명</td><td style="border:1px solid #999;padding:6px 10px;">${esc(detail.donorName)}</td></tr>
+    <tr><td style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">주민등록번호</td><td style="border:1px solid #999;padding:6px 10px;">${esc(detail.donorRrnMasked ?? "(미기재)")}</td></tr>
     <tr><td style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">귀속 연도</td><td style="border:1px solid #999;padding:6px 10px;">${detail.year}년 1월 1일 ~ ${detail.year}년 12월 31일</td></tr>
     <tr><td style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">기부 유형</td><td style="border:1px solid #999;padding:6px 10px;">종교단체 지정기부금 (코드 41)</td></tr>
   </table>
@@ -71,8 +80,8 @@ function printReceipt(detail: ReceiptDetail) {
   <p>위와 같이 기부금을 수령하였음을 증명합니다.</p>
   <p style="text-align:center;margin-top:32px;">${new Date(detail.issuedAt).getFullYear()}년 ${new Date(detail.issuedAt).getMonth() + 1}월 ${new Date(detail.issuedAt).getDate()}일</p>
   <div style="text-align:center;margin-top:24px;">
-    <p style="font-size:18px;font-weight:bold;">${detail.orgName ?? "(단체명 미설정)"} <span style="border:1px solid #999;padding:4px 10px;margin-left:8px;font-size:13px;">직인</span></p>
-    <p>고유번호: ${detail.orgTaxId ?? "(미설정)"}</p>
+    <p style="font-size:18px;font-weight:bold;">${esc(detail.orgName ?? "(단체명 미설정)")} <span style="border:1px solid #999;padding:4px 10px;margin-left:8px;font-size:13px;">직인</span></p>
+    <p>고유번호: ${esc(detail.orgTaxId ?? "(미설정)")}</p>
   </div>
   <script>window.onload = () => window.print();</script>
 </body></html>`;

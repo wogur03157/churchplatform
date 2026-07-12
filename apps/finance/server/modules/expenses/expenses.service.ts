@@ -9,6 +9,7 @@ import { Repository } from "typeorm";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { randomBytes } from "crypto";
+import { assertDateString } from "../../lib/validate";
 import { AuditService } from "../audit/audit.service";
 import { BudgetsService } from "../budgets/budgets.service";
 import { ClosingsService } from "../closings/closings.service";
@@ -146,6 +147,7 @@ export class ExpensesService {
     if (expense.status !== "approved") {
       throw new BadRequestException("승인된 결의서만 지급할 수 있습니다");
     }
+    assertDateString(data.paidAt, "지급일");
     await this.closings.assertNotLocked(data.paidAt);
     expense.status = "paid";
     expense.paidAt = data.paidAt;

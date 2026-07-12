@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { assertDateString } from "../../lib/validate";
 import { AuditService } from "../audit/audit.service";
 import { ClosingsService } from "../closings/closings.service";
 import { Account } from "../settings/settings.entities";
@@ -49,6 +50,7 @@ export class OfferingsService {
     data: { date: string; serviceType: string; counters?: string[] },
     actorUserId: number
   ): Promise<OfferingBatch> {
+    assertDateString(data.date);
     await this.closings.assertNotLocked(data.date);
     const batch = await this.batchRepo.save(
       this.batchRepo.create({ ...data, createdBy: actorUserId, status: "counting" })
@@ -134,6 +136,7 @@ export class OfferingsService {
     if (!input.amount || input.amount <= 0) {
       throw new BadRequestException("금액은 1원 이상이어야 합니다");
     }
+    assertDateString(input.date);
     await this.closings.assertNotLocked(input.date);
     const account = await this.accountRepo.findOne({
       where: { id: input.accountId, kind: "income", status: "active" },
