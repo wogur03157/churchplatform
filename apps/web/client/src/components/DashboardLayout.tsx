@@ -54,33 +54,50 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "대시보드", path: "/admin", permKey: null },
-  { icon: Users, label: "교인 관리", path: "/admin/members", permKey: "members" },
-  { icon: FolderTree, label: "조직 관리", path: "/admin/members/groups", permKey: "members" },
-  { icon: CalendarCheck, label: "출석 체크", path: "/admin/members/attendance", permKey: "members" },
-  { icon: Sprout, label: "새가족 정착", path: "/admin/members/newcomers", permKey: "members" },
-  { icon: HeartHandshake, label: "심방 관리", path: "/admin/members/visitations", permKey: "members" },
-  { icon: HandCoins, label: "헌금 계수", path: "/admin/finance/offerings", permKey: "finance" },
-  { icon: ClipboardList, label: "지출결의", path: "/admin/finance/expenses", permKey: "finance" },
-  { icon: PiggyBank, label: "예산", path: "/admin/finance/budget", permKey: "finance" },
-  { icon: ReceiptText, label: "재정 장부", path: "/admin/finance/ledger", permKey: "finance" },
-  { icon: FileBarChart, label: "재정 보고서", path: "/admin/finance/reports", permKey: "finance" },
-  { icon: ScrollText, label: "기부금영수증", path: "/admin/finance/receipts", permKey: "finance" },
-  { icon: Landmark, label: "재정 설정", path: "/admin/finance/settings", permKey: "finance" },
-  { icon: FileText, label: "공지사항", path: "/admin/announcements", permKey: "announcements" },
-  { icon: ImageIcon, label: "이미지", path: "/admin/images", permKey: "images" },
-  { icon: Video, label: "영상", path: "/admin/videos", permKey: "videos" },
-  { icon: Tag, label: "미디어 카테고리", path: "/admin/video-categories", permKey: "video_categories" },
-  { icon: MessageSquare, label: "플로팅 메시지", path: "/admin/floating-messages", permKey: "floating_messages" },
-  { icon: Layers, label: "팝업", path: "/admin/popups", permKey: "popups" },
-  { icon: Settings, label: "레이아웃 설정", path: "/admin/layout", permKey: "layout_settings" },
-  { icon: Users, label: "그룹 관리", path: "/admin/page-groups", permKey: "page_groups" },
-  { icon: FormInput, label: "폼 설정", path: "/admin/form-config", permKey: "form_config" },
-  { icon: ClipboardList, label: "신청 내역", path: "/admin/form-submissions", permKey: "form_submissions" },
-  { icon: FileText, label: "페이지 카테고리", path: "/admin/content-categories", permKey: null },
-  { icon: FileText, label: "페이지 내용", path: "/admin/content-pages", permKey: null },
-  { icon: Globe, label: "사이트 설정", path: "/admin/site-settings", permKey: "layout_settings" },
+  // 재적 (교인 관리 서비스)
+  { icon: LayoutDashboard, label: "대시보드", path: "/admin", permKey: "members", service: "members" },
+  { icon: Users, label: "교인 관리", path: "/admin/members", permKey: "members", service: "members" },
+  { icon: FolderTree, label: "조직 관리", path: "/admin/members/groups", permKey: "members", service: "members" },
+  { icon: CalendarCheck, label: "출석 체크", path: "/admin/members/attendance", permKey: "members", service: "members" },
+  { icon: Sprout, label: "새가족 정착", path: "/admin/members/newcomers", permKey: "members", service: "members" },
+  { icon: HeartHandshake, label: "심방 관리", path: "/admin/members/visitations", permKey: "members", service: "members" },
+  // 재정 서비스
+  { icon: HandCoins, label: "헌금 계수", path: "/admin/finance/offerings", permKey: "finance", service: "finance" },
+  { icon: ClipboardList, label: "지출결의", path: "/admin/finance/expenses", permKey: "finance", service: "finance" },
+  { icon: PiggyBank, label: "예산", path: "/admin/finance/budget", permKey: "finance", service: "finance" },
+  { icon: ReceiptText, label: "재정 장부", path: "/admin/finance/ledger", permKey: "finance", service: "finance" },
+  { icon: FileBarChart, label: "재정 보고서", path: "/admin/finance/reports", permKey: "finance", service: "finance" },
+  { icon: ScrollText, label: "기부금영수증", path: "/admin/finance/receipts", permKey: "finance", service: "finance" },
+  { icon: Landmark, label: "재정 설정", path: "/admin/finance/settings", permKey: "finance", service: "finance" },
+  // 홈페이지 서비스
+  { icon: FileText, label: "공지사항", path: "/admin/announcements", permKey: "announcements", service: "home" },
+  { icon: ImageIcon, label: "이미지", path: "/admin/images", permKey: "images", service: "home" },
+  { icon: Video, label: "영상", path: "/admin/videos", permKey: "videos", service: "home" },
+  { icon: Tag, label: "미디어 카테고리", path: "/admin/video-categories", permKey: "video_categories", service: "home" },
+  { icon: MessageSquare, label: "플로팅 메시지", path: "/admin/floating-messages", permKey: "floating_messages", service: "home" },
+  { icon: Layers, label: "팝업", path: "/admin/popups", permKey: "popups", service: "home" },
+  { icon: Settings, label: "레이아웃 설정", path: "/admin/layout", permKey: "layout_settings", service: "home" },
+  { icon: Users, label: "그룹 관리", path: "/admin/page-groups", permKey: "page_groups", service: "home" },
+  { icon: FormInput, label: "폼 설정", path: "/admin/form-config", permKey: "form_config", service: "home" },
+  { icon: ClipboardList, label: "신청 내역", path: "/admin/form-submissions", permKey: "form_submissions", service: "home" },
+  { icon: FileText, label: "페이지 카테고리", path: "/admin/content-categories", permKey: null, service: "home" },
+  { icon: FileText, label: "페이지 내용", path: "/admin/content-pages", permKey: null, service: "home" },
+  { icon: Globe, label: "사이트 설정", path: "/admin/site-settings", permKey: "layout_settings", service: "home" },
 ] as const;
+
+/** 판매 단위 — 교회가 구독한 서비스만 열린다 (church_features 플래그와 1:1) */
+type ServiceKey = "home" | "members" | "finance";
+const SERVICES: Array<{ key: ServiceKey; label: string; icon: typeof Globe; featureKey: string | null }> = [
+  { key: "home", label: "홈페이지", icon: Globe, featureKey: null },
+  { key: "members", label: "재적", icon: Users, featureKey: "members" },
+  { key: "finance", label: "재정", icon: HandCoins, featureKey: "finance" },
+];
+
+function serviceOfLocation(location: string): ServiceKey {
+  if (location.startsWith("/admin/finance")) return "finance";
+  if (location === "/admin" || location.startsWith("/admin/members")) return "members";
+  return "home";
+}
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -182,11 +199,29 @@ function DashboardLayoutContent({ children, user, logout, setSidebarWidth }: Das
     return permissions.includes(permKey) ? "visible" : "hidden";
   };
 
-  const navItems = NAV_ITEMS.map((item) => ({ ...item, state: getNavState(item.permKey) })).filter(
+  // 서비스 스위처 — 현재 라우트를 따라가되, 사용자가 탭을 누르면 그 서비스의 첫 메뉴로 이동
+  const [activeService, setActiveService] = useState<ServiceKey>(() => serviceOfLocation(location));
+  useEffect(() => {
+    setActiveService(serviceOfLocation(location));
+  }, [location]);
+
+  const services = SERVICES.map((service) => ({
+    ...service,
+    locked: service.featureKey ? getNavState(service.featureKey) === "locked" : false,
+  }));
+
+  const allNavItems = NAV_ITEMS.map((item) => ({ ...item, state: getNavState(item.permKey) })).filter(
     (item) => item.state !== "hidden"
   );
+  const navItems = allNavItems.filter((item) => item.service === activeService);
 
-  const activeMenuItem = navItems.find((item) => item.path === location);
+  const switchService = (key: ServiceKey) => {
+    setActiveService(key);
+    const first = allNavItems.find((item) => item.service === key && item.state === "visible");
+    if (first) setLocation(first.path);
+  };
+
+  const activeMenuItem = allNavItems.find((item) => item.path === location);
 
   useEffect(() => {
     if (isCollapsed) setIsResizing(false);
@@ -237,6 +272,36 @@ function DashboardLayoutContent({ children, user, logout, setSidebarWidth }: Das
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
+            {/* 서비스 스위처 — 홈페이지/재적/재정은 별도 판매 단위 */}
+            <div className={`px-2 pt-2 ${isCollapsed ? "flex flex-col gap-1" : "grid grid-cols-3 gap-1"}`}>
+              {services.map((service) => {
+                const isActive = activeService === service.key;
+                const button = (
+                  <button
+                    key={service.key}
+                    onClick={() => switchService(service.key)}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg border px-1 py-2 text-xs font-medium transition-colors ${
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : service.locked
+                          ? "border-dashed text-muted-foreground/60 hover:bg-accent"
+                          : "hover:bg-accent"
+                    }`}
+                    title={service.locked ? `${service.label} — 구독하지 않은 서비스입니다` : service.label}
+                  >
+                    {service.locked ? <Lock className="h-3.5 w-3.5" /> : <service.icon className="h-3.5 w-3.5" />}
+                    {!isCollapsed && <span>{service.label}</span>}
+                  </button>
+                );
+                return button;
+              })}
+            </div>
+            {services.find((s) => s.key === activeService)?.locked && !isCollapsed && (
+              <p className="mx-2 mt-2 rounded-md bg-muted px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                이 교회는 <b>{services.find((s) => s.key === activeService)?.label}</b> 서비스를
+                사용하지 않습니다. 구독하면 아래 기능이 열립니다.
+              </p>
+            )}
             <SidebarMenu className="px-2 py-1">
               {navItems.map((item) => {
                 const isActive = location === item.path;
