@@ -4,9 +4,13 @@ import { PlatformAuthModule } from "@platform/auth";
 import { PLATFORM_ENTITIES } from "@platform/entities";
 import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
+import { AttendanceModule } from "./modules/attendance/attendance.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { FamiliesModule } from "./modules/families/families.module";
+import { GroupsModule } from "./modules/groups/groups.module";
 import { MembersModule } from "./modules/members/members.module";
+import { NewcomersModule } from "./modules/newcomers/newcomers.module";
 import { PositionsModule } from "./modules/positions/positions.module";
 import { TENANT_ENTITIES } from "./tenant-entities";
 import { seedTenantDefaults } from "./tenant-seed";
@@ -35,6 +39,10 @@ const dbModules = isDbEnabled
       AuditModule,
       PositionsModule,
       FamiliesModule,
+      GroupsModule,
+      AttendanceModule,
+      NewcomersModule,
+      DashboardModule,
       // MembersModule은 루트 경로(:id 와일드카드)를 쓰므로 마지막에 등록
       MembersModule,
     ]

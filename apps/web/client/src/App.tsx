@@ -12,6 +12,7 @@ import AdminVideos from "./pages/admin/Videos";
 import AdminFloatingMessages from "./pages/admin/FloatingMessages";
 import AdminLayoutSettings from "./pages/admin/LayoutSettings";
 import AdminPopups from "./pages/admin/Popups";
+import AdminMembers from "./pages/admin/Members";
 import AdminVideoCategories from "./pages/admin/VideoCategories";
 import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
@@ -84,6 +85,9 @@ function Router() {
       </Route>
       <Route path="/admin/content-pages">
         <DashboardLayout><AdminContentPages /></DashboardLayout>
+      </Route>
+      <Route path="/admin/members">
+        <DashboardLayout><AdminMembers /></DashboardLayout>
       </Route>
       <Route path="/admin">
         <DashboardLayout><Home /></DashboardLayout>

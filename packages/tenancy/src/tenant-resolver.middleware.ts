@@ -47,7 +47,11 @@ export class TenantResolverMiddleware implements NestMiddleware {
       if (church) return church;
     }
 
-    const host = (req.headers.host ?? "").split(":")[0].toLowerCase();
+    // 프록시(web 앱, nginx) 뒤에서는 x-forwarded-host가 원래 도메인
+    const forwardedHost = req.headers["x-forwarded-host"];
+    const rawHost =
+      (typeof forwardedHost === "string" && forwardedHost) || req.headers.host || "";
+    const host = rawHost.split(":")[0].toLowerCase();
     if (host && host !== "localhost" && host !== "127.0.0.1") {
       const byDomain = await this.tenancy.findChurchByDomain(host);
       if (byDomain) return byDomain;

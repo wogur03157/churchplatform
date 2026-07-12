@@ -2,13 +2,15 @@ import { Module } from "@nestjs/common";
 import { PlatformAuthModule } from "@platform/auth";
 import { TenantOrmModule } from "@platform/tenancy";
 import { AuditModule } from "../audit/audit.module";
+import { Position } from "../positions/position.entity";
+import { MemberExcelService } from "./member-excel.service";
 import { Member } from "./member.entity";
 import { MembersController } from "./members.controller";
 import { MembersService } from "./members.service";
 
 @Module({
-  imports: [TenantOrmModule.forFeature([Member]), PlatformAuthModule, AuditModule],
+  imports: [TenantOrmModule.forFeature([Member, Position]), PlatformAuthModule, AuditModule],
   controllers: [MembersController],
-  providers: [MembersService],
+  providers: [MembersService, MemberExcelService],
 })
 export class MembersModule {}

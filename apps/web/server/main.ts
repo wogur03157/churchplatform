@@ -33,6 +33,18 @@ async function bootstrap() {
 
   // Body parser with large limit for file uploads
   const express = (await import("express")).default;
+
+  // members/finance 서비스 프록시 — body parser보다 먼저 등록 (raw body 전달)
+  const { serviceProxy } = await import("./service-proxy");
+  app.use(
+    "/api/members",
+    serviceProxy(process.env.MEMBERS_API_URL ?? "http://localhost:4100")
+  );
+  app.use(
+    "/api/finance",
+    serviceProxy(process.env.FINANCE_API_URL ?? "http://localhost:4200")
+  );
+
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.use(cookieParser());

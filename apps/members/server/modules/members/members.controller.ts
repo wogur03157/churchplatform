@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,10 +10,13 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from "@nestjs/common";
+import type { Response } from "express";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
+import { MemberExcelService } from "./member-excel.service";
 import type { Member } from "./member.entity";
 import { MembersService } from "./members.service";
 
@@ -26,8 +30,29 @@ import { MembersService } from "./members.service";
 export class MembersController {
   constructor(
     @Inject(MembersService)
-    private readonly service: MembersService
+    private readonly service: MembersService,
+    @Inject(MemberExcelService)
+    private readonly excel: MemberExcelService
   ) {}
+
+  /** 엑셀 일괄 등록 — body: { fileBase64 } (xlsx/csv) */
+  @Post("import")
+  importExcel(@Body() body: { fileBase64?: string }, @CurrentUser() user: User) {
+    if (!body.fileBase64) throw new BadRequestException("fileBase64가 필요합니다");
+    return this.excel.import(body.fileBase64, user.id);
+  }
+
+  /** 전체 명단 엑셀 다운로드 */
+  @Get("export")
+  async exportExcel(@CurrentUser() user: User, @Res() res: Response) {
+    const buffer = await this.excel.export(user.id);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="members.xlsx"');
+    res.send(buffer);
+  }
 
   @Get()
   findAll(

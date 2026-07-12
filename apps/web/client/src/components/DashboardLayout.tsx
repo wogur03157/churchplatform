@@ -45,6 +45,7 @@ import { Button } from "./ui/button";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "대시보드", path: "/admin", permKey: null },
+  { icon: Users, label: "교인 관리", path: "/admin/members", permKey: "members" },
   { icon: FileText, label: "공지사항", path: "/admin/announcements", permKey: "announcements" },
   { icon: ImageIcon, label: "이미지", path: "/admin/images", permKey: "images" },
   { icon: Video, label: "영상", path: "/admin/videos", permKey: "videos" },
