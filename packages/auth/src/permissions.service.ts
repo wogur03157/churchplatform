@@ -25,19 +25,24 @@ export class PermissionsService {
   }
 
   /**
-   * 개인 권한 검사.
+   * 개인 권한 검사 — 교회 단위 스코프.
    * - 기본(deny-list): denied 행이 있을 때만 차단
    * - defaultDeny(allow-list): allowed 행이 있어야 허용 — 민감 권한용
-   *   (예: members_sensitive — 목양 메모·심방 내용)
+   * - 행 우선순위: 해당 교회 행 > 글로벌(churchId NULL) 행 > 기본값
+   *   (한 사람이 여러 교회 관리자여도 권한이 교회를 넘어 번지지 않음)
    */
   async check(
     userId: number,
     permKey: string,
-    opts: { defaultDeny?: boolean } = {}
+    opts: { defaultDeny?: boolean; churchId?: number | null } = {}
   ): Promise<boolean> {
-    const permission = await this.permissionRepo.findOne({
+    const rows = await this.permissionRepo.find({
       where: { adminId: userId, permKey },
     });
+    const scoped =
+      opts.churchId != null ? rows.find((r) => r.churchId === opts.churchId) : undefined;
+    const global = rows.find((r) => r.churchId === null);
+    const permission = scoped ?? global;
     if (permission) return permission.status === "allowed";
     return !opts.defaultDeny;
   }
@@ -46,7 +51,7 @@ export class PermissionsService {
   async checkForUser(
     user: { id: number; role: string },
     permKey: string,
-    opts: { defaultDeny?: boolean } = {}
+    opts: { defaultDeny?: boolean; churchId?: number | null } = {}
   ): Promise<boolean> {
     if (user.role === "super_admin") return true;
     return this.check(user.id, permKey, opts);

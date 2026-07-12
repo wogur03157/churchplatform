@@ -7,8 +7,11 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
+import type { Request, Response } from "express";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
 import type { ExpenseStatus } from "./expenses.entities";
@@ -120,9 +123,26 @@ export class ExpensesController {
   async addAttachment(
     @Param("id", ParseIntPipe) id: number,
     @Body() body: { fileBase64: string; fileName: string; mimeType?: string },
-    @CurrentUser() user: User
+    @CurrentUser() user: User,
+    @Req() req: Request
   ) {
-    const attachment = await this.service.addAttachment(id, body, user.id);
+    const attachment = await this.service.addAttachment(id, body, user.id, req.church?.slug);
     return { success: true, id: attachment.id, fileKey: attachment.fileKey };
+  }
+
+  /** 첨부 다운로드 — 인증 + 자기 교회 파일만 (비인증 정적 서빙 대체) */
+  @Get("attachments/:attachmentId(\\d+)/download")
+  async downloadAttachment(
+    @Param("attachmentId", ParseIntPipe) attachmentId: number,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const file = await this.service.getAttachmentFile(attachmentId, req.church?.slug);
+    if (file.mimeType) res.setHeader("Content-Type", file.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`
+    );
+    res.sendFile(file.path);
   }
 }

@@ -415,7 +415,7 @@ export default function AdminFinanceExpenses() {
             {attachments.map((a) => (
               <a
                 key={a.id}
-                href={`/api/finance/uploads/${a.fileKey}`}
+                href={`/api/finance/expenses/attachments/${a.id}/download`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent"

@@ -30,9 +30,12 @@ export class LayoutSettingsService {
     private readonly repo: Repository<LayoutSetting>,
   ) {}
 
-  async findAll(churchId?: number): Promise<LayoutSetting[]> {
-    const where = churchId ? { churchId } : {};
-    return this.repo.find({ where, order: { displayOrder: "ASC", id: "ASC" } });
+  /**
+   * 전체 조회 — 교회 격리는 테넌트 DB 분리가 담당하므로 churchId 필터를 쓰지 않는다.
+   * (과거 단일 DB 시절의 churchId 컬럼은 기록용으로만 남음)
+   */
+  async findAll(): Promise<LayoutSetting[]> {
+    return this.repo.find({ order: { displayOrder: "ASC", id: "ASC" } });
   }
 
   async saveAll(
@@ -41,7 +44,6 @@ export class LayoutSettingsService {
     updatedBy: number,
   ): Promise<LayoutSetting[]> {
     const existing = await this.repo.find({
-      where: { churchId },
       order: { displayOrder: "ASC", id: "ASC" },
     });
     const existingById = new Map(existing.map((item) => [item.id, item] as const));
@@ -102,7 +104,7 @@ export class LayoutSettingsService {
 
     const entity =
       data.id
-        ? (await this.repo.findOne({ where: { id: data.id, churchId: data.churchId } })) ?? this.repo.create()
+        ? (await this.repo.findOne({ where: { id: data.id } })) ?? this.repo.create()
         : this.repo.create();
 
     Object.assign(entity, {

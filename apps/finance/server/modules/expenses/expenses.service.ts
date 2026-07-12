@@ -56,18 +56,28 @@ export class ExpensesService {
     });
     if (!account) throw new BadRequestException("유효한 지출 계정과목이 아닙니다");
 
-    const expense = await this.expenseRepo.save(
-      this.expenseRepo.create({
-        requestNo: await this.nextRequestNo(),
-        departmentId: data.departmentId,
-        accountId: data.accountId,
-        amount: String(data.amount),
-        title: data.title,
-        description: data.description ?? null,
-        requestedBy: actorUserId,
-        status: "pending",
-      })
-    );
+    // 동시 기안 시 연번 충돌(unique) 가능 — 재채번으로 최대 3회 재시도
+    let expense!: ExpenseRequest;
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        expense = await this.expenseRepo.save(
+          this.expenseRepo.create({
+            requestNo: await this.nextRequestNo(),
+            departmentId: data.departmentId,
+            accountId: data.accountId,
+            amount: String(data.amount),
+            title: data.title,
+            description: data.description ?? null,
+            requestedBy: actorUserId,
+            status: "pending",
+          })
+        );
+        break;
+      } catch (error) {
+        const isDuplicate = (error as { driverError?: { code?: string } })?.driverError?.code === "ER_DUP_ENTRY";
+        if (!isDuplicate || attempt >= 2) throw error;
+      }
+    }
     await this.audit.log({
       actorUserId,
       action: "create",
@@ -237,7 +247,8 @@ export class ExpensesService {
   async addAttachment(
     expenseRequestId: number,
     file: { fileBase64: string; fileName: string; mimeType?: string },
-    actorUserId: number
+    actorUserId: number,
+    churchSlug?: string | null
   ): Promise<ExpenseAttachment> {
     const expense = await this.findOne(expenseRequestId);
     if (expense.status === "paid" || expense.status === "voided") {
@@ -250,10 +261,12 @@ export class ExpensesService {
     }
 
     const ext = (file.fileName.split(".").pop() ?? "bin").toLowerCase().slice(0, 8);
-    const fileKey = `${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
-    const dir = join(process.cwd(), "uploads");
+    // 교회별 하위 폴더 — fileKey에 slug가 포함되어 다운로드 시 소속 검증에 사용
+    const safeSlug = (churchSlug ?? "default").replace(/[^a-z0-9-]/gi, "_");
+    const fileKey = `${safeSlug}/${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
+    const dir = join(process.cwd(), "uploads", safeSlug);
     await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, fileKey), buffer);
+    await writeFile(join(process.cwd(), "uploads", fileKey), buffer);
 
     const attachment = await this.attachmentRepo.save(
       this.attachmentRepo.create({
@@ -275,5 +288,27 @@ export class ExpensesService {
 
   findAttachments(expenseRequestId: number): Promise<ExpenseAttachment[]> {
     return this.attachmentRepo.find({ where: { expenseRequestId }, order: { id: "ASC" } });
+  }
+
+  /**
+   * 첨부 다운로드 정보 — 반드시 자기 교회 DB의 attachment 행을 통해서만 접근.
+   * fileKey의 slug 접두사가 요청 교회와 일치하는지 검증한다 (레거시 무접두사 파일은 허용).
+   */
+  async getAttachmentFile(
+    attachmentId: number,
+    churchSlug?: string | null
+  ): Promise<{ path: string; fileName: string; mimeType: string | null }> {
+    const attachment = await this.attachmentRepo.findOne({ where: { id: attachmentId } });
+    if (!attachment) throw new NotFoundException("첨부를 찾을 수 없습니다");
+
+    const safeSlug = (churchSlug ?? "default").replace(/[^a-z0-9-]/gi, "_");
+    if (attachment.fileKey.includes("/") && !attachment.fileKey.startsWith(`${safeSlug}/`)) {
+      throw new NotFoundException("첨부를 찾을 수 없습니다");
+    }
+    return {
+      path: join(process.cwd(), "uploads", attachment.fileKey),
+      fileName: attachment.fileName,
+      mimeType: attachment.mimeType,
+    };
   }
 }

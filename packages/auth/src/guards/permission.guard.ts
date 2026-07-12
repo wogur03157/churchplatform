@@ -88,6 +88,7 @@ export class PermissionGuard implements CanActivate {
 
     const allowed = await this.permissions.check(user.id, requirement.permKey, {
       defaultDeny: requirement.defaultDeny,
+      churchId: church.id,
     });
     if (!allowed) throw new ForbiddenException(NOT_ADMIN_ERR_MSG);
 

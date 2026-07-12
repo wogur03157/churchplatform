@@ -107,14 +107,16 @@ export default function AdminFinanceReceipts() {
     queryKey: ["members", "receipt-roster"],
     queryFn: async () => {
       try {
-        return await api.get<{ items: MemberOption[] }>("/members?limit=100");
+        return await api.get<{ items: MemberOption[] }>("/members?limit=1000");
       } catch {
         return { items: [] as MemberOption[] };
       }
     },
   });
-  const memberName = (id: number) =>
-    roster?.items.find((m) => m.id === id)?.name ?? `교인 #${id}`;
+  // 이름을 못 찾으면 null — 잘못된 이름("교인 #3")이 영수증 성명 스냅샷으로 저장되는 것을 방지
+  const resolvedName = (id: number): string | null =>
+    roster?.items.find((m) => m.id === id)?.name ?? null;
+  const memberName = (id: number) => resolvedName(id) ?? `교인 #${id}`;
 
   const orgDraft = org ?? {
     orgName: orgInfo?.orgName ?? "",
@@ -142,11 +144,13 @@ export default function AdminFinanceReceipts() {
         "/finance/receipts/issue",
         {
           year: parseInt(year),
-          items: Array.from(selected).map((memberId) => ({
-            memberId,
-            donorName: memberName(memberId),
-            rrn: rrnDrafts.get(memberId) || null,
-          })),
+          items: Array.from(selected)
+            .filter((memberId) => resolvedName(memberId) !== null)
+            .map((memberId) => ({
+              memberId,
+              donorName: resolvedName(memberId)!,
+              rrn: rrnDrafts.get(memberId) || null,
+            })),
         }
       ),
     onSuccess: (result) => {
@@ -260,13 +264,16 @@ export default function AdminFinanceReceipts() {
                 <input
                   type="checkbox"
                   checked={selected.has(row.memberId)}
+                  disabled={resolvedName(row.memberId) === null}
                   onChange={(e) => {
                     const next = new Set(selected);
                     e.target.checked ? next.add(row.memberId) : next.delete(row.memberId);
                     setSelected(next);
                   }}
                 />
-                <span className="w-24 font-medium">{memberName(row.memberId)}</span>
+                <span className="w-24 font-medium">
+                  {resolvedName(row.memberId) ?? `교인 #${row.memberId} (이름 확인 필요)`}
+                </span>
                 <span className="text-muted-foreground">{row.count}건</span>
                 <span className="font-semibold">{won(row.total)}</span>
               </label>

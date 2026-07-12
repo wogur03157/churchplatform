@@ -62,7 +62,6 @@ type HomeSectionData = ContentCategorySectionData | MediaCategorySectionData;
 
 @Injectable()
 export class PublicHomeService {
-  private readonly publicChurchId = 1;
 
   constructor(
     @Inject(LayoutSettingsService)
@@ -89,7 +88,7 @@ export class PublicHomeService {
 
   async getHomeData() {
     const now = new Date();
-    const layoutSettings = await this.layoutSettingsService.findAll(this.publicChurchId);
+    const layoutSettings = await this.layoutSettingsService.findAll();
     const visibleSections = layoutSettings.filter((section) => section.status === "visible");
 
     const needsAnnouncements = visibleSections.some((section) => section.sectionType === "announcements");

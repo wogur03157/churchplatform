@@ -115,11 +115,15 @@ export class BudgetsService {
     const budget = await this.budgetRepo.findOne({ where: { year, accountId } });
     if (!budget) return null;
 
+    // 확정 예정 금액 = 지급 완료(지급일 기준) + 승인됨(아직 미지급 — 기안일 기준)
     const spentRow = await this.expenseRepo
       .createQueryBuilder("e")
       .select("COALESCE(SUM(e.amount), 0)", "total")
       .where(
-        "e.accountId = :accountId AND YEAR(e.paidAt) = :year AND e.status IN ('approved','paid')",
+        `e.accountId = :accountId AND (
+          (e.status = 'paid' AND YEAR(e.paidAt) = :year)
+          OR (e.status = 'approved' AND YEAR(e.createdAt) = :year)
+        )`,
         { accountId, year }
       )
       .getRawOne<{ total: string }>();

@@ -136,8 +136,8 @@ export class ChurchesService {
 
   async removeAdmin(churchId: number, userId: number): Promise<void> {
     await this.churchAdminRepo.delete({ churchId, userId });
-    // 소속 해제 시 개인 권한도 정리
-    await this.adminPermissionRepo.delete({ adminId: userId });
+    // 소속 해제 시 해당 교회 개인 권한도 정리
+    await this.adminPermissionRepo.delete({ adminId: userId, churchId });
   }
 
   // ── 관리자 개인 권한 (admin_permissions) ─────────────────────────────────
@@ -149,7 +149,7 @@ export class ChurchesService {
 
   async getAdminPermissions(churchId: number, userId: number): Promise<AdminPermission[]> {
     await this.assertAdminOfChurch(churchId, userId);
-    return this.adminPermissionRepo.find({ where: { adminId: userId } });
+    return this.adminPermissionRepo.find({ where: { adminId: userId, churchId } });
   }
 
   /** status null이면 행 삭제(기본값으로 복귀) */
@@ -161,14 +161,14 @@ export class ChurchesService {
   ): Promise<AdminPermission[]> {
     await this.assertAdminOfChurch(churchId, userId);
     if (status === null) {
-      await this.adminPermissionRepo.delete({ adminId: userId, permKey });
+      await this.adminPermissionRepo.delete({ adminId: userId, permKey, churchId });
     } else {
       await this.adminPermissionRepo.upsert(
-        { adminId: userId, permKey, status },
-        { conflictPaths: ["adminId", "permKey"] },
+        { adminId: userId, permKey, status, churchId },
+        { conflictPaths: ["adminId", "permKey", "churchId"] },
       );
     }
-    return this.adminPermissionRepo.find({ where: { adminId: userId } });
+    return this.adminPermissionRepo.find({ where: { adminId: userId, churchId } });
   }
 
   // ── 기능 플래그 ───────────────────────────────────────────────────────────

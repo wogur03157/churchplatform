@@ -107,21 +107,31 @@ export class ReceiptsService {
         continue;
       }
 
-      const receipt = await this.receiptRepo.save(
-        this.receiptRepo.create({
-          receiptNo: await this.nextReceiptNo(year),
-          memberId: item.memberId,
-          donorName: item.donorName.trim(),
-          donorRrn: this.normalizeRrn(item.rrn),
-          year,
-          totalAmount: String(total),
-          breakdown: detail.map((d) => ({
-            name: accountMap.get(Number(d.accountId)) ?? "(삭제됨)",
-            total: Number(d.total),
-          })),
-          issuedBy: actorUserId,
-        })
-      );
+      // 동시 발급 시 일련번호 충돌(unique) 가능 — 재채번으로 최대 3회 재시도
+      let receipt!: DonationReceipt;
+      for (let attempt = 0; ; attempt += 1) {
+        try {
+          receipt = await this.receiptRepo.save(
+            this.receiptRepo.create({
+              receiptNo: await this.nextReceiptNo(year),
+              memberId: item.memberId,
+              donorName: item.donorName.trim(),
+              donorRrn: this.normalizeRrn(item.rrn),
+              year,
+              totalAmount: String(total),
+              breakdown: detail.map((d) => ({
+                name: accountMap.get(Number(d.accountId)) ?? "(삭제됨)",
+                total: Number(d.total),
+              })),
+              issuedBy: actorUserId,
+            })
+          );
+          break;
+        } catch (error) {
+          const isDuplicate = (error as { driverError?: { code?: string } })?.driverError?.code === "ER_DUP_ENTRY";
+          if (!isDuplicate || attempt >= 2) throw error;
+        }
+      }
       issued += 1;
       await this.audit.log({
         actorUserId,

@@ -9,8 +9,10 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
+import type { Request } from "express";
 import {
   CurrentUser,
   PermissionGuard,
@@ -41,12 +43,14 @@ export class VisitationsController {
   @Get()
   async findAll(
     @CurrentUser() user: User,
+    @Req() req: Request,
     @Query("status") status?: VisitationStatus,
     @Query("memberId") memberId?: string,
     @Query("assignedTo") assignedTo?: string
   ) {
     const canReadContent = await this.permissions.checkForUser(user, SENSITIVE_PERM, {
       defaultDeny: true,
+      churchId: req.church?.id ?? null,
     });
     return this.service.findAll(
       {
@@ -83,12 +87,14 @@ export class VisitationsController {
     body: Partial<
       Pick<Visitation, "assignedTo" | "status" | "scheduledAt" | "type" | "reason" | "content">
     >,
-    @CurrentUser() user: User
+    @CurrentUser() user: User,
+    @Req() req: Request
   ) {
     // 심방 기록(content)은 민감 권한자만 작성 가능
     if (body.content !== undefined) {
       const canWrite = await this.permissions.checkForUser(user, SENSITIVE_PERM, {
         defaultDeny: true,
+        churchId: req.church?.id ?? null,
       });
       if (!canWrite) throw new ForbiddenException("심방 기록은 교역자 권한이 필요합니다");
     }

@@ -79,11 +79,12 @@ CREATE TABLE `church_features` (
 CREATE TABLE `admin_permissions` (
   `id`        INT          NOT NULL AUTO_INCREMENT,
   `adminId`   INT          NOT NULL COMMENT 'users.id (church_admin role)',
+  `churchId`  INT          NULL COMMENT '권한이 유효한 교회 — NULL은 전 교회 공통',
   `permKey`   VARCHAR(100) NOT NULL
     COMMENT 'announcements|images|videos|video_categories|floating_messages|popups|layout_settings|page_groups|form_config|form_submissions',
   `status`    ENUM('allowed','denied') NOT NULL DEFAULT 'allowed',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_admin_permissions` (`adminId`, `permKey`),
+  UNIQUE KEY `uq_admin_permissions` (`adminId`, `permKey`, `churchId`),
   CONSTRAINT `fk_ap_adminId` FOREIGN KEY (`adminId`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

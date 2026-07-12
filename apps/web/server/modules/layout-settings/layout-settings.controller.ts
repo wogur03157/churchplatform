@@ -37,23 +37,9 @@ export class LayoutSettingsController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
-  async findAll(@CurrentUser() user: User | null) {
-    let churchId: number | undefined;
-    
-    if (user) {
-      if (user.role === "super_admin") {
-        // 슈퍼 어드민은 기본적으로 1번 교회를 보거나, 별도 파라미터가 필요함 (일단 1번)
-        churchId = 1;
-      } else {
-        const churches = await this.churchesService.findByAdmin(user.id);
-        if (churches.length > 0) churchId = churches[0].id;
-      }
-    } else {
-      // 비로그인 공개 페이지: 기본적으로 1번 교회 설정을 보여줌
-      churchId = 1;
-    }
-    
-    return this.service.findAll(churchId);
+  async findAll() {
+    // 테넌트 DB가 교회 격리를 담당 — churchId 필터 없이 전체 조회
+    return this.service.findAll();
   }
 
   private async getChurchIdForAdmin(user: User): Promise<number> {

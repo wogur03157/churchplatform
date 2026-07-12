@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { Church } from "@platform/entities";
@@ -76,10 +76,21 @@ export class TenancyService implements OnModuleDestroy {
 
   /**
    * 요청이 속한 교회의 DataSource 반환.
-   * dbName이 없는 교회(아직 프로비저닝 전)는 중앙 DB를 그대로 사용합니다(단일 DB 하위호환).
+   *
+   * 교회 미식별/미프로비저닝 시:
+   * - 기본(단일 교회 배포 하위호환): 중앙 DB로 폴백
+   * - TENANT_FALLBACK=reject (다교회 운영 권장): 403 — 미식별 요청이
+   *   중앙 DB에 데이터를 쓰는 사고(교회 간 버블링)를 원천 차단
    */
   async getDataSourceFor(church: Church | null | undefined): Promise<DataSource> {
-    if (!church?.dbName) return this.platformDataSource;
+    if (!church?.dbName) {
+      if (process.env.TENANT_FALLBACK === "reject") {
+        throw new ForbiddenException(
+          "교회를 식별할 수 없습니다 — 교회 도메인으로 접속해주세요"
+        );
+      }
+      return this.platformDataSource;
+    }
     const cached = await this.getOrCreateTenant(church.id, church.dbName);
     cached.lastUsedAt = Date.now();
     return cached.dataSource;
