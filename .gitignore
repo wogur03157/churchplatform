@@ -118,3 +118,5 @@ temp/
 package-lock.json
 
 .claude
+# 재정 영수증 첨부 (로컬 스토리지 — 민감 파일, git 제외)
+apps/finance/uploads/

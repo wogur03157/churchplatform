@@ -20,6 +20,7 @@ import AdminMemberVisitations from "./pages/admin/MemberVisitations";
 import AdminFinanceOfferings from "./pages/admin/FinanceOfferings";
 import AdminFinanceLedger from "./pages/admin/FinanceLedger";
 import AdminFinanceSettings from "./pages/admin/FinanceSettings";
+import AdminFinanceExpenses from "./pages/admin/FinanceExpenses";
 import AdminVideoCategories from "./pages/admin/VideoCategories";
 import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
@@ -95,6 +96,9 @@ function Router() {
       </Route>
       <Route path="/admin/finance/offerings">
         <DashboardLayout><AdminFinanceOfferings /></DashboardLayout>
+      </Route>
+      <Route path="/admin/finance/expenses">
+        <DashboardLayout><AdminFinanceExpenses /></DashboardLayout>
       </Route>
       <Route path="/admin/finance/ledger">
         <DashboardLayout><AdminFinanceLedger /></DashboardLayout>

@@ -5,6 +5,7 @@ import { PLATFORM_ENTITIES } from "@platform/entities";
 import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
 import { AuditModule } from "./modules/audit/audit.module";
+import { ExpensesModule } from "./modules/expenses/expenses.module";
 import { OfferingsModule } from "./modules/offerings/offerings.module";
 import { SettingsModule } from "./modules/settings/settings.module";
 import { TENANT_ENTITIES } from "./tenant-entities";
@@ -34,6 +35,7 @@ const dbModules = isDbEnabled
       AuditModule,
       SettingsModule,
       OfferingsModule,
+      ExpensesModule,
     ]
   : [];
 

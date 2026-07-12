@@ -8,7 +8,13 @@ import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // 엑셀 base64 임포트를 위해 body 한도 상향 (기본 100kb)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+  });
+  const express = (await import("express")).default;
+  app.use(express.json({ limit: "20mb" }));
+  app.use(express.urlencoded({ limit: "20mb", extended: true }));
   app.use(cookieParser());
 
   // nginx가 /api/members/* 를 이 앱으로 라우팅 — prefix를 그대로 사용

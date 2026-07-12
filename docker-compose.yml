@@ -55,6 +55,8 @@ services:
     env_file: .env.docker
     environment:
       PORT: "4200"
+    volumes:
+      - finance_uploads:/repo/apps/finance/uploads
     depends_on:
       mysql: { condition: service_healthy }
 
@@ -70,3 +72,4 @@ services:
 volumes:
   dbdata:
   uploads:
+  finance_uploads:
