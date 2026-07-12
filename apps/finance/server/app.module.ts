@@ -5,6 +5,8 @@ import { PLATFORM_ENTITIES } from "@platform/entities";
 import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
 import { AuditModule } from "./modules/audit/audit.module";
+import { BudgetsModule } from "./modules/budgets/budgets.module";
+import { ClosingsModule } from "./modules/closings/closings.module";
 import { ExpensesModule } from "./modules/expenses/expenses.module";
 import { OfferingsModule } from "./modules/offerings/offerings.module";
 import { SettingsModule } from "./modules/settings/settings.module";
@@ -34,6 +36,8 @@ const dbModules = isDbEnabled
       PlatformAuthModule,
       AuditModule,
       SettingsModule,
+      ClosingsModule,
+      BudgetsModule,
       OfferingsModule,
       ExpensesModule,
     ]

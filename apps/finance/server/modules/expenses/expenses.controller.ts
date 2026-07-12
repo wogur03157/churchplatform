@@ -61,7 +61,12 @@ export class ExpensesController {
     @CurrentUser() user: User
   ) {
     const expense = await this.service.create(body, user.id);
-    return { success: true, id: expense.id, requestNo: expense.requestNo };
+    return {
+      success: true,
+      id: expense.id,
+      requestNo: expense.requestNo,
+      budgetWarning: expense.budgetWarning ?? null,
+    };
   }
 
   @Post(":id(\\d+)/approve")

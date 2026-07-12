@@ -1,5 +1,7 @@
 import type { EntitySchema } from "typeorm";
 import { FinanceAuditLog } from "./modules/audit/finance-audit-log.entity";
+import { Budget } from "./modules/budgets/budget.entity";
+import { ClosingLock } from "./modules/closings/closing-lock.entity";
 import { ExpenseAttachment, ExpenseRequest } from "./modules/expenses/expenses.entities";
 import { Offering, OfferingBatch } from "./modules/offerings/offerings.entities";
 import { Account, Department, FiscalYear } from "./modules/settings/settings.entities";
@@ -16,5 +18,7 @@ export const TENANT_ENTITIES: (Function | EntitySchema)[] = [
   Offering,
   ExpenseRequest,
   ExpenseAttachment,
+  Budget,
+  ClosingLock,
   FinanceAuditLog,
 ];

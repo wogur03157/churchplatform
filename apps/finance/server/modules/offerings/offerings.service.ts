@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuditService } from "../audit/audit.service";
+import { ClosingsService } from "../closings/closings.service";
 import { Account } from "../settings/settings.entities";
 import { Offering, OfferingBatch } from "./offerings.entities";
 
@@ -33,7 +34,9 @@ export class OfferingsService {
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
     @Inject(AuditService)
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    @Inject(ClosingsService)
+    private readonly closings: ClosingsService
   ) {}
 
   // ── 계수 세션(배치) ───────────────────────────────────────────
@@ -46,6 +49,7 @@ export class OfferingsService {
     data: { date: string; serviceType: string; counters?: string[] },
     actorUserId: number
   ): Promise<OfferingBatch> {
+    await this.closings.assertNotLocked(data.date);
     const batch = await this.batchRepo.save(
       this.batchRepo.create({ ...data, createdBy: actorUserId, status: "counting" })
     );
@@ -63,6 +67,7 @@ export class OfferingsService {
     const batch = await this.batchRepo.findOne({ where: { id } });
     if (!batch) throw new NotFoundException("계수 세션을 찾을 수 없습니다");
     if (batch.status === "confirmed") throw new BadRequestException("이미 확정된 세션입니다");
+    await this.closings.assertNotLocked(batch.date);
 
     const row = await this.offeringRepo
       .createQueryBuilder("o")
@@ -129,6 +134,7 @@ export class OfferingsService {
     if (!input.amount || input.amount <= 0) {
       throw new BadRequestException("금액은 1원 이상이어야 합니다");
     }
+    await this.closings.assertNotLocked(input.date);
     const account = await this.accountRepo.findOne({
       where: { id: input.accountId, kind: "income", status: "active" },
     });
@@ -173,6 +179,7 @@ export class OfferingsService {
     const offering = await this.offeringRepo.findOne({ where: { id } });
     if (!offering) throw new NotFoundException("헌금 기록을 찾을 수 없습니다");
     if (offering.status === "voided") throw new BadRequestException("이미 취소된 기록입니다");
+    await this.closings.assertNotLocked(offering.date);
 
     offering.status = "voided";
     offering.voidedBy = actorUserId;

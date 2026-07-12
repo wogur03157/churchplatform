@@ -10,6 +10,8 @@ import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { randomBytes } from "crypto";
 import { AuditService } from "../audit/audit.service";
+import { BudgetsService } from "../budgets/budgets.service";
+import { ClosingsService } from "../closings/closings.service";
 import { Account, Department } from "../settings/settings.entities";
 import { ApprovalEntry, ExpenseAttachment, ExpenseRequest, ExpenseStatus } from "./expenses.entities";
 
@@ -25,7 +27,11 @@ export class ExpensesService {
     @InjectRepository(Department)
     private readonly departmentRepo: Repository<Department>,
     @Inject(AuditService)
-    private readonly audit: AuditService
+    private readonly audit: AuditService,
+    @Inject(ClosingsService)
+    private readonly closings: ClosingsService,
+    @Inject(BudgetsService)
+    private readonly budgets: BudgetsService
   ) {}
 
   // ── 기안 ────────────────────────────────────────────────────
@@ -39,7 +45,7 @@ export class ExpensesService {
       description?: string | null;
     },
     actorUserId: number
-  ): Promise<ExpenseRequest> {
+  ): Promise<ExpenseRequest & { budgetWarning?: string | null }> {
     if (!data.amount || data.amount <= 0) {
       throw new BadRequestException("금액은 1원 이상이어야 합니다");
     }
@@ -69,7 +75,8 @@ export class ExpensesService {
       targetId: expense.id,
       detail: { amount: data.amount, title: data.title },
     });
-    return expense;
+    const budgetWarning = await this.budgets.overrunWarning(data.accountId, data.amount);
+    return { ...expense, budgetWarning };
   }
 
   /** 연번 채번 — 연도별 순번 (2026-001) */
@@ -129,6 +136,7 @@ export class ExpensesService {
     if (expense.status !== "approved") {
       throw new BadRequestException("승인된 결의서만 지급할 수 있습니다");
     }
+    await this.closings.assertNotLocked(data.paidAt);
     expense.status = "paid";
     expense.paidAt = data.paidAt;
     expense.paidMethod = data.paidMethod;

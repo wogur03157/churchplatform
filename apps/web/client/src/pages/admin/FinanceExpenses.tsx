@@ -113,7 +113,7 @@ export default function AdminFinanceExpenses() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const result = await api.post<{ id: number; requestNo: string }>("/finance/expenses", {
+      const result = await api.post<{ id: number; requestNo: string; budgetWarning: string | null }>("/finance/expenses", {
         departmentId: parseInt(form.departmentId),
         accountId: parseInt(form.accountId),
         amount: parseInt(form.amount.replace(/[^0-9]/g, "")),
@@ -138,6 +138,7 @@ export default function AdminFinanceExpenses() {
     },
     onSuccess: (result) => {
       toast.success(`결의서 ${result.requestNo}가 기안되었습니다`);
+      if (result.budgetWarning) toast.warning(result.budgetWarning, { duration: 8000 });
       setIsCreateOpen(false);
       setForm(EMPTY_FORM);
       setReceiptFile(null);

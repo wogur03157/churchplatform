@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ReceiptText, Undo2 } from "lucide-react";
+import { Lock, LockOpen, ReceiptText, Undo2 } from "lucide-react";
 
 type Account = { id: number; name: string };
 type Offering = {
@@ -20,6 +20,7 @@ type Offering = {
   status: "confirmed" | "voided";
   voidReason: string | null;
 };
+type ClosingLock = { id: number; year: number; month: number | null };
 type Summary = {
   byAccount: { accountId: number; accountName: string; count: number; total: number }[];
   grandTotal: number;
@@ -72,6 +73,31 @@ export default function AdminFinanceLedger() {
 
   const accountName = (id: number) => accounts.find((a) => a.id === id)?.name ?? "?";
 
+  // ── 월 마감 ──
+  const year = new Date().getFullYear();
+  const { data: closings = [] } = useQuery({
+    queryKey: ["closings", year],
+    queryFn: () => api.get<ClosingLock[]>(`/finance/closings?year=${year}`),
+  });
+  const lockMutation = useMutation({
+    mutationFn: (month: number) => api.post("/finance/closings", { year, month }),
+    onSuccess: () => {
+      toast.success("마감되었습니다 — 해당 월 기록이 잠겼습니다");
+      queryClient.invalidateQueries({ queryKey: ["closings"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+  const unlockMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/finance/closings/${id}`),
+    onSuccess: () => {
+      toast.success("마감이 해제되었습니다");
+      queryClient.invalidateQueries({ queryKey: ["closings"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+  const lockOf = (month: number) =>
+    closings.find((c) => c.month === month) ?? closings.find((c) => c.month === null) ?? null;
+
   return (
     <div className="space-y-6">
       <div>
@@ -106,6 +132,43 @@ export default function AdminFinanceLedger() {
           </Card>
         ))}
       </div>
+
+      {/* 월 마감 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Lock className="h-4 w-4" /> {year}년 월 마감
+            <span className="text-xs font-normal text-muted-foreground">
+              — 마감된 월은 헌금 입력·취소·지급이 차단됩니다 (잠금·해제는 승인 권한)
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
+              const lock = lockOf(month);
+              return (
+                <button
+                  key={month}
+                  onClick={() => {
+                    if (lock) {
+                      if (confirm(`${month}월 마감을 해제하시겠습니까?`)) unlockMutation.mutate(lock.id);
+                    } else if (confirm(`${month}월을 마감하시겠습니까? 해당 월 기록이 잠깁니다.`)) {
+                      lockMutation.mutate(month);
+                    }
+                  }}
+                  className={`flex flex-col items-center gap-1 rounded-lg border px-2 py-2.5 text-sm transition-colors ${
+                    lock ? "border-primary bg-primary/10 font-medium" : "hover:bg-accent"
+                  }`}
+                >
+                  {lock ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5 text-muted-foreground" />}
+                  {month}월
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 내역 */}
       <Card>
