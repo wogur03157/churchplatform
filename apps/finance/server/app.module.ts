@@ -9,6 +9,7 @@ import { BudgetsModule } from "./modules/budgets/budgets.module";
 import { ClosingsModule } from "./modules/closings/closings.module";
 import { ExpensesModule } from "./modules/expenses/expenses.module";
 import { OfferingsModule } from "./modules/offerings/offerings.module";
+import { ReceiptsModule } from "./modules/receipts/receipts.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { SettingsModule } from "./modules/settings/settings.module";
 import { TENANT_ENTITIES } from "./tenant-entities";
@@ -42,6 +43,7 @@ const dbModules = isDbEnabled
       OfferingsModule,
       ExpensesModule,
       ReportsModule,
+      ReceiptsModule,
     ]
   : [];
 
