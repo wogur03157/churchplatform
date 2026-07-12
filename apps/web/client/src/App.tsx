@@ -22,6 +22,8 @@ import AdminFinanceLedger from "./pages/admin/FinanceLedger";
 import AdminFinanceSettings from "./pages/admin/FinanceSettings";
 import AdminFinanceExpenses from "./pages/admin/FinanceExpenses";
 import AdminFinanceBudget from "./pages/admin/FinanceBudget";
+import AdminFinanceReports from "./pages/admin/FinanceReports";
+import Transparency from "./pages/public/Transparency";
 import AdminVideoCategories from "./pages/admin/VideoCategories";
 import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
@@ -53,6 +55,7 @@ function Router() {
       <Route path="/super-admin" component={SuperAdminDashboard} />
 
       <Route path="/apply" component={Apply} />
+      <Route path="/transparency" component={Transparency} />
 
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/invite" component={AdminInvite} />
@@ -100,6 +103,9 @@ function Router() {
       </Route>
       <Route path="/admin/finance/expenses">
         <DashboardLayout><AdminFinanceExpenses /></DashboardLayout>
+      </Route>
+      <Route path="/admin/finance/reports">
+        <DashboardLayout><AdminFinanceReports /></DashboardLayout>
       </Route>
       <Route path="/admin/finance/budget">
         <DashboardLayout><AdminFinanceBudget /></DashboardLayout>

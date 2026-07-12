@@ -4,7 +4,7 @@ import { Budget } from "./modules/budgets/budget.entity";
 import { ClosingLock } from "./modules/closings/closing-lock.entity";
 import { ExpenseAttachment, ExpenseRequest } from "./modules/expenses/expenses.entities";
 import { Offering, OfferingBatch } from "./modules/offerings/offerings.entities";
-import { Account, Department, FiscalYear } from "./modules/settings/settings.entities";
+import { Account, Department, FinanceConfig, FiscalYear } from "./modules/settings/settings.entities";
 
 /**
  * 재정 앱의 테넌트(교회별) DB 엔티티 목록.
@@ -20,5 +20,6 @@ export const TENANT_ENTITIES: (Function | EntitySchema)[] = [
   ExpenseAttachment,
   Budget,
   ClosingLock,
+  FinanceConfig,
   FinanceAuditLog,
 ];

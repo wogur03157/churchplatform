@@ -66,3 +66,16 @@ export class Account {
   @Column({ type: "enum", enum: ["active", "archived"], default: "active" })
   status!: "active" | "archived";
 }
+
+/** 재정 앱 설정 (key-value) — 예: transparency_enabled */
+@Entity("finance_config")
+export class FinanceConfig {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ type: "varchar", length: 100, unique: true })
+  key!: string;
+
+  @Column({ type: "text" })
+  value!: string;
+}
