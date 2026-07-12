@@ -88,6 +88,9 @@ docker compose up -d --build finance # 재정만 재배포
 - **⚠️ ESM 임포트 호이스팅**: 환경변수 로드는 `server/env.ts` side-effect 모듈이
   main.ts의 **첫 import**여야 한다. 함수 호출로 하면 app.module이 먼저 평가됨
 - **⚠️ esbuild DI**: 생성자 주입은 항상 `@Inject(...)` 명시 (데코레이터 메타데이터 없음)
+- **⚠️ 중앙 DB 스키마는 수동 관리**: 엔티티를 바꾸면 테넌트 DB는 `pnpm tenant:migrate`로
+  자동 반영되지만, 중앙(폴백) DB는 아니다. `pnpm platform:schema-diff`로 차이를 확인하고
+  안전한 구문(CREATE/ADD)만 골라 적용할 것 — 안 하면 공개 홈 등에서 Unknown column 500 발생
 - 패키지에 새 외부 의존성을 추가하면 그 패키지의 package.json에 선언할 것
   (버전은 apps와 동일하게 — pnpm이 한 인스턴스로 dedupe)
 - Docker 구성은 로컬에 Docker가 없어 **이미지 빌드 미검증** 상태. 각 앱의

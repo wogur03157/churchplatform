@@ -13,7 +13,8 @@
     "check": "pnpm -r check",
     "format": "prettier --write .",
     "tenant:provision": "tsx scripts/tenants.ts provision",
-    "tenant:migrate": "tsx scripts/tenants.ts migrate"
+    "tenant:migrate": "tsx scripts/tenants.ts migrate",
+    "platform:schema-diff": "tsx scripts/platform-schema-log.ts"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
