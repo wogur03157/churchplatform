@@ -4,7 +4,11 @@ import { PlatformAuthModule } from "@platform/auth";
 import { PLATFORM_ENTITIES } from "@platform/entities";
 import { TenancyModule } from "@platform/tenancy";
 import { HealthController } from "./modules/health/health.controller";
+import { AuditModule } from "./modules/audit/audit.module";
+import { OfferingsModule } from "./modules/offerings/offerings.module";
+import { SettingsModule } from "./modules/settings/settings.module";
 import { TENANT_ENTITIES } from "./tenant-entities";
+import { seedTenantDefaults } from "./tenant-seed";
 
 const dbUrl = process.env.DATABASE_URL ?? "";
 const isDbEnabled = process.env.SKIP_DB !== "true" && dbUrl.length > 0;
@@ -22,8 +26,14 @@ const dbModules = isDbEnabled
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
       }),
-      TenancyModule.forRoot({ tenantEntities: [...TENANT_ENTITIES] }),
+      TenancyModule.forRoot({
+        tenantEntities: [...TENANT_ENTITIES],
+        seedTenant: seedTenantDefaults,
+      }),
       PlatformAuthModule,
+      AuditModule,
+      SettingsModule,
+      OfferingsModule,
     ]
   : [];
 

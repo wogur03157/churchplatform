@@ -23,6 +23,8 @@ import { TENANT_ENTITIES as WEB_TENANT_ENTITIES } from "../apps/web/server/tenan
 import { seedTenantDefaults as seedWebDefaults } from "../apps/web/server/tenant-seed";
 import { TENANT_ENTITIES as MEMBERS_TENANT_ENTITIES } from "../apps/members/server/tenant-entities";
 import { seedTenantDefaults as seedMembersDefaults } from "../apps/members/server/tenant-seed";
+import { TENANT_ENTITIES as FINANCE_TENANT_ENTITIES } from "../apps/finance/server/tenant-entities";
+import { seedTenantDefaults as seedFinanceDefaults } from "../apps/finance/server/tenant-seed";
 
 interface AppManifest {
   name: string;
@@ -34,7 +36,7 @@ interface AppManifest {
 const APPS: AppManifest[] = [
   { name: "web", entities: [...WEB_TENANT_ENTITIES], seed: seedWebDefaults },
   { name: "members", entities: [...MEMBERS_TENANT_ENTITIES], seed: seedMembersDefaults },
-  // { name: "finance", entities: [...FINANCE_TENANT_ENTITIES] },
+  { name: "finance", entities: [...FINANCE_TENANT_ENTITIES], seed: seedFinanceDefaults },
 ];
 
 function createPlatformDataSource(): DataSource {
