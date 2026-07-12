@@ -1,335 +1,150 @@
-# Admin Dashboard
+# 교회 플랫폼 (churchplatform)
 
-콘텐츠 관리 시스템(CMS). 공지사항, 이미지, 영상, 플로팅 메시지를 관리하고 공개 페이지에 노출하는 풀스택 웹 애플리케이션.
+교회 **홈페이지 + 재적(교인 관리) + 재정(회계)** 를 하나로 묶은 멀티테넌트 SaaS.
+한 벌의 서버로 여러 교회를 서비스하며, **교회마다 데이터베이스가 물리적으로 분리**됩니다.
 
----
+| 서비스 | 내용 | 포트 |
+|---|---|---|
+| **web** | 교회 공개 홈페이지(커스텀 레이아웃) + 어드민 UI + 콘텐츠 API | 4000 |
+| **members** | 재적 — 교인·가족·직분, 조직, 출석, 새가족, 심방, 엑셀 | 4100 |
+| **finance** | 재정 — 헌금 계수, 지출결의, 예산, 마감, 보고서, 기부금영수증 | 4200 |
 
-## 기술 스택
-
-| 영역 | 기술 |
-|------|------|
-| 프론트엔드 | React 19, TypeScript, Tailwind CSS v4, shadcn/ui |
-| 백엔드 | NestJS, TypeORM, MySQL |
-| 인증 | Google OAuth 2.0, JWT (jose), httpOnly 쿠키 |
-| 파일 스토리지 | AWS S3 (또는 호환 서비스) |
-| AI 어시스턴트 | OpenAI 호환 API |
-| 상태 관리 | TanStack Query v5 |
-| 라우터 | Wouter |
-| 패키지 매니저 | pnpm 10.4.1 |
+> 📖 문서: [기획서(재적)](z_docs/plan-members.md) · [기획서(재정)](z_docs/plan-finance.md) ·
+> [모노레포 구조·규칙](z_docs/monorepo.md) · [테넌트 DB 아키텍처](z_docs/tenant-db-routing.md) ·
+> [관리자 사용 설명서](z_docs/user-guide.md) · [2026-07 릴리스 노트](z_docs/release-2026-07.md)
 
 ---
 
-## 주요 기능
-
-### 공개 페이지 (`/`)
-- 레이아웃 설정에 따라 섹션을 동적으로 렌더링
-- 공지사항 / 이미지 갤러리 / 영상 목록 표시
-- 플로팅 메시지 팝업 (위치, 유형, 기간 설정 가능)
-- 공지사항 상세 페이지 (`/announcements/:id`)
-
-### 관리자 대시보드 (`/admin`)
-Google 계정으로 로그인한 관리자만 접근 가능.
-
-| 메뉴 | 기능 |
-|------|------|
-| 공지사항 | 작성 / 수정 / 삭제 / 발행(published) 전환 |
-| 이미지 | 업로드 / 수정 / 삭제 / 공개 전환 / 표시 순서 |
-| 영상 | YouTube·Vimeo URL 등록 또는 파일 직접 업로드 |
-| 플로팅 메시지 | 메시지 유형(info/warning/success/announcement), 노출 위치, 기간 설정 |
-| 레이아웃 설정 | 섹션별 표시 여부, 순서, 제목/부제목 커스터마이징 |
-| AI 어시스턴트 | 텍스트 개선 / 요약 / 영한 번역 |
-
----
-
-## 프로젝트 구조
+## 아키텍처 한눈에
 
 ```
-admin-dashboard/
-├── client/                   # 프론트엔드 (Vite + React)
-│   └── src/
-│       ├── _core/hooks/      # useAuth 등 공통 훅
-│       ├── components/       # 공통 컴포넌트 (shadcn/ui 포함)
-│       ├── lib/
-│       │   ├── api.ts        # fetch 래퍼 (/api prefix, credentials)
-│       │   └── queryClient.ts # TanStack Query 클라이언트
-│       └── pages/
-│           ├── PublicView.tsx         # 공개 메인 페이지
-│           ├── AnnouncementDetail.tsx # 공지사항 상세
-│           ├── AdminLogin.tsx         # 관리자 로그인
-│           └── admin/                 # 관리자 페이지들
-├── server/                   # 백엔드 (NestJS)
-│   ├── main.ts               # 부트스트랩 (개발: Vite 통합, 운영: 정적 파일)
-│   ├── app.module.ts         # 루트 모듈
-│   ├── vite.ts               # Vite 개발 서버 미들웨어
-│   └── modules/
-│       ├── auth/             # JWT 인증, 가드, 데코레이터
-│       ├── oauth/            # Google OAuth 콜백
-│       ├── users/            # 사용자 엔티티
-│       ├── announcements/    # 공지사항 CRUD
-│       ├── images/           # 이미지 업로드/관리
-│       ├── videos/           # 영상 등록/관리
-│       ├── floating-messages/ # 플로팅 메시지 관리
-│       ├── layout-settings/  # 레이아웃 설정 관리
-│       ├── ai-assistant/     # LLM 텍스트 개선
-│       ├── storage/          # 파일 스토리지 서비스
-│       ├── notifications/    # 알림 서비스
-│       └── health/           # 헬스체크
-├── shared/                   # 공유 타입/상수
-│   ├── const.ts
-│   └── _core/errors.ts
-├── .env                      # 환경변수 (직접 작성 필요)
-├── env-setup.md              # 환경변수 세팅 가이드
-└── migration.md              # NestJS 마이그레이션 이력
+                        ┌── nginx (경로 라우팅) ──┐
+  *.도메인 ─────────────▶│ /api/members/* → :4100 │
+                        │ /api/finance/* → :4200 │
+                        │ /*             → :4000 │
+                        └────────────────────────┘
+        세 앱이 공유: 같은 JWT 쿠키(인증) + 같은 테넌시 모듈(교회 식별)
+
+  ┌─ 중앙 DB (admin_dashboard) ─┐   ┌─ 교회별 DB (church_<slug>) ──────────────┐
+  │ users, churches(+dbName),   │   │ 콘텐츠(공지·미디어·레이아웃…)            │
+  │ church_admins, permissions, │   │ 재적(members, attendance, visitations…) │
+  │ invitations, features       │   │ 재정(offerings, expenses, receipts…)    │
+  └─────────────────────────────┘   └──────────────────────────────────────────┘
 ```
 
----
+- **교회 식별**: 요청의 커스텀 도메인 → 서브도메인 → `x-church-slug` 헤더 → `DEFAULT_CHURCH_SLUG` 순.
+  식별된 교회의 DataSource로 자동 라우팅 (`packages/tenancy`)
+- **권한 3단계**: 교회 기능 플래그(church_features) → 관리자 역할 → 개인 권한(admin_permissions).
+  민감 권한(`members_sensitive`, `finance_approve`)은 **명시 허용(allow-list)** 방식
+- **금전 기록은 불변**: 수정·삭제 대신 취소(voided)+재입력, 월 마감 시 잠금
 
-## 홈화면 섹션 추가하기
-
-공개 페이지(`/`)는 `client/src/pages/PublicView.tsx` 상단의 설정 두 곳만 수정하면 새 섹션을 추가할 수 있습니다.
-
-### 레이아웃 구조
-
-- **모바일**: 섹션이 세로로 쌓이는 스크롤 레이아웃
-- **데스크탑**: 한 화면에 모든 섹션이 그리드로 표시, 각 열은 독립적으로 스크롤
+## 디렉토리
 
 ```
-데스크탑 예시 (3열):
-┌─────────────────────────────────────────────────────┐
-│  Hero (컴팩트 스트립)                                │
-├─────────────────┬───────────────┬───────────────────┤
-│   공지사항       │    갤러리      │     영상           │
-│  (독립 스크롤)   │  (독립 스크롤)  │  (독립 스크롤)     │
-└─────────────────┴───────────────┴───────────────────┘
+apps/web        홈페이지 + 어드민 UI (React 19 + NestJS, 클라이언트는 여기 하나뿐)
+apps/members    재적 API (NestJS)
+apps/finance    재정 API (NestJS)
+packages/       공유 코드 — shared(상수)·entities(중앙DB)·auth(인증/권한)·tenancy(테넌트 라우팅)
+scripts/        tenants.ts(프로비저닝·마이그레이션), platform-schema-log.ts(스키마 diff)
+docker/         공용 Dockerfile + nginx.conf
+z_docs/         기획서·아키텍처·가이드 문서
 ```
-
-### 섹션 추가 방법
-
-**1단계 — `SECTION_CONFIG`에 배치 등록** (`PublicView.tsx` 상단)
-
-```ts
-const SECTION_CONFIG: Record<string, { colSpan: number }> = {
-  announcements: { colSpan: 1 },
-  images:        { colSpan: 1 },
-  videos:        { colSpan: 1 },
-  events:        { colSpan: 2 }, // ← 새 섹션 추가 (2칸 차지)
-};
-```
-
-**2단계 — `TOTAL_COLS` 조정** (필요 시)
-
-```ts
-const TOTAL_COLS = 4; // colSpan 합산이 늘어나면 조정
-```
-
-**3단계 — `renderSection()`에 렌더 로직 추가**
-
-```ts
-case "events":
-  if (!events || events.length === 0) return null;
-  return (
-    <section key="events" className="py-20 lg:py-4">
-      {/* 섹션 내용 */}
-    </section>
-  );
-```
-
-**4단계 — 백엔드 `layoutSettings` 테이블에 행 추가**
-
-```sql
-INSERT INTO layout_settings (section_type, is_visible, display_order, title)
-VALUES ('events', 1, 5, '이벤트');
-```
-
-> 관리자 페이지 → 레이아웃 설정에서 표시 여부와 순서를 실시간으로 조정할 수 있습니다.
-
----
-
-## REST API
-
-모든 API는 `/api` prefix. 인증이 필요한 엔드포인트는 `admin` 역할 필요.
-
-| Method | Path | 인증 | 설명 |
-|--------|------|------|------|
-| GET | `/api/health` | - | 헬스체크 |
-| GET | `/api/auth/me` | - | 현재 사용자 정보 |
-| POST | `/api/auth/logout` | - | 로그아웃 |
-| GET | `/api/oauth/google` | - | Google 로그인 리다이렉트 |
-| GET | `/api/oauth/callback` | - | Google OAuth 콜백 |
-| GET | `/api/announcements` | - | 공지사항 목록 (`?publishedOnly=true`) |
-| GET | `/api/announcements/:id` | - | 공지사항 상세 |
-| POST | `/api/announcements` | admin | 공지사항 생성 |
-| PATCH | `/api/announcements/:id` | admin | 공지사항 수정 |
-| DELETE | `/api/announcements/:id` | admin | 공지사항 삭제 |
-| GET | `/api/images` | - | 이미지 목록 (`?publishedOnly=true`) |
-| POST | `/api/images` | admin | 이미지 업로드 (base64) |
-| PATCH | `/api/images/:id` | admin | 이미지 수정 |
-| DELETE | `/api/images/:id` | admin | 이미지 삭제 |
-| GET | `/api/videos` | - | 영상 목록 (`?publishedOnly=true`) |
-| POST | `/api/videos` | admin | 영상 등록 |
-| POST | `/api/videos/upload-file` | admin | 영상 파일 업로드 |
-| PATCH | `/api/videos/:id` | admin | 영상 수정 |
-| DELETE | `/api/videos/:id` | admin | 영상 삭제 |
-| GET | `/api/floating-messages` | - | 플로팅 메시지 목록 (`?activeOnly=true`) |
-| POST | `/api/floating-messages` | admin | 플로팅 메시지 생성 |
-| PATCH | `/api/floating-messages/:id` | admin | 플로팅 메시지 수정 |
-| DELETE | `/api/floating-messages/:id` | admin | 플로팅 메시지 삭제 |
-| GET | `/api/layout-settings` | - | 레이아웃 설정 목록 |
-| PATCH | `/api/layout-settings/:id` | admin | 레이아웃 설정 수정 |
-| POST | `/api/ai-assistant/improve-text` | admin | AI 텍스트 개선 |
-
----
 
 ## 시작하기
 
-### 사전 요구사항
+### 요구사항
 
-- Node.js **20.18 이상** (Vite 7 요구사항)
-- pnpm **10.4.1** (정확한 버전 필요)
-- MySQL 8.0+ (Mock 모드로 실행 시 불필요)
+- Node.js 20.18+ · pnpm 10.4.1 (`corepack enable && corepack prepare pnpm@10.4.1 --activate`)
+- MySQL 8.0+
 
-### 0. Node / pnpm 버전 맞추기
-
-```bash
-# Node 버전 확인
-node --version   # v20.x 이상이어야 함
-
-# nvm 사용 시 (프로젝트 루트의 .node-version 자동 적용)
-nvm install 20
-nvm use 20
-
-# pnpm은 Corepack으로 설치 (버전 자동 고정)
-corepack enable
-corepack prepare pnpm@10.4.1 --activate
-```
-
-> `packageManager` 필드에 sha512 해시가 고정되어 있어, Corepack을 통하지 않고 다른 버전의 pnpm을 사용하면 설치가 실패할 수 있습니다.
-
-### 1. 의존성 설치
+### 1. 설치 & 환경변수
 
 ```bash
 pnpm install --frozen-lockfile
 ```
 
-> `--frozen-lockfile` 옵션으로 lock 파일 기반 설치를 권장합니다. lock 파일 없이 설치 시 `wouter` 패치가 미적용될 수 있습니다.
-
-### Mock 모드로 빠르게 실행하기 (DB 없이)
-
-DB 없이 목업 데이터로 개발/테스트 가능합니다.
-
-```bash
-pnpm dev:no-db
-```
-
-- 브라우저: `http://localhost:3000`
-- 관리자: `http://localhost:3000/admin` (별도 로그인 불필요)
-- 실제 DB, Google OAuth, AWS S3 설정 없이 동작
-
-> 아래 2~5단계는 실제 DB와 OAuth를 연결하는 경우에만 필요합니다.
-
-### 2. 환경변수 설정
-
-`.env` 파일을 프로젝트 루트에 생성:
+루트에 `.env` 생성 (세 앱이 공유):
 
 ```env
-# DB 연결
 DATABASE_URL=mysql://root:password@localhost:3306/admin_dashboard
+JWT_SECRET=openssl-rand-base64-32로-생성          # 세 앱 공통 — 로그인 쿠키 공유의 핵심
 
-# JWT 서명 키 (openssl rand -base64 32 으로 생성)
-JWT_SECRET=your_secret_key
+# Google OAuth (web 로그인)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+OAUTH_CALLBACK_URL=http://localhost:4000/api/oauth/callback
+OWNER_OPEN_ID=관리자로_지정할_구글_ID
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-OAUTH_CALLBACK_URL=http://localhost:3000/api/oauth/callback
+# 개인정보 암호화 키 (운영 필수 — 없으면 평문 저장 + 경고)
+MEMBER_DATA_KEY=...        # 교인 연락처·주소
+FINANCE_DATA_KEY=...       # 기부금영수증 주민번호
 
-# 관리자 openId (로그인 후 DB에서 확인)
-OWNER_OPEN_ID=google_numeric_user_id
-
-# AI 어시스턴트 (OpenAI 호환)
-BUILT_IN_FORGE_API_URL=https://api.openai.com
-BUILT_IN_FORGE_API_KEY=sk-...
-
-# 파일 스토리지 (AWS S3)
-AWS_REGION=ap-northeast-2
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
-AWS_S3_BUCKET=your-bucket-name
+# 테넌트 식별 (선택)
+DEFAULT_CHURCH_SLUG=       # 단일 교회 배포 시 기본 교회
+TENANT_BASE_DOMAIN=        # <slug>.도메인 서브도메인 매칭용
 ```
 
-> 자세한 설정 방법은 [env-setup.md](./env-setup.md) 참고.
-
-### 3. DB 생성 및 테이블 초기화
-
-```sql
-CREATE DATABASE admin_dashboard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-`server/app.module.ts`에서 `synchronize: true`로 변경하면 서버 시작 시 테이블이 자동 생성됨.
-**운영 환경에서는 반드시 `synchronize: false`로 되돌릴 것.**
-
-### 4. 개발 서버 실행
+### 2. DB 준비
 
 ```bash
-# DB 연결 포함 (환경변수 설정 완료 후)
-pnpm dev
-
-# DB 없이 Mock 모드
-pnpm dev:no-db
+# 중앙 DB 스키마 (최초 1회)
+mysql -uroot -e "CREATE DATABASE admin_dashboard CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql -uroot admin_dashboard < z_docs/db-schema.sql
 ```
 
-- 서버: `http://localhost:3000`
-- Vite HMR이 NestJS 서버와 통합되어 단일 포트에서 동작
-
-### 5. 관리자 계정 설정
-
-1. `http://localhost:3000/admin/login` 접속
-2. Google 계정으로 로그인
-3. DB에서 본인 `open_id` 확인:
-   ```sql
-   SELECT open_id FROM users WHERE email = 'your@gmail.com';
-   ```
-4. `.env`의 `OWNER_OPEN_ID`에 입력 후 서버 재시작
-5. 재로그인하면 `role = 'admin'`으로 자동 업데이트됨
-
----
-
-## 빌드 및 운영 배포
+교회 승인(`/super-admin`) 시 교회별 DB가 **자동 생성**됩니다. 수동으로는:
 
 ```bash
-# 프론트엔드 + 서버 빌드
-pnpm build
-
-# 운영 서버 실행
-pnpm start
+pnpm tenant:provision <slug>    # 특정 교회 프로비저닝 (DB 생성+스키마+시드)
+pnpm tenant:provision --all     # 미프로비저닝 active 교회 전부
 ```
 
-빌드 결과물:
-- `dist/public/` — Vite 빌드된 프론트엔드 정적 파일
-- `dist/server/main.js` — esbuild 번들된 NestJS 서버
-
----
-
-## 타입 체크
+### 3. 실행
 
 ```bash
-pnpm check
+pnpm dev            # web     http://localhost:4000
+pnpm dev:members    # members http://localhost:4100
+pnpm dev:finance    # finance http://localhost:4200
 ```
 
----
+- 관리자: `http://localhost:4000/admin` (개발 모드에선 `POST /api/auth/dev-login`(슈퍼) /
+  `dev-church-login`(교회 관리자)로 즉시 로그인 가능)
+- 특정 교회로 개발: 요청에 `x-church-slug: <slug>` 헤더 또는 `VITE_CHURCH_SLUG` env
 
-## 인증 플로우
+### 4. 스키마 변경 워크플로 ⚠️
 
-```
-[/admin/login]
-  → "Google로 로그인" 클릭
-  → GET /api/oauth/google
-  → Google 계정 선택
-  → GET /api/oauth/callback?code=...
-  → JWT 서명 → httpOnly 쿠키(app_session_id) 발급
-  → / 로 리다이렉트
+```bash
+# 엔티티 수정 후 —
+pnpm tenant:migrate          # 교회별 DB 전체에 자동 반영 (백업 후 실행 권장)
+pnpm platform:schema-diff    # 중앙 DB와의 차이 SQL 출력 → CREATE/ADD만 골라 수동 적용
 ```
 
-- 세션은 httpOnly 쿠키로 관리 (XSS 방어)
-- JWT 유효기간 1년
-- `OWNER_OPEN_ID`와 일치하는 사용자는 자동으로 `admin` 역할 부여
+중앙 DB는 실데이터 보호를 위해 자동 동기화하지 않습니다. diff 출력 중
+DROP·타입변경 구문은 그대로 실행하지 말 것.
+
+### 5. 검증
+
+```bash
+pnpm check          # 전 앱 타입체크
+pnpm build          # 전 앱 프로덕션 빌드 (web: vite+esbuild, members/finance: esbuild)
+```
+
+## 배포 (Docker)
+
+```bash
+cp .env.docker.example .env.docker   # 값 채우기
+docker compose up -d                 # mysql + web + members + finance + nginx
+docker compose up -d --build finance # 특정 앱만 재배포
+```
+
+- 이미지 하나(`docker/app.Dockerfile`)를 `--build-arg APP=web|members|finance`로 공유
+- nginx가 경로로 분기, `Host` 헤더 전달로 도메인 기반 교회 식별 유지
+- 볼륨: `dbdata`(MySQL), `uploads`(웹 업로드), `finance_uploads`(영수증 첨부)
+
+## 운영 참고
+
+- **권한 부여**: 슈퍼관리자가 `PUT /api/churches/:id/admins/:userId/permissions`
+  `{ "permKey": "members_sensitive" | "finance_approve", "status": "allowed" }`
+- **감사 로그**: 교인 데이터 접근(member_audit_logs)·금전 기록(finance_audit_logs) 자동 기록
+- **개발 함정 모음**: [monorepo.md 주의사항](z_docs/monorepo.md#주의사항)
+  (esbuild DI `@Inject` 필수, ESM env 로드 순서, tsx tsconfig include, 중앙 DB 수동 스키마)
