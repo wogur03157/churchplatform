@@ -13,6 +13,10 @@ import AdminFloatingMessages from "./pages/admin/FloatingMessages";
 import AdminLayoutSettings from "./pages/admin/LayoutSettings";
 import AdminPopups from "./pages/admin/Popups";
 import AdminMembers from "./pages/admin/Members";
+import AdminMemberGroups from "./pages/admin/MemberGroups";
+import AdminMemberAttendance from "./pages/admin/MemberAttendance";
+import AdminMemberNewcomers from "./pages/admin/MemberNewcomers";
+import AdminMemberVisitations from "./pages/admin/MemberVisitations";
 import AdminVideoCategories from "./pages/admin/VideoCategories";
 import AdminPageGroups from "./pages/admin/PageGroups";
 import AdminFormConfig from "./pages/admin/FormConfig";
@@ -85,6 +89,18 @@ function Router() {
       </Route>
       <Route path="/admin/content-pages">
         <DashboardLayout><AdminContentPages /></DashboardLayout>
+      </Route>
+      <Route path="/admin/members/groups">
+        <DashboardLayout><AdminMemberGroups /></DashboardLayout>
+      </Route>
+      <Route path="/admin/members/attendance">
+        <DashboardLayout><AdminMemberAttendance /></DashboardLayout>
+      </Route>
+      <Route path="/admin/members/newcomers">
+        <DashboardLayout><AdminMemberNewcomers /></DashboardLayout>
+      </Route>
+      <Route path="/admin/members/visitations">
+        <DashboardLayout><AdminMemberVisitations /></DashboardLayout>
       </Route>
       <Route path="/admin/members">
         <DashboardLayout><AdminMembers /></DashboardLayout>

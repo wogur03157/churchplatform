@@ -84,7 +84,7 @@ export class AttendanceService {
   async stats(from: string, to: string, sessionId?: number) {
     const qb = this.recordRepo
       .createQueryBuilder("r")
-      .select("r.date", "date")
+      .select("DATE_FORMAT(r.date, '%Y-%m-%d')", "date")
       .addSelect("r.sessionId", "sessionId")
       .addSelect("SUM(r.status != 'absent')", "presentCount")
       .where("r.date BETWEEN :from AND :to", { from, to })

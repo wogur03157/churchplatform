@@ -1,6 +1,6 @@
 # 재적(교인 관리) 서비스 기획서
 
-> 상태: **백엔드 MVP 구현 완료** (권한·CRUD·엑셀·조직·출석·새가족·대시보드·심방·목양메모) + 교인 목록 어드민 화면 (2026-07-12)
+> 상태: **백엔드 MVP 구현 완료** (권한·CRUD·엑셀·조직·출석·새가족·대시보드·심방·목양메모) + 어드민 화면 5종(교인·조직·출석·새가족·심방) (2026-07-12)
 > 민감 권한: members_sensitive는 allow-list — 슈퍼관리자가 PUT /api/churches/:id/admins/:userId/permissions로 부여
 > 전제: [tenant-db-routing.md](./tenant-db-routing.md)의 교회별 DB 구조 위에 구현.
 > 재정 기획서([plan-finance.md](./plan-finance.md))와 교인 데이터를 공유(헌금자 매칭).
