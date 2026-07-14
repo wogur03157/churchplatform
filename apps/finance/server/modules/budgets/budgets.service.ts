@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { assertAmount } from "../../lib/validate";
 import { AuditService } from "../audit/audit.service";
 import { ExpenseRequest } from "../expenses/expenses.entities";
 import { Account, Department } from "../settings/settings.entities";
@@ -86,7 +87,7 @@ export class BudgetsService {
   ): Promise<void> {
     if (!Array.isArray(entries)) throw new BadRequestException("entries가 필요합니다");
     for (const entry of entries) {
-      if (entry.amount < 0) throw new BadRequestException("예산은 0 이상이어야 합니다");
+      if (entry.amount !== 0) assertAmount(entry.amount, "예산");
       if (entry.amount === 0) {
         await this.budgetRepo.delete({ year, accountId: entry.accountId });
       } else {

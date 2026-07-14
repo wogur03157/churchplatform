@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { assertDateString } from "../../lib/validate";
+import { assertAmount, assertDateString } from "../../lib/validate";
 import { AuditService } from "../audit/audit.service";
 import { ClosingsService } from "../closings/closings.service";
 import { Account } from "../settings/settings.entities";
@@ -133,9 +133,7 @@ export class OfferingsService {
   // ── 헌금 기록 (불변 원장) ─────────────────────────────────────
 
   async create(input: OfferingInput, actorUserId: number): Promise<Offering> {
-    if (!input.amount || input.amount <= 0) {
-      throw new BadRequestException("금액은 1원 이상이어야 합니다");
-    }
+    assertAmount(input.amount);
     assertDateString(input.date);
     await this.closings.assertNotLocked(input.date);
     const account = await this.accountRepo.findOne({

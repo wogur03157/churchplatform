@@ -9,7 +9,7 @@ import { Repository } from "typeorm";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { randomBytes } from "crypto";
-import { assertDateString } from "../../lib/validate";
+import { assertAmount, assertDateString } from "../../lib/validate";
 import { AuditService } from "../audit/audit.service";
 import { BudgetsService } from "../budgets/budgets.service";
 import { ClosingsService } from "../closings/closings.service";
@@ -47,9 +47,7 @@ export class ExpensesService {
     },
     actorUserId: number
   ): Promise<ExpenseRequest & { budgetWarning?: string | null }> {
-    if (!data.amount || data.amount <= 0) {
-      throw new BadRequestException("금액은 1원 이상이어야 합니다");
-    }
+    assertAmount(data.amount);
     const department = await this.departmentRepo.findOne({ where: { id: data.departmentId } });
     if (!department) throw new BadRequestException("부서를 찾을 수 없습니다");
     const account = await this.accountRepo.findOne({

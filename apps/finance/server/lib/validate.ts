@@ -16,3 +16,21 @@ export function parseIntParam(value: string | undefined, label: string, min = 1,
   }
   return parsed;
 }
+
+/**
+ * 금액(원) 검증 — DECIMAL(15,0) 컬럼 범위 안의 양의 정수여야 함.
+ * 최대 999,999,999,999,999원(약 1000조). 초과 시 500 대신 400.
+ */
+const MAX_AMOUNT = 999_999_999_999_999;
+export function assertAmount(value: number | undefined | null, label = "금액"): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value)) {
+    throw new BadRequestException(`${label}은(는) 정수여야 합니다`);
+  }
+  if (value <= 0) {
+    throw new BadRequestException(`${label}은(는) 1원 이상이어야 합니다`);
+  }
+  if (value > MAX_AMOUNT) {
+    throw new BadRequestException(`${label}이(가) 너무 큽니다`);
+  }
+  return value;
+}
