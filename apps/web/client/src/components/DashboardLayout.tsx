@@ -55,7 +55,7 @@ import { Button } from "./ui/button";
 
 const NAV_ITEMS = [
   // 재적 (교인 관리 서비스)
-  { icon: LayoutDashboard, label: "대시보드", path: "/admin", permKey: "members", service: "members" },
+  { icon: LayoutDashboard, label: "재적 현황", path: "/admin/members/dashboard", permKey: "members", service: "members" },
   { icon: Users, label: "교인 관리", path: "/admin/members", permKey: "members", service: "members" },
   { icon: FolderTree, label: "조직 관리", path: "/admin/members/groups", permKey: "members", service: "members" },
   { icon: CalendarCheck, label: "출석 체크", path: "/admin/members/attendance", permKey: "members", service: "members" },
@@ -71,6 +71,7 @@ const NAV_ITEMS = [
   { icon: ScrollText, label: "기부금영수증", path: "/admin/finance/receipts", permKey: "finance", service: "finance" },
   { icon: Landmark, label: "재정 설정", path: "/admin/finance/settings", permKey: "finance", service: "finance" },
   // 홈페이지 서비스
+  { icon: LayoutDashboard, label: "대시보드", path: "/admin", permKey: null, service: "home" },
   { icon: FileText, label: "공지사항", path: "/admin/announcements", permKey: "announcements", service: "home" },
   { icon: ImageIcon, label: "이미지", path: "/admin/images", permKey: "images", service: "home" },
   { icon: Video, label: "영상", path: "/admin/videos", permKey: "videos", service: "home" },
@@ -96,8 +97,8 @@ const SERVICES: Array<{ key: ServiceKey; label: string; icon: typeof Globe; feat
 
 function serviceOfLocation(location: string): ServiceKey {
   if (location.startsWith("/admin/finance")) return "finance";
-  if (location === "/admin" || location.startsWith("/admin/members")) return "members";
-  return "home";
+  if (location.startsWith("/admin/members")) return "members";
+  return "home"; // "/admin"(홈페이지 대시보드) 포함
 }
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
