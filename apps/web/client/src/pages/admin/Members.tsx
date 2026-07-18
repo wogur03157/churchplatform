@@ -66,6 +66,14 @@ const BAPTISM_LABELS: Record<string, string> = {
   infant: "유아세례",
 };
 
+/** 숫자만 남기고 010-0000-0000 형태로 자동 하이픈 */
+function formatPhone(value: string): string {
+  const digits = value.replace(/[^0-9]/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
 const EMPTY_FORM = {
   name: "",
   gender: "" as "" | "m" | "f",
@@ -233,7 +241,7 @@ export default function AdminMembers() {
         </div>
         <div>
           <Label>연락처</Label>
-          <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="010-0000-0000" />
+          <Input value={form.phone} onChange={(e) => set("phone", formatPhone(e.target.value))} placeholder="010-0000-0000" />
         </div>
         <div>
           <Label>이메일</Label>
@@ -310,7 +318,7 @@ export default function AdminMembers() {
           <Button variant="outline" onClick={() => window.open("/api/members/export", "_blank")}>
             <Download className="h-4 w-4 mr-1" /> 엑셀 다운로드
           </Button>
-          <Button onClick={() => { setForm(EMPTY_FORM); setIsCreateOpen(true); }}>
+          <Button onClick={() => { setForm({ ...EMPTY_FORM, registeredAt: new Date().toISOString().slice(0, 10) }); setIsCreateOpen(true); }}>
             <Plus className="h-4 w-4 mr-1" /> 교인 등록
           </Button>
         </div>
@@ -391,7 +399,11 @@ export default function AdminMembers() {
                 </td></tr>
               ) : (
                 data!.items.map((member) => (
-                  <tr key={member.id} className="border-b last:border-0 hover:bg-muted/50">
+                  <tr
+                    key={member.id}
+                    className="cursor-pointer border-b last:border-0 hover:bg-muted/50"
+                    onClick={() => openEdit(member)}
+                  >
                     <td className="p-3 font-medium">
                       {member.name}
                       {member.gender && (
@@ -412,13 +424,13 @@ export default function AdminMembers() {
                     </td>
                     <td className="p-3 hidden md:table-cell">{member.registeredAt ?? "-"}</td>
                     <td className="p-3 text-right whitespace-nowrap">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(member)}>
+                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(member); }}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => confirmDelete(member.id)}
+                        onClick={(e) => { e.stopPropagation(); confirmDelete(member.id); }}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

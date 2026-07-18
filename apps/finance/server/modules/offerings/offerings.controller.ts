@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -41,6 +42,13 @@ export class OfferingsController {
   @Post("offering-batches/:id/confirm")
   confirmBatch(@Param("id", ParseIntPipe) id: number, @CurrentUser() user: User) {
     return this.service.confirmBatch(id, user.id);
+  }
+
+  /** 계수 세션 폐기 (확정 전만) */
+  @Delete("offering-batches/:id(\\d+)")
+  async discardBatch(@Param("id", ParseIntPipe) id: number, @CurrentUser() user: User) {
+    await this.service.discardBatch(id, user.id);
+    return { success: true };
   }
 
   /** 계수표 — 종류별/방법별 합계 */

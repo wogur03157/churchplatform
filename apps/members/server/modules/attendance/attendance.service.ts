@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { In } from "typeorm";
+import { Member } from "../members/member.entity";
 import { AttendanceRecord, AttendanceSession, AttendanceStatus } from "./attendance.entity";
 
 export interface CheckPayload {
@@ -15,7 +17,9 @@ export class AttendanceService {
     @InjectRepository(AttendanceSession)
     private readonly sessionRepo: Repository<AttendanceSession>,
     @InjectRepository(AttendanceRecord)
-    private readonly recordRepo: Repository<AttendanceRecord>
+    private readonly recordRepo: Repository<AttendanceRecord>,
+    @InjectRepository(Member)
+    private readonly memberRepo: Repository<Member>
   ) {}
 
   // ── 세션 ──────────────────────────────────────────────────────
@@ -60,9 +64,25 @@ export class AttendanceService {
         checkedBy,
       })
     );
-    await this.recordRepo.upsert(entities, {
-      conflictPaths: ["sessionId", "memberId", "date"],
-    });
+    // upsert()는 기존 행 갱신 시 entity id 반환 문제로 실패 — orUpdate + updateEntity(false) 사용
+    await this.recordRepo
+      .createQueryBuilder()
+      .insert()
+      .values(entities)
+      .orUpdate(["status", "checkedBy"], ["sessionId", "memberId", "date"])
+      .updateEntity(false)
+      .execute();
+
+    // 장기결석 교인이 출석하면 자동으로 '출석' 상태 복귀 (잃은 양이 돌아온 순간)
+    const presentIds = payload.records
+      .filter((r) => (r.status ?? "present") !== "absent")
+      .map((r) => r.memberId);
+    if (presentIds.length > 0) {
+      await this.memberRepo.update(
+        { id: In(presentIds), status: "absent_long" },
+        { status: "active" }
+      );
+    }
     return { saved: entities.length };
   }
 

@@ -14,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Banknote, CheckCircle2, HandCoins, Plus, Undo2 } from "lucide-react";
+import { Banknote, CheckCircle2, HandCoins, Plus, Printer, Trash2, Undo2 } from "lucide-react";
+import { ConfirmDialog, ReasonDialog } from "@/components/ReasonDialog";
 
 type Account = { id: number; name: string; kind: "income" | "expense" };
 type Batch = {
@@ -56,6 +57,8 @@ export default function AdminFinanceOfferings() {
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [startForm, setStartForm] = useState({ date: today(), serviceType: "주일예배", counters: "" });
   const [sheetTarget, setSheetTarget] = useState<number | null>(null);
+  const [voidTarget, setVoidTarget] = useState<number | null>(null);
+  const [discardTarget, setDiscardTarget] = useState<Batch | null>(null);
 
   // 계수 입력 폼
   const [accountId, setAccountId] = useState<number | null>(null);
@@ -90,7 +93,8 @@ export default function AdminFinanceOfferings() {
           `/members?limit=6&query=${encodeURIComponent(donorQuery)}`
         );
       } catch {
-        return { items: [] as MemberOption[] };
+        // 재적 미구독/권한 없음 — 이름 직접 기록으로 동작 (안내만)
+        return { items: [] as MemberOption[], unavailable: true } as never;
       }
     },
     enabled: donorQuery.length >= 1 && !selectedMember,
@@ -168,6 +172,16 @@ export default function AdminFinanceOfferings() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const discardMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/finance/offering-batches/${id}`),
+    onSuccess: () => {
+      toast.success("계수 세션이 폐기되었습니다");
+      setActiveBatch(null);
+      invalidate();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const confirmMutation = useMutation({
     mutationFn: (id: number) => api.post(`/finance/offering-batches/${id}/confirm`),
     onSuccess: () => {
@@ -204,10 +218,10 @@ export default function AdminFinanceOfferings() {
             </h1>
             <p className="text-muted-foreground">봉투 순서대로 입력하고 Enter를 누르세요</p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-lg font-bold">{won(runningTotal)}</span>
-            <Button variant="outline" onClick={() => setActiveBatch(null)}>나가기</Button>
-            <Button onClick={() => setSheetTarget(activeBatch.id)}>
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+            <span className="mr-auto text-lg font-bold sm:mr-0">{won(runningTotal)}</span>
+            <Button variant="outline" size="sm" onClick={() => setActiveBatch(null)}>나가기</Button>
+            <Button size="sm" onClick={() => setSheetTarget(activeBatch.id)}>
               <CheckCircle2 className="mr-2 h-4 w-4" /> 계수 완료
             </Button>
           </div>
@@ -351,10 +365,7 @@ export default function AdminFinanceOfferings() {
                       variant="ghost"
                       className="h-7 w-7 p-0 text-muted-foreground"
                       title="취소 (사유 필요)"
-                      onClick={() => {
-                        const reason = prompt("취소 사유를 입력해주세요 (기록에 남습니다)");
-                        if (reason) voidMutation.mutate({ id: e.id, reason });
-                      }}
+                      onClick={() => setVoidTarget(e.id)}
                     >
                       <Undo2 className="h-3.5 w-3.5" />
                     </Button>
@@ -365,6 +376,15 @@ export default function AdminFinanceOfferings() {
           </Card>
         </div>
 
+        <ReasonDialog
+          open={voidTarget !== null}
+          title="헌금 기록 취소"
+          description="취소 사유는 감사 기록에 남습니다. 정정이 필요하면 취소 후 다시 입력하세요."
+          submitLabel="취소 처리"
+          destructive
+          onSubmit={(reason) => voidTarget && voidMutation.mutate({ id: voidTarget, reason })}
+          onClose={() => setVoidTarget(null)}
+        />
         <SheetDialog
           sheet={sheet}
           open={sheetTarget !== null}
@@ -408,7 +428,7 @@ export default function AdminFinanceOfferings() {
               <HandCoins className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{b.date} {b.serviceType}</span>
+                  <span className="font-medium"><span className="whitespace-nowrap">{b.date}</span> {b.serviceType}</span>
                   <Badge variant={b.status === "confirmed" ? "outline" : "default"}>
                     {b.status === "confirmed" ? "확정됨" : "계수 중"}
                   </Badge>
@@ -422,7 +442,18 @@ export default function AdminFinanceOfferings() {
               )}
               <div className="flex gap-2">
                 {b.status === "counting" ? (
-                  <Button size="sm" onClick={() => setActiveBatch(b)}>이어서 입력</Button>
+                  <>
+                    <Button size="sm" onClick={() => setActiveBatch(b)}>이어서 입력</Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground"
+                      title="세션 폐기 (입력 내역 포함 삭제)"
+                      onClick={() => setDiscardTarget(b)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
                 ) : (
                   <Button size="sm" variant="outline" onClick={() => setSheetTarget(b.id)}>
                     계수표
@@ -478,8 +509,59 @@ export default function AdminFinanceOfferings() {
       </Dialog>
 
       <SheetDialog sheet={sheet} open={sheetTarget !== null} onClose={() => setSheetTarget(null)} />
+      <ConfirmDialog
+        open={discardTarget !== null}
+        title="계수 세션 폐기"
+        description={
+          discardTarget
+            ? `${discardTarget.date} ${discardTarget.serviceType} 세션과 입력된 내역이 모두 삭제됩니다. 되돌릴 수 없습니다.`
+            : undefined
+        }
+        confirmLabel="폐기"
+        destructive
+        onConfirm={() => discardTarget && discardMutation.mutate(discardTarget.id)}
+        onClose={() => setDiscardTarget(null)}
+      />
     </div>
   );
+}
+
+function escHtml(v: string): string {
+  return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** 계수표 인쇄 — 계수자 서명란 포함 (실물 보관용) */
+function printSheet(sheet: Sheet) {
+  const rows = sheet.byAccount
+    .map(
+      (r) =>
+        `<tr><td style="border:1px solid #999;padding:6px 10px;">${escHtml(r.accountName)}</td><td style="border:1px solid #999;padding:6px 10px;text-align:right;">${r.count}건</td><td style="border:1px solid #999;padding:6px 10px;text-align:right;">${r.total.toLocaleString("ko-KR")}원</td></tr>`
+    )
+    .join("");
+  const methods = sheet.byMethod
+    .map((m) => `${METHOD_LABELS[m.method as keyof typeof METHOD_LABELS] ?? m.method} ${m.total.toLocaleString("ko-KR")}원`)
+    .join(" · ");
+  const counters = (sheet.batch.counters ?? [])
+    .map((name) => `<span style="display:inline-block;min-width:160px;margin-right:24px;">${escHtml(name)}: ______________ (서명)</span>`)
+    .join("");
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>계수표 ${sheet.batch.date}</title></head>
+<body style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:40px auto;color:#111;">
+  <h1 style="text-align:center;letter-spacing:6px;">헌금 계수표</h1>
+  <p style="text-align:center;">${sheet.batch.date} ${escHtml(sheet.batch.serviceType)}</p>
+  <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+    <tr><th style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">헌금 종류</th><th style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">건수</th><th style="border:1px solid #999;padding:6px 10px;background:#f5f5f5;">금액</th></tr>
+    ${rows}
+    <tr><td style="border:1px solid #999;padding:8px 10px;font-weight:bold;">합계</td><td style="border:1px solid #999;"></td><td style="border:1px solid #999;padding:8px 10px;text-align:right;font-weight:bold;">${sheet.grandTotal.toLocaleString("ko-KR")}원</td></tr>
+  </table>
+  <p>지급 방법별: ${methods || "-"}</p>
+  <p style="margin-top:40px;">계수자 확인</p>
+  <p style="margin-top:16px;">${counters || "______________ (서명) &nbsp;&nbsp; ______________ (서명)"}</p>
+  <script>window.onload = () => window.print();</script>
+</body></html>`;
+  const w = window.open("", "_blank", "width=720,height=900");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
 }
 
 /** 계수표 다이얼로그 — 확정 전이면 확정 버튼 포함 */
@@ -534,6 +616,11 @@ function SheetDialog({
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>닫기</Button>
+          {sheet && (
+            <Button variant="outline" onClick={() => printSheet(sheet)}>
+              <Printer className="mr-2 h-4 w-4" /> 인쇄
+            </Button>
+          )}
           {onConfirm && (
             <Button onClick={onConfirm}>
               <CheckCircle2 className="mr-2 h-4 w-4" /> 이 금액으로 확정

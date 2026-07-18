@@ -17,6 +17,7 @@ import AdminMemberGroups from "./pages/admin/MemberGroups";
 import AdminMemberAttendance from "./pages/admin/MemberAttendance";
 import AdminMemberNewcomers from "./pages/admin/MemberNewcomers";
 import AdminMemberVisitations from "./pages/admin/MemberVisitations";
+import AdminFinanceDashboard from "./pages/admin/FinanceDashboard";
 import AdminFinanceOfferings from "./pages/admin/FinanceOfferings";
 import AdminFinanceLedger from "./pages/admin/FinanceLedger";
 import AdminFinanceSettings from "./pages/admin/FinanceSettings";
@@ -98,6 +99,9 @@ function Router() {
       </Route>
       <Route path="/admin/content-pages">
         <DashboardLayout><AdminContentPages /></DashboardLayout>
+      </Route>
+      <Route path="/admin/finance">
+        <DashboardLayout><AdminFinanceDashboard /></DashboardLayout>
       </Route>
       <Route path="/admin/finance/offerings">
         <DashboardLayout><AdminFinanceOfferings /></DashboardLayout>

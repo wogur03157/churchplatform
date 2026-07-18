@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Download, FileCheck2, Printer, ScrollText } from "lucide-react";
+import { ConfirmDialog } from "@/components/ReasonDialog";
 
 type AggregateRow = {
   memberId: number;
@@ -98,6 +99,7 @@ export default function AdminFinanceReceipts() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [rrnDrafts, setRrnDrafts] = useState<Map<number, string>>(new Map());
   const [org, setOrg] = useState<{ orgName: string; orgTaxId: string } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Receipt | null>(null);
 
   const { data: aggregate = [] } = useQuery({
     queryKey: ["receipt-aggregate", year],
@@ -345,10 +347,7 @@ export default function AdminFinanceReceipts() {
                       size="sm"
                       variant="ghost"
                       className="text-muted-foreground"
-                      onClick={() => {
-                        if (confirm("이 영수증을 취소하시겠습니까? 취소 후 재발급할 수 있습니다."))
-                          cancelMutation.mutate(r.id);
-                      }}
+                      onClick={() => setCancelTarget(r)}
                     >
                       취소
                     </Button>
@@ -359,6 +358,19 @@ export default function AdminFinanceReceipts() {
           ))}
         </CardContent>
       </Card>
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        title="영수증 취소"
+        description={
+          cancelTarget
+            ? `${cancelTarget.receiptNo} (${cancelTarget.donorName})를 취소합니다. 대장에는 취소 기록이 남고, 재발급할 수 있습니다.`
+            : undefined
+        }
+        confirmLabel="취소"
+        destructive
+        onConfirm={() => cancelTarget && cancelMutation.mutate(cancelTarget.id)}
+        onClose={() => setCancelTarget(null)}
+      />
     </div>
   );
 }

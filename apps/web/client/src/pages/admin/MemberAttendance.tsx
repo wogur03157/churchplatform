@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CalendarCheck, Check, Save } from "lucide-react";
+import { CalendarCheck, Check } from "lucide-react";
 
 type Session = { id: number; name: string; displayOrder: number };
 type Member = { id: number; name: string; status: string };
@@ -21,13 +21,18 @@ type AttendanceRecord = { memberId: number; status: "present" | "absent" | "onli
 type StatRow = { date: string; sessionId: number; presentCount: number };
 
 const today = () => new Date().toISOString().slice(0, 10);
+/** 가장 가까운 주일(오늘이 일요일이면 오늘) — 예배 출석은 주일 기준이 기본 */
+const lastSunday = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay());
+  return d.toISOString().slice(0, 10);
+};
 
 export default function AdminMemberAttendance() {
   const queryClient = useQueryClient();
   const [sessionId, setSessionId] = useState<string>("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(lastSunday());
   const [checked, setChecked] = useState<Map<number, AttendanceRecord["status"]>>(new Map());
-  const [dirty, setDirty] = useState(false);
 
   const { data: sessionsData } = useQuery({
     queryKey: ["attendance-sessions"],
@@ -44,9 +49,12 @@ export default function AdminMemberAttendance() {
 
   const { data: memberList } = useQuery({
     queryKey: ["members", "attendance-roster"],
-    queryFn: () => api.get<{ items: Member[] }>("/members?status=active&limit=100"),
+    queryFn: () => api.get<{ items: Member[] }>("/members?limit=1000"),
   });
-  const members = memberList?.items ?? [];
+  // 출석 + 장기결석 교인만 (장기결석자가 다시 나오면 체크 → 자동 복귀)
+  const members = (memberList?.items ?? []).filter(
+    (m) => m.status === "active" || m.status === "absent_long"
+  );
 
   const { data: recordsData } = useQuery({
     queryKey: ["attendance-records", sessionId, date],
@@ -58,8 +66,7 @@ export default function AdminMemberAttendance() {
   // 서버 기록 → 체크 상태 초기화 (기본값 []를 deps에 넣으면 무한루프 — 쿼리 결과 원본만 사용)
   useEffect(() => {
     if (!recordsData) return;
-    setChecked(new Map(recordsData.map((r) => [r.memberId, r.status])));
-    setDirty(false);
+    setChecked(new Map(recordsData.filter((r) => r.status !== "absent").map((r) => [r.memberId, r.status])));
   }, [recordsData]);
 
   const { data: stats = [] } = useQuery({
@@ -74,28 +81,37 @@ export default function AdminMemberAttendance() {
     enabled: !!sessionId,
   });
 
-  const saveMutation = useMutation({
-    mutationFn: () =>
+  // 탭 즉시 저장 — 별도 저장 버튼 없이 누르는 순간 기록된다 (해제는 absent로 upsert)
+  const checkMutation = useMutation({
+    mutationFn: ({ memberId, status }: { memberId: number; status: AttendanceRecord["status"] | "absent" }) =>
       api.post("/members/attendance/check", {
         sessionId: parseInt(sessionId),
         date,
-        records: Array.from(checked.entries()).map(([memberId, status]) => ({ memberId, status })),
+        records: [{ memberId, status }],
       }),
-    onSuccess: () => {
-      toast.success("출석이 저장되었습니다");
-      setDirty(false);
-      queryClient.invalidateQueries({ queryKey: ["attendance-records"] });
+    onError: (err: Error, variables) => {
+      toast.error(`저장 실패: ${err.message}`);
+      // 실패 시 롤백
+      setChecked((prev) => {
+        const next = new Map(prev);
+        if (variables.status === "absent") next.set(variables.memberId, "present");
+        else next.delete(variables.memberId);
+        return next;
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance-stats"] });
     },
-    onError: (err: Error) => toast.error(`저장 실패: ${err.message}`),
   });
 
   const toggle = (memberId: number) => {
+    if (!sessionId) return toast.error("예배를 먼저 선택해주세요");
     const next = new Map(checked);
-    if (next.has(memberId)) next.delete(memberId);
+    const wasChecked = next.has(memberId);
+    if (wasChecked) next.delete(memberId);
     else next.set(memberId, "present");
     setChecked(next);
-    setDirty(true);
+    checkMutation.mutate({ memberId, status: wasChecked ? "absent" : "present" });
   };
 
   const presentCount = useMemo(
@@ -110,10 +126,9 @@ export default function AdminMemberAttendance() {
           <h1 className="text-2xl font-bold">출석 체크</h1>
           <p className="text-muted-foreground">예배·모임을 선택하고 이름을 탭하면 출석 처리됩니다</p>
         </div>
-        <Button onClick={() => saveMutation.mutate()} disabled={!dirty || !sessionId}>
-          <Save className="mr-2 h-4 w-4" />
-          저장 {dirty && `(${presentCount}명)`}
-        </Button>
+        <Badge variant="secondary" className="self-center text-sm">
+          자동 저장 — 탭하는 즉시 기록됩니다
+        </Badge>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -143,7 +158,7 @@ export default function AdminMemberAttendance() {
         <CardContent>
           {members.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              출석(active) 상태의 교인이 없습니다
+              출석 체크할 교인이 없습니다
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -161,6 +176,9 @@ export default function AdminMemberAttendance() {
                   >
                     {isPresent && <Check className="h-3.5 w-3.5" />}
                     {m.name}
+                    {m.status === "absent_long" && !isPresent && (
+                      <span className="text-[10px] text-amber-600">장기결석</span>
+                    )}
                   </button>
                 );
               })}

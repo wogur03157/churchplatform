@@ -62,6 +62,7 @@ const NAV_ITEMS = [
   { icon: Sprout, label: "새가족 정착", path: "/admin/members/newcomers", permKey: "members", service: "members" },
   { icon: HeartHandshake, label: "심방 관리", path: "/admin/members/visitations", permKey: "members", service: "members" },
   // 재정 서비스
+  { icon: LayoutDashboard, label: "재정 현황", path: "/admin/finance", permKey: "finance", service: "finance" },
   { icon: HandCoins, label: "헌금 계수", path: "/admin/finance/offerings", permKey: "finance", service: "finance" },
   { icon: ClipboardList, label: "지출결의", path: "/admin/finance/expenses", permKey: "finance", service: "finance" },
   { icon: PiggyBank, label: "예산", path: "/admin/finance/budget", permKey: "finance", service: "finance" },

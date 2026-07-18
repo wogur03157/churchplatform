@@ -92,6 +92,27 @@ export class OfferingsService {
     return batch;
   }
 
+  /**
+   * 계수 세션 폐기 — 확정 전(counting)만 가능. 세션과 그 안의 입력을 함께 삭제한다.
+   * (확정 전 기록은 아직 원장이 아니므로 물리 삭제 허용 — 폐기 사실은 감사 로그에 남김)
+   */
+  async discardBatch(id: number, actorUserId: number): Promise<void> {
+    const batch = await this.batchRepo.findOne({ where: { id } });
+    if (!batch) throw new NotFoundException("계수 세션을 찾을 수 없습니다");
+    if (batch.status !== "counting") {
+      throw new BadRequestException("확정된 세션은 폐기할 수 없습니다");
+    }
+    const { affected } = await this.offeringRepo.delete({ batchId: id });
+    await this.batchRepo.remove(batch);
+    await this.audit.log({
+      actorUserId,
+      action: "discard",
+      targetType: "offering_batch",
+      targetId: id,
+      detail: { date: batch.date, serviceType: batch.serviceType, removedEntries: affected ?? 0 },
+    });
+  }
+
   /** 계수표 데이터 — 종류별/방법별 합계 */
   async batchSheet(id: number) {
     const batch = await this.batchRepo.findOne({ where: { id } });

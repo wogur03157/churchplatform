@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle2, ClipboardList, Paperclip, Plus, XCircle } from "lucide-react";
+import { ReasonDialog } from "@/components/ReasonDialog";
 
 type Department = { id: number; name: string };
 type Account = { id: number; name: string; kind: string; departmentId: number | null };
@@ -80,6 +81,7 @@ export default function AdminFinanceExpenses() {
   const [payTarget, setPayTarget] = useState<Expense | null>(null);
   const [payForm, setPayForm] = useState({ paidAt: new Date().toISOString().slice(0, 10), paidMethod: "transfer" as const });
   const [attachTarget, setAttachTarget] = useState<Expense | null>(null);
+  const [reasonTarget, setReasonTarget] = useState<{ id: number; action: "reject" | "void" } | null>(null);
 
   const { from, to } = monthRange();
 
@@ -250,10 +252,7 @@ export default function AdminFinanceExpenses() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        const comment = prompt("반려 사유를 입력해주세요");
-                        if (comment) actionMutation.mutate({ id: e.id, action: "reject", body: { comment } });
-                      }}
+                      onClick={() => setReasonTarget({ id: e.id, action: "reject" })}
                     >
                       <XCircle className="mr-1 h-4 w-4" /> 반려
                     </Button>
@@ -266,10 +265,7 @@ export default function AdminFinanceExpenses() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => {
-                      const reason = prompt("취소 사유를 입력해주세요");
-                      if (reason) actionMutation.mutate({ id: e.id, action: "void", body: { reason } });
-                    }}
+                    onClick={() => setReasonTarget({ id: e.id, action: "void" })}
                   >
                     취소
                   </Button>
@@ -404,6 +400,27 @@ export default function AdminFinanceExpenses() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ReasonDialog
+        open={reasonTarget !== null}
+        title={reasonTarget?.action === "reject" ? "결의서 반려" : "결의서 취소"}
+        description={
+          reasonTarget?.action === "reject"
+            ? "반려 사유는 기안자에게 표시되고 기록에 남습니다."
+            : "취소 사유는 기록에 남습니다."
+        }
+        submitLabel={reasonTarget?.action === "reject" ? "반려" : "취소 처리"}
+        destructive
+        onSubmit={(text) => {
+          if (!reasonTarget) return;
+          actionMutation.mutate({
+            id: reasonTarget.id,
+            action: reasonTarget.action,
+            body: reasonTarget.action === "reject" ? { comment: text } : { reason: text },
+          });
+        }}
+        onClose={() => setReasonTarget(null)}
+      />
 
       {/* 첨부 보기 다이얼로그 */}
       <Dialog open={attachTarget !== null} onOpenChange={(o) => !o && setAttachTarget(null)}>

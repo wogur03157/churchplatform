@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Plus, Sprout, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ReasonDialog";
 
 type Card_ = {
   id: number;
@@ -40,6 +41,7 @@ type MemberOption = { id: number; name: string };
 export default function AdminMemberNewcomers() {
   const queryClient = useQueryClient();
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<number | null>(null);
   const [memberSearch, setMemberSearch] = useState("");
   const [noteTarget, setNoteTarget] = useState<Card_ | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
@@ -189,7 +191,7 @@ export default function AdminMemberNewcomers() {
                         variant="ghost"
                         className="h-7 w-7 p-0 text-muted-foreground"
                         onClick={() => {
-                          if (confirm("이 카드를 삭제하시겠습니까?")) removeMutation.mutate(card.id);
+                          setRemoveTarget(card.id);
                         }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -258,6 +260,15 @@ export default function AdminMemberNewcomers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={removeTarget !== null}
+        title="새가족 카드 삭제"
+        description="파이프라인에서 카드만 제거됩니다. 교인 정보는 유지됩니다."
+        confirmLabel="삭제"
+        destructive
+        onConfirm={() => removeTarget && removeMutation.mutate(removeTarget)}
+        onClose={() => setRemoveTarget(null)}
+      />
     </div>
   );
 }

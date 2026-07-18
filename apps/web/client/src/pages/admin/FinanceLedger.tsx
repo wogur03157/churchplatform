@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Lock, LockOpen, ReceiptText, Undo2 } from "lucide-react";
+import { ConfirmDialog, ReasonDialog } from "@/components/ReasonDialog";
 
 type Account = { id: number; name: string };
 type Offering = {
@@ -39,6 +40,8 @@ export default function AdminFinanceLedger() {
   const queryClient = useQueryClient();
   const [{ from, to }, setRange] = useState(monthRange());
   const [showVoided, setShowVoided] = useState(false);
+  const [voidTarget, setVoidTarget] = useState<number | null>(null);
+  const [lockConfirm, setLockConfirm] = useState<{ month: number; lockId: number | null } | null>(null);
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["finance-accounts", "income"],
@@ -150,13 +153,7 @@ export default function AdminFinanceLedger() {
               return (
                 <button
                   key={month}
-                  onClick={() => {
-                    if (lock) {
-                      if (confirm(`${month}월 마감을 해제하시겠습니까?`)) unlockMutation.mutate(lock.id);
-                    } else if (confirm(`${month}월을 마감하시겠습니까? 해당 월 기록이 잠깁니다.`)) {
-                      lockMutation.mutate(month);
-                    }
-                  }}
+                  onClick={() => setLockConfirm({ month, lockId: lock?.id ?? null })}
                   className={`flex flex-col items-center gap-1 rounded-lg border px-2 py-2.5 text-sm transition-colors ${
                     lock ? "border-primary bg-primary/10 font-medium" : "hover:bg-accent"
                   }`}
@@ -201,24 +198,52 @@ export default function AdminFinanceLedger() {
                   <Badge variant="destructive" className="text-[10px]">취소: {o.voidReason}</Badge>
                 )}
               </div>
-              {o.status === "confirmed" && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0 text-muted-foreground"
-                  title="취소 (사유 필요)"
-                  onClick={() => {
-                    const reason = prompt("취소 사유를 입력해주세요 (기록에 남습니다)");
-                    if (reason) voidMutation.mutate({ id: o.id, reason });
-                  }}
-                >
-                  <Undo2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
+              {o.status === "confirmed" && (() => {
+                const locked = lockOf(parseInt(o.date.slice(5, 7))) !== null;
+                return (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0 text-muted-foreground disabled:opacity-30"
+                    disabled={locked}
+                    title={locked ? "마감된 월 — 해제 후 취소할 수 있습니다" : "취소 (사유 필요)"}
+                    onClick={() => setVoidTarget(o.id)}
+                  >
+                    <Undo2 className="h-3.5 w-3.5" />
+                  </Button>
+                );
+              })()}
             </div>
           ))}
         </CardContent>
       </Card>
+
+      <ReasonDialog
+        open={voidTarget !== null}
+        title="헌금 기록 취소"
+        description="취소 사유는 감사 기록에 남습니다. 정정이 필요하면 취소 후 다시 입력하세요."
+        submitLabel="취소 처리"
+        destructive
+        onSubmit={(reason) => voidTarget && voidMutation.mutate({ id: voidTarget, reason })}
+        onClose={() => setVoidTarget(null)}
+      />
+      <ConfirmDialog
+        open={lockConfirm !== null}
+        title={lockConfirm?.lockId ? `${lockConfirm.month}월 마감 해제` : `${lockConfirm?.month}월 마감`}
+        description={
+          lockConfirm?.lockId
+            ? "해제하면 해당 월 기록을 다시 수정할 수 있습니다. 해제 이력은 기록에 남습니다."
+            : "마감하면 해당 월의 헌금 입력·취소·지급이 잠깁니다."
+        }
+        confirmLabel={lockConfirm?.lockId ? "해제" : "마감"}
+        destructive={!!lockConfirm?.lockId}
+        onConfirm={() => {
+          if (!lockConfirm) return;
+          if (lockConfirm.lockId) unlockMutation.mutate(lockConfirm.lockId);
+          else lockMutation.mutate(lockConfirm.month);
+        }}
+        onClose={() => setLockConfirm(null)}
+      />
     </div>
   );
 }
