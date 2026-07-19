@@ -121,6 +121,9 @@ export default function AdminMemberAttendance() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance-stats"] });
+      // 출석 체크는 장기결석자를 출석으로 자동 복귀시키므로 명단·요약도 갱신한다
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["members-dashboard"] });
     },
   });
 

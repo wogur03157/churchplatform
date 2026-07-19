@@ -9,6 +9,13 @@ interface UseCRUDOptions {
   path: string;
   /** 토스트 메시지에 사용할 엔티티 이름, 예: "영상" */
   entityName: string;
+  /**
+   * 함께 무효화할 다른 쿼리키 루트들.
+   * queryKey 접두사 매칭은 첫 요소가 정확히 같아야 하므로("members-dashboard"는
+   * "members"로 매칭되지 않음), 요약·집계처럼 별도 키를 쓰는 쿼리는 여기에 적어야
+   * 수정 직후 화면 숫자가 갱신됩니다.
+   */
+  alsoInvalidate?: string[];
   /** 생성·수정 성공 후 호출됩니다 (다이얼로그 닫기, 폼 초기화 등) */
   onSuccess?: () => void;
 }
@@ -23,10 +30,19 @@ interface UseCRUDOptions {
  *     onSuccess: () => { resetForm(); setDialogOpen(false); },
  *   });
  */
-export function useCRUD({ queryKey, path, entityName, onSuccess }: UseCRUDOptions) {
+export function useCRUD({
+  queryKey,
+  path,
+  entityName,
+  alsoInvalidate,
+  onSuccess,
+}: UseCRUDOptions) {
   const queryClient = useQueryClient();
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: [queryKey] });
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: [queryKey] });
+    alsoInvalidate?.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: unknown) => api.post(`/${path}`, data),

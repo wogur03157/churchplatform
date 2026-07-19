@@ -155,6 +155,8 @@ export default function AdminMembers() {
     queryKey: "members",
     path: "members",
     entityName: "교인",
+    // 상태(출석·장기결석 등)를 바꾸면 요약 카드·재적 현황 숫자도 함께 갱신돼야 한다
+    alsoInvalidate: ["members-dashboard"],
     onSuccess: closeAll,
   });
 

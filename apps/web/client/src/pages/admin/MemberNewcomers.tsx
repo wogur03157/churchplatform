@@ -60,7 +60,11 @@ export default function AdminMemberNewcomers() {
     enabled: isAddOpen,
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["newcomers"] });
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["newcomers"] });
+    // 새가족 단계 변화는 재적 현황의 정착 단계 집계에도 반영돼야 한다
+    queryClient.invalidateQueries({ queryKey: ["members-dashboard"] });
+  };
 
   const addMutation = useMutation({
     mutationFn: (memberId: number) => api.post("/members/newcomers", { memberId }),
