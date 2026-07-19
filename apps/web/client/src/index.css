@@ -25,6 +25,23 @@
   --color-accent-gold: #facc15;
   --color-border: #e2e8f0;
   --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
+  --color-input: #e2e8f0;
+  --color-ring: #002147;
+
+  /* 사이드바 (모바일 Sheet 포함) — 미정의 시 배경·글자색이 빠져 오버레이 위에서 안 보인다 */
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #020617;
+  --color-sidebar-primary: #002147;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f1f5f9;
+  --color-sidebar-accent-foreground: #0f172a;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #002147;
 }
 
 :root {
@@ -47,6 +64,22 @@
   --color-muted-foreground: #94a3b8;
   --color-border: rgba(255, 255, 255, 0.1);
   --color-secondary: #1e293b;
+  --color-secondary-foreground: #f8fafc;
+  --color-accent: #1e293b;
+  --color-accent-foreground: #f8fafc;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #f8fafc;
+  --color-input: rgba(255, 255, 255, 0.15);
+  --color-ring: #facc15;
+
+  --color-sidebar: #0f172a;
+  --color-sidebar-foreground: #f8fafc;
+  --color-sidebar-primary: #facc15;
+  --color-sidebar-primary-foreground: #020617;
+  --color-sidebar-accent: #1e293b;
+  --color-sidebar-accent-foreground: #f8fafc;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-ring: #facc15;
 }
 
 @layer base {

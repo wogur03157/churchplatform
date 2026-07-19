@@ -172,7 +172,26 @@ export default function AdminMemberVisitations() {
                 ) : null}
               </div>
               <div className="flex shrink-0 gap-2">
-                {v.status !== "done" && v.status !== "canceled" && (
+                {v.status === "done" ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setRecordTarget(v);
+                      setRecordDraft(v.content ?? "");
+                    }}
+                  >
+                    기록 보기·수정
+                  </Button>
+                ) : v.status === "canceled" ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => updateMutation.mutate({ id: v.id, status: "requested" })}
+                  >
+                    되돌리기
+                  </Button>
+                ) : (
                   <>
                     <Button
                       size="sm"
@@ -279,14 +298,19 @@ export default function AdminMemberVisitations() {
         </DialogContent>
       </Dialog>
 
-      {/* 기록 작성 다이얼로그 (교역자 권한 필요 — 권한 없으면 서버가 403) */}
+      {/* 기록 작성·수정 다이얼로그 (교역자 권한 필요 — 권한 없으면 서버가 403) */}
       <Dialog open={recordTarget !== null} onOpenChange={(open) => !open && setRecordTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>심방 기록 작성</DialogTitle>
+            <DialogTitle>
+              {recordTarget?.status === "done" ? "심방 기록 (완료됨)" : "심방 기록 작성"}
+            </DialogTitle>
           </DialogHeader>
           <p className="text-xs text-muted-foreground">
             기록은 교역자(members_sensitive) 권한자만 작성·열람할 수 있습니다.
+            {recordTarget?.status === "done"
+              ? " 완료 후에도 내용을 보완하거나 정정할 수 있습니다."
+              : " 다녀온 뒤 메모만 먼저 저장하고, 마무리될 때 완료 처리하세요."}
           </p>
           <Textarea
             rows={5}
@@ -294,16 +318,62 @@ export default function AdminMemberVisitations() {
             onChange={(e) => setRecordDraft(e.target.value)}
             placeholder="심방 내용, 기도제목 등"
           />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRecordTarget(null)}>취소</Button>
-            <Button
-              onClick={() =>
-                recordTarget &&
-                updateMutation.mutate({ id: recordTarget.id, content: recordDraft, status: "done" })
-              }
-            >
-              완료 처리 + 저장
-            </Button>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+            <div>
+              {recordTarget?.status === "done" && (
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={() =>
+                    recordTarget &&
+                    updateMutation.mutate({
+                      id: recordTarget.id,
+                      content: recordDraft,
+                      status: "assigned",
+                    })
+                  }
+                >
+                  완료 취소 (재오픈)
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setRecordTarget(null)}>닫기</Button>
+              {recordTarget?.status === "done" ? (
+                <Button
+                  onClick={() =>
+                    recordTarget &&
+                    updateMutation.mutate({ id: recordTarget.id, content: recordDraft })
+                  }
+                >
+                  기록 저장
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      recordTarget &&
+                      updateMutation.mutate({ id: recordTarget.id, content: recordDraft })
+                    }
+                  >
+                    저장
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      recordTarget &&
+                      updateMutation.mutate({
+                        id: recordTarget.id,
+                        content: recordDraft,
+                        status: "done",
+                      })
+                    }
+                  >
+                    완료 처리
+                  </Button>
+                </>
+              )}
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

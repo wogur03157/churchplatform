@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCRUD } from "@/hooks/useCRUD";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Download, Edit, Plus, Trash2, Upload, Users } from "lucide-react";
+import { Camera, Download, Edit, Link2, Plus, Trash2, Unlink, Upload, Users, X } from "lucide-react";
 
 type Member = {
   id: number;
@@ -38,6 +38,16 @@ type Member = {
   status: string;
   registeredAt: string | null;
   memo: string | null;
+  photoUrl: string | null;
+  familyId: number | null;
+  familyRole: string | null;
+};
+
+type FamilyDetail = {
+  id: number;
+  label: string | null;
+  headMemberId: number | null;
+  members: Member[];
 };
 
 type Position = { id: number; name: string };
@@ -55,6 +65,14 @@ const STATUS_LABELS: Record<string, string> = {
   transferred: "이명",
   deceased: "별세",
   removed: "제적",
+};
+
+const FAMILY_ROLE_LABELS: Record<string, string> = {
+  head: "가장",
+  spouse: "배우자",
+  child: "자녀",
+  parent: "부모",
+  etc: "기타",
 };
 
 const BAPTISM_LABELS: Record<string, string> = {
@@ -86,10 +104,33 @@ const EMPTY_FORM = {
   status: "active",
   registeredAt: "",
   memo: "",
+  familyRole: "",
 };
 
+/** 인증 쿠키로 접근하는 사진 URL — v로 업로드 직후 캐시 무효화 */
+const photoSrc = (id: number, v: number) => `/api/members/${id}/photo?v=${v}`;
+
+function MemberAvatar({ member, version, size = "h-9 w-9" }: { member: Member; version: number; size?: string }) {
+  if (member.photoUrl) {
+    return (
+      <img
+        src={photoSrc(member.id, version)}
+        alt={member.name}
+        className={`${size} shrink-0 rounded-full object-cover border`}
+      />
+    );
+  }
+  return (
+    <div className={`${size} shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium`}>
+      {member.name.slice(0, 1)}
+    </div>
+  );
+}
+
 export default function AdminMembers() {
+  const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Member | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -97,11 +138,14 @@ export default function AdminMembers() {
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [photoVersion, setPhotoVersion] = useState(() => Date.now());
+  const [familySearch, setFamilySearch] = useState("");
 
   const closeAll = () => {
     setIsCreateOpen(false);
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    setFamilySearch("");
   };
 
   const { createMutation, updateMutation, confirmDelete } = useCRUD({
@@ -153,9 +197,128 @@ export default function AdminMembers() {
       status: member.status,
       registeredAt: member.registeredAt ?? "",
       memo: member.memo ?? "",
+      familyRole: member.familyRole ?? "",
     });
+    setFamilySearch("");
     setEditTarget(member);
   };
+
+  // ── 사진 ──
+  const refreshAfterPhoto = () => {
+    setPhotoVersion(Date.now());
+    queryClient.invalidateQueries({ queryKey: ["members"] });
+    queryClient.invalidateQueries({ queryKey: ["member-family"] });
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editTarget) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("사진은 JPG/PNG/WebP 형식만 가능합니다");
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        await api.post(`/members/${editTarget.id}/photo`, {
+          fileBase64: ev.target?.result as string,
+          mimeType: file.type,
+        });
+        toast.success("사진이 등록되었습니다");
+        setEditTarget({ ...editTarget, photoUrl: "uploaded" });
+        refreshAfterPhoto();
+      } catch (err: any) {
+        toast.error(err.message);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handlePhotoDelete = async () => {
+    if (!editTarget) return;
+    try {
+      await api.delete(`/members/${editTarget.id}/photo`);
+      toast.success("사진이 삭제되었습니다");
+      setEditTarget({ ...editTarget, photoUrl: null });
+      refreshAfterPhoto();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  // ── 가족 ──
+  const { data: family } = useQuery({
+    queryKey: ["member-family", editTarget?.familyId],
+    queryFn: () => api.get<FamilyDetail>(`/members/families/${editTarget!.familyId}`),
+    enabled: editTarget !== null && editTarget.familyId !== null,
+  });
+
+  const { data: familyCandidates = [] } = useQuery({
+    queryKey: ["members", "family-search", familySearch],
+    queryFn: () =>
+      api.get<{ items: Member[] }>(
+        `/members?query=${encodeURIComponent(familySearch)}&limit=8`
+      ),
+    select: (d) => d.items.filter((m) => m.id !== editTarget?.id),
+    enabled: editTarget !== null && familySearch.trim().length > 0,
+  });
+
+  const refreshFamily = () => {
+    queryClient.invalidateQueries({ queryKey: ["members"] });
+    queryClient.invalidateQueries({ queryKey: ["member-family"] });
+  };
+
+  /**
+   * 다른 교인과 가족으로 묶기.
+   * - 편집 중인 교인에게 가족이 있으면: 상대를 이 가족에 추가 (기존 가족 유지)
+   * - 없고 상대에게 가족이 있으면: 이 교인이 상대 가족에 합류
+   * - 둘 다 없으면: 새 가족을 만들고 함께 소속
+   */
+  const linkFamilyMutation = useMutation({
+    mutationFn: async (other: Member) => {
+      if (!editTarget) return;
+      if (editTarget.familyId) {
+        await api.patch(`/members/${other.id}`, {
+          familyId: editTarget.familyId,
+          familyRole: other.familyId ? other.familyRole : "etc",
+        });
+        return editTarget.familyId;
+      }
+      let familyId = other.familyId;
+      if (!familyId) {
+        const created = await api.post<{ id: number }>("/members/families", {
+          label: `${other.name} 가정`,
+          headMemberId: other.id,
+        });
+        familyId = created.id;
+      }
+      await api.patch(`/members/${editTarget.id}`, {
+        familyId,
+        familyRole: form.familyRole || "etc",
+      });
+      return familyId;
+    },
+    onSuccess: (familyId) => {
+      toast.success("가족으로 연결되었습니다");
+      if (editTarget && familyId) setEditTarget({ ...editTarget, familyId });
+      setFamilySearch("");
+      refreshFamily();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const unlinkFamilyMutation = useMutation({
+    mutationFn: () =>
+      api.patch(`/members/${editTarget!.id}`, { familyId: null, familyRole: null }),
+    onSuccess: () => {
+      toast.success("가족 관계가 해제되었습니다");
+      if (editTarget) setEditTarget({ ...editTarget, familyId: null, familyRole: null });
+      refreshFamily();
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   const buildPayload = () => ({
     name: form.name.trim(),
@@ -169,6 +332,7 @@ export default function AdminMembers() {
     status: form.status,
     registeredAt: form.registeredAt || null,
     memo: form.memo.trim() || null,
+    familyRole: form.familyRole || null,
   });
 
   const handleSubmit = () => {
@@ -220,6 +384,33 @@ export default function AdminMembers() {
       <DialogHeader>
         <DialogTitle>{editTarget ? "교인 정보 수정" : "새 교인 등록"}</DialogTitle>
       </DialogHeader>
+      {/* 사진 — 등록된 교인만 (id 필요) */}
+      {editTarget && (
+        <div className="flex items-center gap-4">
+          <MemberAvatar member={editTarget} version={photoVersion} size="h-20 w-20" />
+          <div className="space-y-1.5">
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant="outline" onClick={() => photoRef.current?.click()}>
+                <Camera className="mr-1 h-4 w-4" /> 사진 {editTarget.photoUrl ? "변경" : "등록"}
+              </Button>
+              {editTarget.photoUrl && (
+                <Button type="button" size="sm" variant="ghost" onClick={handlePhotoDelete}>
+                  <X className="mr-1 h-4 w-4" /> 삭제
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">JPG/PNG/WebP, 5MB 이하</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
           <Label>이름 *</Label>
@@ -293,6 +484,102 @@ export default function AdminMembers() {
           <Textarea value={form.memo} onChange={(e) => set("memo", e.target.value)} rows={2} />
         </div>
       </div>
+
+      {/* 가족 — 등록된 교인만 */}
+      {editTarget && (
+        <div className="space-y-3 rounded-lg border p-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <Users className="h-4 w-4" /> 가족
+              {family?.label && <span className="text-muted-foreground font-normal">— {family.label}</span>}
+            </p>
+            {editTarget.familyId && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 text-muted-foreground"
+                onClick={() => unlinkFamilyMutation.mutate()}
+              >
+                <Unlink className="mr-1 h-3.5 w-3.5" /> 관계 해제
+              </Button>
+            )}
+          </div>
+
+          <div>
+            <Label className="text-xs">이 교인의 가족 내 관계</Label>
+            <Select value={form.familyRole} onValueChange={(v) => set("familyRole", v)}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="선택" /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(FAMILY_ROLE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {editTarget.familyId ? (
+            <div className="space-y-1">
+              {(family?.members ?? [])
+                .filter((m) => m.id !== editTarget.id)
+                .map((m) => (
+                  <div key={m.id} className="flex items-center gap-2 rounded-md border px-2 py-1.5 text-sm">
+                    <MemberAvatar member={m} version={photoVersion} size="h-7 w-7" />
+                    <span className="font-medium">{m.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {m.familyRole ? FAMILY_ROLE_LABELS[m.familyRole] ?? m.familyRole : "관계 미지정"}
+                    </Badge>
+                  </div>
+                ))}
+              {(family?.members ?? []).filter((m) => m.id !== editTarget.id).length === 0 && (
+                <p className="text-xs text-muted-foreground">아직 다른 구성원이 없습니다 — 아래에서 교인을 검색해 추가하세요</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">연결된 가족이 없습니다 — 교인을 검색해 가족으로 묶으세요</p>
+          )}
+
+          <div>
+            <Input
+              placeholder="이름으로 교인 검색 (가족 연결)"
+              value={familySearch}
+              onChange={(e) => setFamilySearch(e.target.value)}
+              className="h-9"
+            />
+            {familySearch.trim() && (
+              <div className="mt-1 space-y-1">
+                {familyCandidates.length === 0 && (
+                  <p className="px-1 text-xs text-muted-foreground">검색 결과가 없습니다</p>
+                )}
+                {familyCandidates.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    disabled={linkFamilyMutation.isPending || m.familyId === editTarget.familyId && editTarget.familyId !== null}
+                    onClick={() => linkFamilyMutation.mutate(m)}
+                    className="flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-sm hover:bg-accent disabled:opacity-50"
+                  >
+                    <MemberAvatar member={m} version={photoVersion} size="h-7 w-7" />
+                    <span className="flex-1">{m.name}</span>
+                    {m.familyId && editTarget.familyId === m.familyId ? (
+                      <span className="text-xs text-muted-foreground">이미 같은 가족</span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-xs text-primary">
+                        <Link2 className="h-3.5 w-3.5" />
+                        {editTarget.familyId
+                          ? "이 가족에 추가"
+                          : m.familyId
+                            ? "상대 가족에 합류"
+                            : "가족으로 묶기"}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <DialogFooter>
         <Button variant="outline" onClick={closeAll}>취소</Button>
         <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
@@ -405,12 +692,23 @@ export default function AdminMembers() {
                     onClick={() => openEdit(member)}
                   >
                     <td className="p-3 font-medium">
-                      {member.name}
-                      {member.gender && (
-                        <span className="ml-1 text-xs text-muted-foreground">
-                          ({member.gender === "m" ? "남" : "여"})
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2.5">
+                        <MemberAvatar member={member} version={photoVersion} />
+                        <div>
+                          {member.name}
+                          {member.gender && (
+                            <span className="ml-1 text-xs text-muted-foreground">
+                              ({member.gender === "m" ? "남" : "여"})
+                            </span>
+                          )}
+                          {member.familyId && (
+                            <span className="ml-1.5 inline-flex items-center text-xs text-muted-foreground">
+                              <Users className="mr-0.5 h-3 w-3" />
+                              가족
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="p-3 hidden md:table-cell">{member.phone ?? "-"}</td>
                     <td className="p-3 hidden lg:table-cell">{positionName(member.positionId)}</td>

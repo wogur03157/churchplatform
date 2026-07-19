@@ -13,7 +13,8 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Response } from "express";
+import type { Request, Response } from "express";
+import { Req } from "@nestjs/common";
 import { CurrentUser, PermissionGuard, RequirePermission } from "@platform/auth";
 import type { User } from "@platform/entities";
 import { MemberExcelService } from "./member-excel.service";
@@ -82,6 +83,7 @@ export class MembersController {
 
   @Post()
   async create(@Body() body: Partial<Member>, @CurrentUser() user: User) {
+    delete body.photoUrl; // 사진은 업로드 엔드포인트로만 설정
     const member = await this.service.create(body, user.id);
     return { success: true, id: member.id };
   }
@@ -92,7 +94,48 @@ export class MembersController {
     @Body() body: Partial<Member>,
     @CurrentUser() user: User
   ) {
+    delete body.photoUrl; // 사진은 업로드 엔드포인트로만 설정
     await this.service.update(id, body, user.id);
+    return { success: true };
+  }
+
+  // ── 사진 ────────────────────────────────────────────
+
+  @Post(":id(\\d+)/photo")
+  async uploadPhoto(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: { fileBase64?: string; mimeType?: string },
+    @CurrentUser() user: User,
+    @Req() req: Request
+  ) {
+    if (!body.fileBase64 || !body.mimeType) {
+      throw new BadRequestException("fileBase64와 mimeType이 필요합니다");
+    }
+    const fileKey = await this.service.setPhoto(
+      id,
+      { fileBase64: body.fileBase64, mimeType: body.mimeType },
+      user.id,
+      req.church?.slug
+    );
+    return { success: true, fileKey };
+  }
+
+  /** 사진 보기 — 인증 필수, 자기 교회 파일만 (img src로 사용) */
+  @Get(":id(\\d+)/photo")
+  async getPhoto(
+    @Param("id", ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const file = await this.service.getPhotoFile(id, req.church?.slug);
+    res.setHeader("Content-Type", file.mimeType);
+    res.setHeader("Cache-Control", "private, max-age=60");
+    res.sendFile(file.path);
+  }
+
+  @Delete(":id(\\d+)/photo")
+  async deletePhoto(@Param("id", ParseIntPipe) id: number, @CurrentUser() user: User) {
+    await this.service.removePhoto(id, user.id);
     return { success: true };
   }
 
