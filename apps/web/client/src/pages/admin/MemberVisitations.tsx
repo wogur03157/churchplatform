@@ -91,7 +91,7 @@ export default function AdminMemberVisitations() {
   // 목록에 교인 이름 표시용 명단 (id → name)
   const { data: roster } = useQuery({
     queryKey: ["members", "roster-names"],
-    queryFn: () => api.get<{ items: MemberOption[] }>("/members?limit=100"),
+    queryFn: () => api.get<{ items: MemberOption[] }>("/members?limit=2000"),
   });
   const memberOf = (id: number) => roster?.items.find((m) => m.id === id);
   const memberName = (id: number) => memberOf(id)?.name ?? `교인 #${id}`;

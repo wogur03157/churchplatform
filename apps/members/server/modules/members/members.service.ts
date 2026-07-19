@@ -39,7 +39,9 @@ export class MembersService {
 
   async findAll(q: MemberListQuery): Promise<MemberListResult> {
     const page = Math.max(1, q.page ?? 1);
-    const limit = Math.min(100, Math.max(1, q.limit ?? 20));
+    // 페이지 목록은 보통 20~50이지만, 출석·영수증 등은 전체 명단(로스터)이 필요해
+    // 큰 limit을 요청한다. 상한을 넉넉히 둬서 명단이 조용히 잘리지 않게 한다.
+    const limit = Math.min(5000, Math.max(1, q.limit ?? 20));
 
     const qb = this.repo.createQueryBuilder("m");
     if (q.query) qb.andWhere("m.name LIKE :name", { name: `%${q.query}%` });

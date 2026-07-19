@@ -125,7 +125,7 @@ export default function AdminFinanceReceipts() {
     queryKey: ["members", "receipt-roster"],
     queryFn: async () => {
       try {
-        return await api.get<{ items: MemberOption[] }>("/members?limit=1000");
+        return await api.get<{ items: MemberOption[] }>("/members?limit=2000");
       } catch {
         return { items: [] as MemberOption[] };
       }

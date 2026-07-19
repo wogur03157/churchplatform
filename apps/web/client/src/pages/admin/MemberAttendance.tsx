@@ -57,7 +57,7 @@ export default function AdminMemberAttendance() {
 
   const { data: memberList } = useQuery({
     queryKey: ["members", "attendance-roster"],
-    queryFn: () => api.get<{ items: Member[] }>("/members?limit=1000"),
+    queryFn: () => api.get<{ items: Member[] }>("/members?limit=2000"),
   });
   // 출석 + 장기결석 교인만 (장기결석자가 다시 나오면 체크 → 자동 복귀)
   const members = (memberList?.items ?? []).filter(

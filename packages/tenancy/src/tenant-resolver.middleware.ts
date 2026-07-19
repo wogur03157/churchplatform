@@ -16,7 +16,10 @@ declare global {
  * 요청이 어느 교회 것인지 식별해 req.church에 주입합니다.
  *
  * 식별 우선순위:
- *   1. x-church-slug 헤더 (개발/테스트용)
+ *   1. x-church-slug 헤더 — 개발/테스트 전용. 운영(NODE_ENV=production)에서는
+ *      ALLOW_CHURCH_SLUG_HEADER=true 로 명시 허용하지 않는 한 무시한다.
+ *      (헤더는 클라이언트가 임의로 보낼 수 있어, 운영에서 신뢰하면 다른 교회
+ *       데이터를 가리키는 테넌트 격리 우회가 된다 — Host/도메인 기반만 신뢰)
  *   2. Host가 교회의 customDomain과 일치
  *   3. Host가 `<slug>.${TENANT_BASE_DOMAIN}` 형태의 서브도메인
  *   4. DEFAULT_CHURCH_SLUG 환경변수 (단일 교회 배포 호환)
@@ -40,9 +43,21 @@ export class TenantResolverMiddleware implements NestMiddleware {
     next();
   }
 
+  /** x-church-slug 헤더를 신뢰할지 — 운영에서는 명시 허용 시에만 */
+  private static headerAllowed(): boolean {
+    return (
+      process.env.NODE_ENV !== "production" ||
+      process.env.ALLOW_CHURCH_SLUG_HEADER === "true"
+    );
+  }
+
   private async resolve(req: Request): Promise<Church | null> {
     const headerSlug = req.headers["x-church-slug"];
-    if (typeof headerSlug === "string" && headerSlug.length > 0) {
+    if (
+      TenantResolverMiddleware.headerAllowed() &&
+      typeof headerSlug === "string" &&
+      headerSlug.length > 0
+    ) {
       const church = await this.tenancy.findChurchBySlug(headerSlug);
       if (church) return church;
     }
