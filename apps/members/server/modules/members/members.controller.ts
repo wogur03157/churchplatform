@@ -58,7 +58,7 @@ export class MembersController {
   @Get()
   findAll(
     @Query("query") query?: string,
-    @Query("status") status?: Member["status"],
+    @Query("status") status?: string,
     @Query("positionId") positionId?: string,
     @Query("baptismLevel") baptismLevel?: Member["baptismLevel"],
     @Query("familyId") familyId?: string,

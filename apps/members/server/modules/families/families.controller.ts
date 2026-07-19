@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,6 +12,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { PermissionGuard, RequirePermission } from "@platform/auth";
+import type { FamilyRole } from "../members/member.entity";
 import { Family } from "./family.entity";
 import { FamiliesService } from "./families.service";
 
@@ -31,6 +33,22 @@ export class FamiliesController {
   @Get(":id")
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.service.findOne(id);
+  }
+
+  /** 두 교인을 같은 가족으로 묶기 (트랜잭션 — 고아 가족 방지) */
+  @Post("link")
+  async link(
+    @Body() body: { memberId?: number; withMemberId?: number; role?: FamilyRole }
+  ) {
+    if (!body.memberId || !body.withMemberId) {
+      throw new BadRequestException("memberId와 withMemberId가 필요합니다");
+    }
+    const { familyId } = await this.service.linkMembers(
+      body.memberId,
+      body.withMemberId,
+      body.role ?? "etc"
+    );
+    return { success: true, familyId };
   }
 
   @Post()

@@ -13,13 +13,16 @@ function isDupCode(err: unknown): boolean {
 
 export interface MemberListQuery {
   query?: string;
-  status?: Member["status"];
+  /** 단일 상태 또는 콤마 구분 다중 상태 (예: "active,absent_long" — 출석 로스터용) */
+  status?: string;
   positionId?: number;
   baptismLevel?: Member["baptismLevel"];
   familyId?: number;
   page?: number;
   limit?: number;
 }
+
+const MEMBER_STATUSES = ["active", "absent_long", "transferred", "deceased", "removed"];
 
 export interface MemberListResult {
   items: Member[];
@@ -45,7 +48,12 @@ export class MembersService {
 
     const qb = this.repo.createQueryBuilder("m");
     if (q.query) qb.andWhere("m.name LIKE :name", { name: `%${q.query}%` });
-    if (q.status) qb.andWhere("m.status = :status", { status: q.status });
+    if (q.status) {
+      // 유효한 상태값만 통과 (잘못된 입력이 쿼리에 흘러가지 않도록)
+      const statuses = q.status.split(",").filter((s) => MEMBER_STATUSES.includes(s));
+      if (statuses.length === 1) qb.andWhere("m.status = :status", { status: statuses[0] });
+      else if (statuses.length > 1) qb.andWhere("m.status IN (:...statuses)", { statuses });
+    }
     if (q.positionId) qb.andWhere("m.positionId = :positionId", { positionId: q.positionId });
     if (q.baptismLevel)
       qb.andWhere("m.baptismLevel = :baptismLevel", { baptismLevel: q.baptismLevel });

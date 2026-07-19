@@ -280,33 +280,19 @@ export default function AdminMembers() {
    * - 없고 상대에게 가족이 있으면: 이 교인이 상대 가족에 합류
    * - 둘 다 없으면: 새 가족을 만들고 함께 소속
    */
+  // 서버 트랜잭션 단일 호출 — 가족 생성·연결이 원자적으로 처리돼 고아 레코드가 안 생긴다.
+  // editTarget에 가족이 있으면 상대를 그 가족에 합류시키고, 없으면 editTarget을 상대 가족에 합류시킨다.
   const linkFamilyMutation = useMutation({
-    mutationFn: async (other: Member) => {
-      if (!editTarget) return;
-      if (editTarget.familyId) {
-        await api.patch(`/members/${other.id}`, {
-          familyId: editTarget.familyId,
-          familyRole: other.familyId ? other.familyRole : "etc",
-        });
-        return editTarget.familyId;
-      }
-      let familyId = other.familyId;
-      if (!familyId) {
-        const created = await api.post<{ id: number }>("/members/families", {
-          label: `${other.name} 가정`,
-          headMemberId: other.id,
-        });
-        familyId = created.id;
-      }
-      await api.patch(`/members/${editTarget.id}`, {
-        familyId,
-        familyRole: form.familyRole || "etc",
-      });
-      return familyId;
+    mutationFn: (other: Member) => {
+      if (!editTarget) throw new Error("대상 교인이 없습니다");
+      const payload = editTarget.familyId
+        ? { memberId: other.id, withMemberId: editTarget.id, role: other.familyRole || "etc" }
+        : { memberId: editTarget.id, withMemberId: other.id, role: form.familyRole || "etc" };
+      return api.post<{ familyId: number }>("/members/families/link", payload);
     },
-    onSuccess: (familyId) => {
+    onSuccess: (res) => {
       toast.success("가족으로 연결되었습니다");
-      if (editTarget && familyId) setEditTarget({ ...editTarget, familyId });
+      if (editTarget) setEditTarget({ ...editTarget, familyId: res.familyId });
       setFamilySearch("");
       refreshFamily();
     },

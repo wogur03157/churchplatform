@@ -36,11 +36,16 @@ const lastSunday = () => {
   return d.toISOString().slice(0, 10);
 };
 
+const ROSTER_PAGE_SIZE = 60;
+
 export default function AdminMemberAttendance() {
   const queryClient = useQueryClient();
   const [sessionId, setSessionId] = useState<string>("");
   const [date, setDate] = useState(lastSunday());
   const [checked, setChecked] = useState<Map<number, AttendanceRecord["status"]>>(new Map());
+  const [searchInput, setSearchInput] = useState("");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
   const { data: sessionsData } = useQuery({
     queryKey: ["attendance-sessions"],
@@ -55,15 +60,21 @@ export default function AdminMemberAttendance() {
     }
   }, [sessionsData, sessionId]);
 
-  const { data: memberList } = useQuery({
-    queryKey: ["members", "attendance-roster"],
-    queryFn: () => api.get<{ items: Member[] }>("/members?limit=2000"),
+  // 출석 + 장기결석 교인만(장기결석자가 다시 나오면 체크 → 자동 복귀). 서버에서 상태 필터·페이징.
+  // 대형 교회도 한 페이지(60명)씩 불러오며, 이름 검색으로 바로 찾을 수 있다.
+  const { data: rosterData } = useQuery({
+    queryKey: ["members", "attendance-roster", query, page],
+    queryFn: () =>
+      api.get<{ items: Member[]; total: number }>(
+        `/members?status=active,absent_long&page=${page}&limit=${ROSTER_PAGE_SIZE}${
+          query ? `&query=${encodeURIComponent(query)}` : ""
+        }`
+      ),
   });
-  // 출석 + 장기결석 교인만 (장기결석자가 다시 나오면 체크 → 자동 복귀)
-  const members = (memberList?.items ?? []).filter(
-    (m) => m.status === "active" || m.status === "absent_long"
-  );
-  const dupNames = duplicateNames(members);
+  const members = rosterData?.items ?? [];
+  const rosterTotal = rosterData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(rosterTotal / ROSTER_PAGE_SIZE));
+  const dupNames = duplicateNames(members); // 같은 페이지 내 동명이인 강조
 
   const { data: recordsData } = useQuery({
     queryKey: ["attendance-records", sessionId, date],
@@ -152,8 +163,25 @@ export default function AdminMemberAttendance() {
           </SelectContent>
         </Select>
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44" />
+        <form
+          className="flex gap-2"
+          onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(searchInput.trim()); }}
+        >
+          <Input
+            placeholder="이름 검색"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-40"
+          />
+          <Button type="submit" variant="secondary">검색</Button>
+          {query && (
+            <Button type="button" variant="ghost" onClick={() => { setSearchInput(""); setQuery(""); setPage(1); }}>
+              전체
+            </Button>
+          )}
+        </form>
         <Badge variant="secondary" className="self-center">
-          출석 {presentCount} / 재적 {members.length}
+          출석 {presentCount} / 재적 {rosterTotal}
         </Badge>
       </div>
 
@@ -167,7 +195,7 @@ export default function AdminMemberAttendance() {
         <CardContent>
           {members.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              출석 체크할 교인이 없습니다
+              {query ? "검색 결과가 없습니다" : "출석 체크할 교인이 없습니다"}
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -198,6 +226,18 @@ export default function AdminMemberAttendance() {
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                이전
+              </Button>
+              <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                다음
+              </Button>
             </div>
           )}
         </CardContent>
