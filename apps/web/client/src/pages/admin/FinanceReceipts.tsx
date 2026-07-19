@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Download, FileCheck2, Printer, ScrollText } from "lucide-react";
 import { ConfirmDialog } from "@/components/ReasonDialog";
 import { memberMeta } from "@/lib/memberLabel";
+import { escapeHtml, won } from "@/lib/format";
 
 type AggregateRow = {
   memberId: number;
@@ -51,16 +52,8 @@ type MemberOption = {
   phone?: string | null;
 };
 
-const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
-/** raw HTML 삽입 전 이스케이프 — 교인 이름·단체명에 섞인 태그가 실행되는 것 방지 */
-function esc(value: string | null | undefined): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+const esc = escapeHtml;
 
 /** 영수증 인쇄 — 새 창에 소득세법 서식 기반 간이 양식 렌더 */
 function printReceipt(detail: ReceiptDetail) {

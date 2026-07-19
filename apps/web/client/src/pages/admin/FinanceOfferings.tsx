@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Banknote, CheckCircle2, HandCoins, Plus, Printer, Trash2, Undo2 } from "lucide-react";
 import { ConfirmDialog, ReasonDialog } from "@/components/ReasonDialog";
 import { memberMeta } from "@/lib/memberLabel";
+import { escapeHtml, OFFERING_METHOD_LABELS as METHOD_LABELS, today, won } from "@/lib/format";
 
 type Account = { id: number; name: string; kind: "income" | "expense" };
 type Batch = {
@@ -51,9 +52,6 @@ type MemberOption = {
   phone?: string | null;
 };
 
-const METHOD_LABELS = { cash: "현금", check: "수표", transfer: "이체" } as const;
-const today = () => new Date().toISOString().slice(0, 10);
-const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
 export default function AdminFinanceOfferings() {
   const queryClient = useQueryClient();
@@ -544,9 +542,7 @@ export default function AdminFinanceOfferings() {
   );
 }
 
-function escHtml(v: string): string {
-  return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+const escHtml = escapeHtml;
 
 /** 계수표 인쇄 — 계수자 서명란 포함 (실물 보관용) */
 function printSheet(sheet: Sheet) {

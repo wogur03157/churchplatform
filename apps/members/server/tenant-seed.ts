@@ -1,5 +1,6 @@
 import { IsNull, type DataSource } from "typeorm";
 import { AttendanceSession } from "./modules/attendance/attendance.entity";
+import { formatMemberCode } from "./modules/members/member-code.util";
 import { Member } from "./modules/members/member.entity";
 import { NewcomerStage } from "./modules/newcomers/newcomer.entity";
 import { Position } from "./modules/positions/position.entity";
@@ -56,7 +57,7 @@ export async function seedTenantDefaults(dataSource: DataSource): Promise<void> 
       .getRawOne<{ max: string | null }>();
     let next = (parseInt(row?.max ?? "0", 10) || 0) + 1;
     for (const m of missing) {
-      await memberRepo.update(m.id, { code: String(next).padStart(4, "0") });
+      await memberRepo.update(m.id, { code: formatMemberCode(next) });
       next++;
     }
   }

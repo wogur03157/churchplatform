@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { CalendarCheck, Check } from "lucide-react";
 import { duplicateNames, memberMeta } from "@/lib/memberLabel";
+import { today } from "@/lib/format";
 
 type Session = { id: number; name: string; displayOrder: number };
 type Member = {
@@ -28,7 +29,6 @@ type Member = {
 type AttendanceRecord = { memberId: number; status: "present" | "absent" | "online" };
 type StatRow = { date: string; sessionId: number; presentCount: number };
 
-const today = () => new Date().toISOString().slice(0, 10);
 /** 가장 가까운 주일(오늘이 일요일이면 오늘) — 예배 출석은 주일 기준이 기본 */
 const lastSunday = () => {
   const d = new Date();

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { won } from "@/lib/format";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,6 @@ type WeeklyReport = {
   grandTotal: number;
 };
 
-const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 
 /** 가장 최근 주일 날짜 */
 function lastSunday(): string {

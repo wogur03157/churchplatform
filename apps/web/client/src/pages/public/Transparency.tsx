@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { won } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";
 import PublicPageLayout from "@/components/PublicPageLayout";
 
@@ -15,7 +16,6 @@ type MonthlyReport = {
   closingBalance: number;
 };
 
-const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 
 /** 재정 투명성 공개 페이지 — 교회가 공개를 켠 경우에만 데이터가 보인다 */
 export default function Transparency() {

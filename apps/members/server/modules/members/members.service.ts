@@ -6,6 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Repository } from "typeorm";
 import { AuditService } from "../audit/audit.service";
 import { Member } from "./member.entity";
+import { nextMemberCode } from "./member-code.util";
 
 function isDupCode(err: unknown): boolean {
   return (err as { code?: string })?.code === "ER_DUP_ENTRY";
@@ -74,15 +75,8 @@ export class MembersService {
     return member;
   }
 
-  /** 다음 교적번호 — 숫자형 코드 중 최댓값+1, 4자리 0채움 */
-  private async nextCode(): Promise<string> {
-    const row = await this.repo
-      .createQueryBuilder("m")
-      .select("MAX(CAST(m.code AS UNSIGNED))", "max")
-      .where("m.code REGEXP '^[0-9]+$'")
-      .getRawOne<{ max: string | null }>();
-    const next = (parseInt(row?.max ?? "0", 10) || 0) + 1;
-    return String(next).padStart(4, "0");
+  private nextCode(): Promise<string> {
+    return nextMemberCode(this.repo);
   }
 
   async create(data: Partial<Member>, actorUserId: number): Promise<Member> {

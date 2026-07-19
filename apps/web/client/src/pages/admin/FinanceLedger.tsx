@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Lock, LockOpen, ReceiptText, Undo2 } from "lucide-react";
 import { ConfirmDialog, ReasonDialog } from "@/components/ReasonDialog";
+import { monthRange, OFFERING_METHOD_LABELS as METHOD_LABELS, won } from "@/lib/format";
 
 type Account = { id: number; name: string };
 type Offering = {
@@ -26,15 +27,6 @@ type Summary = {
   byAccount: { accountId: number; accountName: string; count: number; total: number }[];
   grandTotal: number;
 };
-
-const METHOD_LABELS = { cash: "현금", check: "수표", transfer: "이체" } as const;
-const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
-
-function monthRange() {
-  const now = new Date();
-  const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-  return { from, to: now.toISOString().slice(0, 10) };
-}
 
 export default function AdminFinanceLedger() {
   const queryClient = useQueryClient();

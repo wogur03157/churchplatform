@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { won } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,6 @@ type Expense = {
 type Batch = { id: number; date: string; serviceType: string; status: string };
 type BudgetStatus = { totals: { budget: number; spent: number } };
 
-const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
 /** 재정 현황 — 재정 탭의 첫 화면. 이번 달 요약과 할 일이 한눈에 */
 export default function AdminFinanceDashboard() {

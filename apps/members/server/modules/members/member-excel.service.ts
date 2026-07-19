@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import * as XLSX from "xlsx";
 import { AuditService } from "../audit/audit.service";
 import { Position } from "../positions/position.entity";
+import { formatMemberCode } from "./member-code.util";
 import type { BaptismLevel, FamilyRole, MemberStatus } from "./member.entity";
 import { Member } from "./member.entity";
 
@@ -105,8 +106,8 @@ export class MemberExcelService {
         ...existing.map((m) => (m.code && /^[0-9]+$/.test(m.code) ? parseInt(m.code, 10) : 0))
       ) + 1;
     const takeAutoCode = (): string => {
-      while (usedCodes.has(String(nextAuto).padStart(4, "0"))) nextAuto++;
-      return String(nextAuto++).padStart(4, "0");
+      while (usedCodes.has(formatMemberCode(nextAuto))) nextAuto++;
+      return formatMemberCode(nextAuto++);
     };
 
     const result: ImportResult = { created: 0, duplicated: 0, errors: [], unknownHeaders };

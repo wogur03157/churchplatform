@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { won } from "@/lib/format";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,6 @@ const STATUS_META: Record<Expense["status"], { label: string; variant: "default"
   voided: { label: "취소", variant: "destructive" },
 };
 const PAID_METHOD_LABELS = { cash: "현금", transfer: "이체", card: "카드" } as const;
-const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
 function monthRange() {
   const now = new Date();
