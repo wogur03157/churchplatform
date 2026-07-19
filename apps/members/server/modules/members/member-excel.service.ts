@@ -9,6 +9,8 @@ import { Member } from "./member.entity";
 
 /** 헤더 이름 → 필드 매핑 (엑셀 첫 행 기준, 공백 제거 후 비교) */
 const HEADER_ALIASES: Record<string, string> = {
+  교적번호: "code",
+  교번: "code",
   이름: "name",
   성명: "name",
   성별: "gender",
@@ -92,9 +94,20 @@ export class MemberExcelService {
     const positions = await this.positionRepo.find();
     const positionByName = new Map(positions.map((p) => [p.name, p.id]));
 
-    // 중복 검사용 기존 명단 (이름+전화 조합)
-    const existing = await this.memberRepo.find({ select: ["name", "phone"] });
+    // 중복 검사용 기존 명단 (이름+전화 조합) + 교적번호 집합
+    const existing = await this.memberRepo.find({ select: ["name", "phone", "code"] });
     const existingKeys = new Set(existing.map((m) => `${m.name}|${m.phone ?? ""}`));
+    const usedCodes = new Set(existing.map((m) => m.code).filter((c): c is string => !!c));
+    // 자동 발번 시작값 — 숫자형 교적번호 최댓값 + 1
+    let nextAuto =
+      Math.max(
+        0,
+        ...existing.map((m) => (m.code && /^[0-9]+$/.test(m.code) ? parseInt(m.code, 10) : 0))
+      ) + 1;
+    const takeAutoCode = (): string => {
+      while (usedCodes.has(String(nextAuto).padStart(4, "0"))) nextAuto++;
+      return String(nextAuto++).padStart(4, "0");
+    };
 
     const result: ImportResult = { created: 0, duplicated: 0, errors: [], unknownHeaders };
 
@@ -117,7 +130,16 @@ export class MemberExcelService {
           continue;
         }
 
+        // 교적번호: 시트에 있으면 사용(중복 시 오류), 없으면 자동 발번
+        const rawCode = raw.code != null ? String(raw.code).trim() : "";
+        if (rawCode && usedCodes.has(rawCode)) {
+          result.errors.push({ row: rowNo, message: `교적번호 중복: ${rawCode}` });
+          continue;
+        }
+        const code = rawCode || takeAutoCode();
+
         const member = this.memberRepo.create({
+          code,
           name,
           phone,
           address: raw.address != null ? String(raw.address).trim() : null,
@@ -140,6 +162,7 @@ export class MemberExcelService {
         });
         await this.memberRepo.save(member);
         existingKeys.add(key);
+        usedCodes.add(code);
         result.created++;
       } catch (err) {
         result.errors.push({ row: rowNo, message: `저장 실패: ${err}` });
@@ -172,6 +195,7 @@ export class MemberExcelService {
     };
 
     const rows = members.map((m) => ({
+      교적번호: m.code ?? "",
       이름: m.name,
       성별: m.gender ? genderKo[m.gender] : "",
       생년월일: m.birthDate ?? "",

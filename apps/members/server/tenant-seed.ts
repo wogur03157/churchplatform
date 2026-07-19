@@ -1,5 +1,6 @@
-import type { DataSource } from "typeorm";
+import { IsNull, type DataSource } from "typeorm";
 import { AttendanceSession } from "./modules/attendance/attendance.entity";
+import { Member } from "./modules/members/member.entity";
 import { NewcomerStage } from "./modules/newcomers/newcomer.entity";
 import { Position } from "./modules/positions/position.entity";
 
@@ -38,5 +39,25 @@ export async function seedTenantDefaults(dataSource: DataSource): Promise<void> 
         stageRepo.create({ ...s, displayOrder: index + 1, isBuiltIn: 1 })
       )
     );
+  }
+
+  // 교적번호 없는 기존 교인에게 순번 부여 (code 컬럼 추가 후 1회 백필, 멱등적)
+  const memberRepo = dataSource.getRepository(Member);
+  const missing = await memberRepo.find({
+    where: { code: IsNull() },
+    order: { id: "ASC" },
+    select: ["id"],
+  });
+  if (missing.length > 0) {
+    const row = await memberRepo
+      .createQueryBuilder("m")
+      .select("MAX(CAST(m.code AS UNSIGNED))", "max")
+      .where("m.code REGEXP '^[0-9]+$'")
+      .getRawOne<{ max: string | null }>();
+    let next = (parseInt(row?.max ?? "0", 10) || 0) + 1;
+    for (const m of missing) {
+      await memberRepo.update(m.id, { code: String(next).padStart(4, "0") });
+      next++;
+    }
   }
 }

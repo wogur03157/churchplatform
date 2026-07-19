@@ -24,9 +24,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Camera, Download, Edit, Link2, Plus, Trash2, Unlink, Upload, Users, X } from "lucide-react";
+import { duplicateNames, memberMeta } from "@/lib/memberLabel";
 
 type Member = {
   id: number;
+  code: string | null;
   name: string;
   gender: "m" | "f" | null;
   birthDate: string | null;
@@ -93,6 +95,7 @@ function formatPhone(value: string): string {
 }
 
 const EMPTY_FORM = {
+  code: "",
   name: "",
   gender: "" as "" | "m" | "f",
   birthDate: "",
@@ -186,6 +189,7 @@ export default function AdminMembers() {
 
   const openEdit = (member: Member) => {
     setForm({
+      code: member.code ?? "",
       name: member.name,
       gender: member.gender ?? "",
       birthDate: member.birthDate ?? "",
@@ -321,6 +325,7 @@ export default function AdminMembers() {
   });
 
   const buildPayload = () => ({
+    code: form.code.trim() || undefined, // 빈 값이면 서버가 자동 발번
     name: form.name.trim(),
     gender: form.gender || null,
     birthDate: form.birthDate || null,
@@ -378,6 +383,7 @@ export default function AdminMembers() {
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 20));
+  const dupNames = duplicateNames(data?.items ?? []);
 
   const formDialog = (
     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -412,9 +418,17 @@ export default function AdminMembers() {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
+        <div>
           <Label>이름 *</Label>
           <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
+        </div>
+        <div>
+          <Label>교적번호</Label>
+          <Input
+            value={form.code}
+            onChange={(e) => set("code", e.target.value)}
+            placeholder={editTarget ? "" : "비우면 자동 발번"}
+          />
         </div>
         <div>
           <Label>성별</Label>
@@ -695,18 +709,28 @@ export default function AdminMembers() {
                       <div className="flex items-center gap-2.5">
                         <MemberAvatar member={member} version={photoVersion} />
                         <div>
-                          {member.name}
-                          {member.gender && (
-                            <span className="ml-1 text-xs text-muted-foreground">
-                              ({member.gender === "m" ? "남" : "여"})
-                            </span>
-                          )}
-                          {member.familyId && (
-                            <span className="ml-1.5 inline-flex items-center text-xs text-muted-foreground">
-                              <Users className="mr-0.5 h-3 w-3" />
-                              가족
-                            </span>
-                          )}
+                          <div className="flex items-center">
+                            {member.name}
+                            {member.gender && (
+                              <span className="ml-1 text-xs text-muted-foreground">
+                                ({member.gender === "m" ? "남" : "여"})
+                              </span>
+                            )}
+                            {dupNames.has(member.name) && (
+                              <Badge variant="outline" className="ml-1.5 h-4 px-1 text-[10px] text-amber-600">
+                                동명이인
+                              </Badge>
+                            )}
+                            {member.familyId && (
+                              <span className="ml-1.5 inline-flex items-center text-xs text-muted-foreground">
+                                <Users className="mr-0.5 h-3 w-3" />
+                                가족
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs font-normal text-muted-foreground">
+                            {memberMeta(member) || "—"}
+                          </div>
                         </div>
                       </div>
                     </td>

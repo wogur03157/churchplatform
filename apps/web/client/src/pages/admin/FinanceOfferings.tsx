@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Banknote, CheckCircle2, HandCoins, Plus, Printer, Trash2, Undo2 } from "lucide-react";
 import { ConfirmDialog, ReasonDialog } from "@/components/ReasonDialog";
+import { memberMeta } from "@/lib/memberLabel";
 
 type Account = { id: number; name: string; kind: "income" | "expense" };
 type Batch = {
@@ -42,7 +43,13 @@ type Sheet = {
   byMethod: { method: string; total: number }[];
   grandTotal: number;
 };
-type MemberOption = { id: number; name: string };
+type MemberOption = {
+  id: number;
+  name: string;
+  code?: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+};
 
 const METHOD_LABELS = { cash: "현금", check: "수표", transfer: "이체" } as const;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -277,7 +284,12 @@ export default function AdminFinanceOfferings() {
                 <Label>헌금자 (비우면 무기명)</Label>
                 {selectedMember ? (
                   <div className="flex items-center gap-2">
-                    <Badge className="px-3 py-1.5 text-sm">교적: {selectedMember.name}</Badge>
+                    <Badge className="px-3 py-1.5 text-sm">
+                      교적: {selectedMember.name}
+                      {memberMeta(selectedMember) && (
+                        <span className="ml-1.5 font-normal opacity-80">{memberMeta(selectedMember)}</span>
+                      )}
+                    </Badge>
                     <Button size="sm" variant="ghost" onClick={() => setSelectedMember(null)}>
                       변경
                     </Button>
@@ -295,13 +307,19 @@ export default function AdminFinanceOfferings() {
                         {memberMatches!.items.map((m) => (
                           <button
                             key={m.id}
-                            className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-accent"
+                            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-accent"
                             onClick={() => {
                               setSelectedMember(m);
                               setDonorQuery(m.name);
                             }}
                           >
-                            {m.name} <Badge variant="outline">교적 연결</Badge>
+                            <span>
+                              {m.name}
+                              {memberMeta(m) && (
+                                <span className="ml-1.5 text-xs text-muted-foreground">{memberMeta(m)}</span>
+                              )}
+                            </span>
+                            <Badge variant="outline">교적 연결</Badge>
                           </button>
                         ))}
                       </div>

@@ -3,9 +3,13 @@ import { randomBytes } from "crypto";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { join, normalize } from "path";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { AuditService } from "../audit/audit.service";
 import { Member } from "./member.entity";
+
+function isDupCode(err: unknown): boolean {
+  return (err as { code?: string })?.code === "ER_DUP_ENTRY";
+}
 
 export interface MemberListQuery {
   query?: string;
@@ -60,23 +64,53 @@ export class MembersService {
     return member;
   }
 
+  /** 다음 교적번호 — 숫자형 코드 중 최댓값+1, 4자리 0채움 */
+  private async nextCode(): Promise<string> {
+    const row = await this.repo
+      .createQueryBuilder("m")
+      .select("MAX(CAST(m.code AS UNSIGNED))", "max")
+      .where("m.code REGEXP '^[0-9]+$'")
+      .getRawOne<{ max: string | null }>();
+    const next = (parseInt(row?.max ?? "0", 10) || 0) + 1;
+    return String(next).padStart(4, "0");
+  }
+
   async create(data: Partial<Member>, actorUserId: number): Promise<Member> {
-    const saved = await this.repo.save(this.repo.create(data));
-    await this.audit.log({
-      actorUserId,
-      action: "create",
-      targetType: "member",
-      targetId: saved.id,
-    });
-    return saved;
+    const manualCode = typeof data.code === "string" ? data.code.trim() : "";
+    // 자동 발번은 동시 등록 시 충돌할 수 있어 재시도, 수동 입력은 즉시 중복 안내
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = manualCode || (await this.nextCode());
+      try {
+        const saved = await this.repo.save(this.repo.create({ ...data, code }));
+        await this.audit.log({
+          actorUserId,
+          action: "create",
+          targetType: "member",
+          targetId: saved.id,
+        });
+        return saved;
+      } catch (err) {
+        if (!isDupCode(err)) throw err;
+        if (manualCode) throw new BadRequestException("이미 사용 중인 교적번호입니다");
+        // 자동 발번 충돌 → 다시 번호를 계산해 재시도
+      }
+    }
+    throw new BadRequestException("교적번호 발번에 실패했습니다. 다시 시도해주세요");
   }
 
   async update(id: number, data: Partial<Member>, actorUserId: number): Promise<Member> {
     const member = await this.findOne(id);
+    if (typeof data.code === "string") data.code = data.code.trim() || null;
     // 민감 값 자체는 로그에 남기지 않고 어떤 필드가 바뀌었는지만 기록
     const changedFields = Object.keys(data);
     Object.assign(member, data);
-    const saved = await this.repo.save(member);
+    let saved: Member;
+    try {
+      saved = await this.repo.save(member);
+    } catch (err) {
+      if (isDupCode(err)) throw new BadRequestException("이미 사용 중인 교적번호입니다");
+      throw err;
+    }
     await this.audit.log({
       actorUserId,
       action: "update",
@@ -85,6 +119,21 @@ export class MembersService {
       detail: { changedFields },
     });
     return saved;
+  }
+
+  /** 교적번호 없는 기존 교인에게 순번 부여 (마이그레이션·프로비저닝 시 호출) */
+  async backfillCodes(): Promise<number> {
+    const missing = await this.repo.find({
+      where: { code: IsNull() },
+      order: { id: "ASC" },
+      select: ["id"],
+    });
+    let assigned = 0;
+    for (const m of missing) {
+      await this.repo.update(m.id, { code: await this.nextCode() });
+      assigned++;
+    }
+    return assigned;
   }
 
   // ── 사진 ────────────────────────────────────────────

@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { Download, FileCheck2, Printer, ScrollText } from "lucide-react";
 import { ConfirmDialog } from "@/components/ReasonDialog";
+import { memberMeta } from "@/lib/memberLabel";
 
 type AggregateRow = {
   memberId: number;
@@ -42,7 +43,13 @@ type ReceiptDetail = Receipt & {
   orgName: string | null;
   orgTaxId: string | null;
 };
-type MemberOption = { id: number; name: string };
+type MemberOption = {
+  id: number;
+  name: string;
+  code?: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+};
 
 const won = (n: number | string) => Number(n).toLocaleString("ko-KR") + "원";
 
@@ -125,8 +132,8 @@ export default function AdminFinanceReceipts() {
     },
   });
   // 이름을 못 찾으면 null — 잘못된 이름("교인 #3")이 영수증 성명 스냅샷으로 저장되는 것을 방지
-  const resolvedName = (id: number): string | null =>
-    roster?.items.find((m) => m.id === id)?.name ?? null;
+  const memberOf = (id: number) => roster?.items.find((m) => m.id === id);
+  const resolvedName = (id: number): string | null => memberOf(id)?.name ?? null;
   const memberName = (id: number) => resolvedName(id) ?? `교인 #${id}`;
 
   const orgDraft = org ?? {
@@ -282,8 +289,13 @@ export default function AdminFinanceReceipts() {
                     setSelected(next);
                   }}
                 />
-                <span className="w-24 font-medium">
+                <span className="font-medium">
                   {resolvedName(row.memberId) ?? `교인 #${row.memberId} (이름 확인 필요)`}
+                  {memberOf(row.memberId) && memberMeta(memberOf(row.memberId)!) && (
+                    <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                      {memberMeta(memberOf(row.memberId)!)}
+                    </span>
+                  )}
                 </span>
                 <span className="text-muted-foreground">{row.count}건</span>
                 <span className="font-semibold">{won(row.total)}</span>

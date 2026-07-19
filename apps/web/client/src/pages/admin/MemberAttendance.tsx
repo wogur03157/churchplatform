@@ -14,9 +14,17 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { CalendarCheck, Check } from "lucide-react";
+import { duplicateNames, memberMeta } from "@/lib/memberLabel";
 
 type Session = { id: number; name: string; displayOrder: number };
-type Member = { id: number; name: string; status: string };
+type Member = {
+  id: number;
+  name: string;
+  status: string;
+  code?: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+};
 type AttendanceRecord = { memberId: number; status: "present" | "absent" | "online" };
 type StatRow = { date: string; sessionId: number; presentCount: number };
 
@@ -55,6 +63,7 @@ export default function AdminMemberAttendance() {
   const members = (memberList?.items ?? []).filter(
     (m) => m.status === "active" || m.status === "absent_long"
   );
+  const dupNames = duplicateNames(members);
 
   const { data: recordsData } = useQuery({
     queryKey: ["attendance-records", sessionId, date],
@@ -168,16 +177,23 @@ export default function AdminMemberAttendance() {
                   <button
                     key={m.id}
                     onClick={() => toggle(m.id)}
-                    className={`flex items-center justify-center gap-1 rounded-lg border px-3 py-3 text-sm transition-colors ${
+                    className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border px-3 py-3 text-sm transition-colors ${
                       isPresent
                         ? "border-primary bg-primary text-primary-foreground"
                         : "hover:bg-accent"
                     }`}
                   >
-                    {isPresent && <Check className="h-3.5 w-3.5" />}
-                    {m.name}
-                    {m.status === "absent_long" && !isPresent && (
-                      <span className="text-[10px] text-amber-600">장기결석</span>
+                    <span className="flex items-center gap-1">
+                      {isPresent && <Check className="h-3.5 w-3.5" />}
+                      {m.name}
+                      {m.status === "absent_long" && !isPresent && (
+                        <span className="text-[10px] text-amber-600">장기결석</span>
+                      )}
+                    </span>
+                    {dupNames.has(m.name) && (
+                      <span className={`text-[10px] ${isPresent ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                        {memberMeta(m, { includePhone: false }) || `#${m.code ?? "-"}`}
+                      </span>
                     )}
                   </button>
                 );

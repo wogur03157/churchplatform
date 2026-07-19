@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { HeartHandshake, Lock, Plus } from "lucide-react";
+import { memberMeta } from "@/lib/memberLabel";
 
 type Visitation = {
   id: number;
@@ -36,7 +37,13 @@ type Visitation = {
   createdAt: string;
 };
 
-type MemberOption = { id: number; name: string };
+type MemberOption = {
+  id: number;
+  name: string;
+  code?: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+};
 
 const TYPE_LABELS: Record<Visitation["type"], string> = {
   regular: "정기",
@@ -86,8 +93,8 @@ export default function AdminMemberVisitations() {
     queryKey: ["members", "roster-names"],
     queryFn: () => api.get<{ items: MemberOption[] }>("/members?limit=100"),
   });
-  const memberName = (id: number) =>
-    roster?.items.find((m) => m.id === id)?.name ?? `교인 #${id}`;
+  const memberOf = (id: number) => roster?.items.find((m) => m.id === id);
+  const memberName = (id: number) => memberOf(id)?.name ?? `교인 #${id}`;
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["visitations"] });
 
@@ -154,6 +161,10 @@ export default function AdminMemberVisitations() {
               <div className="min-w-40 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{memberName(v.memberId)}</span>
+                  {(() => {
+                    const meta = memberOf(v.memberId) ? memberMeta(memberOf(v.memberId)!) : "";
+                    return meta ? <span className="text-xs text-muted-foreground">{meta}</span> : null;
+                  })()}
                   <Badge variant="outline">{TYPE_LABELS[v.type]}</Badge>
                   <Badge variant={STATUS_LABELS[v.status].variant}>
                     {STATUS_LABELS[v.status].label}
@@ -233,17 +244,21 @@ export default function AdminMemberVisitations() {
                 onChange={(e) => setMemberSearch(e.target.value)}
               />
               <div className="max-h-36 space-y-1 overflow-y-auto">
-                {(memberOptions?.items ?? []).map((m) => (
-                  <button
-                    key={m.id}
-                    className={`w-full rounded-md px-3 py-1.5 text-left text-sm hover:bg-accent ${
-                      form.memberId === String(m.id) ? "bg-accent font-medium" : ""
-                    }`}
-                    onClick={() => setForm({ ...form, memberId: String(m.id) })}
-                  >
-                    {m.name}
-                  </button>
-                ))}
+                {(memberOptions?.items ?? []).map((m) => {
+                  const meta = memberMeta(m);
+                  return (
+                    <button
+                      key={m.id}
+                      className={`flex w-full items-center justify-between rounded-md px-3 py-1.5 text-left text-sm hover:bg-accent ${
+                        form.memberId === String(m.id) ? "bg-accent font-medium" : ""
+                      }`}
+                      onClick={() => setForm({ ...form, memberId: String(m.id) })}
+                    >
+                      <span>{m.name}</span>
+                      {meta && <span className="text-xs text-muted-foreground">{meta}</span>}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

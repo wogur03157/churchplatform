@@ -34,6 +34,11 @@ export class Member {
   @Column({ type: "int", nullable: true })
   userId!: number | null;
 
+  /** 교적번호 — 교회 내 유일. 동명이인 식별용. 등록 시 자동 발번(수정 가능) */
+  @Index({ unique: true })
+  @Column({ type: "varchar", length: 30, nullable: true })
+  code!: string | null;
+
   @Index()
   @Column({ type: "varchar", length: 50 })
   name!: string;
