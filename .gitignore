@@ -120,3 +120,5 @@ package-lock.json
 .claude
 # 재정 영수증 첨부 (로컬 스토리지 — 민감 파일, git 제외)
 apps/finance/uploads/
+# 교인 사진 (로컬 스토리지 — 개인정보, git 제외)
+apps/members/uploads/
