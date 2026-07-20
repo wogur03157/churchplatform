@@ -136,7 +136,7 @@ export default function AdminAnnouncements() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">공지사항 관리</h1>
           <p className="text-muted-foreground mt-2">공지사항을 작성하고 관리하세요</p>

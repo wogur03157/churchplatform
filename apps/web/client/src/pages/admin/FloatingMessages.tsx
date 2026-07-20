@@ -151,7 +151,7 @@ export default function AdminFloatingMessages() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">플로팅 메시지 관리</h1>
           <p className="text-muted-foreground mt-2">방문자에게 표시할 팝업 메시지를 관리하세요</p>

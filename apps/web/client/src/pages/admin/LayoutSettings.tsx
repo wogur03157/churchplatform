@@ -362,7 +362,7 @@ function HeroSlidesPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Label>메인 슬라이드</Label>
           <p className="mt-1 text-xs text-muted-foreground">홈 히어로에서 사용하는 슬라이드를 관리합니다.</p>

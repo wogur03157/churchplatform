@@ -180,7 +180,7 @@ export default function AdminImages() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">이미지 관리</h1>
           <p className="text-muted-foreground mt-2">이미지를 업로드하고 공통 카테고리와 함께 관리합니다.</p>

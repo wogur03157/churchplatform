@@ -119,7 +119,7 @@ export default function AdminFloatingMessagesForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">플로팅 메시지 폼 설정</h1>
           <p className="text-muted-foreground mt-2">플로팅 메시지에 동적 폼 필드를 추가하세요</p>

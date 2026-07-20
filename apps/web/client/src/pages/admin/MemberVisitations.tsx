@@ -122,7 +122,7 @@ export default function AdminMemberVisitations() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">심방 관리</h1>
           <p className="text-muted-foreground">
@@ -158,9 +158,9 @@ export default function AdminMemberVisitations() {
           <Card key={v.id}>
             <CardContent className="flex flex-wrap items-center gap-3 py-4">
               <HeartHandshake className="h-5 w-5 shrink-0 text-muted-foreground" />
-              <div className="min-w-40 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{memberName(v.memberId)}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="whitespace-nowrap font-medium">{memberName(v.memberId)}</span>
                   {(() => {
                     const meta = memberOf(v.memberId) ? memberMeta(memberOf(v.memberId)!) : "";
                     return meta ? <span className="text-xs text-muted-foreground">{meta}</span> : null;
@@ -170,7 +170,7 @@ export default function AdminMemberVisitations() {
                     {STATUS_LABELS[v.status].label}
                   </Badge>
                   {v.scheduledAt && (
-                    <span className="text-xs text-muted-foreground">예정 {v.scheduledAt}</span>
+                    <span className="whitespace-nowrap text-xs text-muted-foreground">예정 {v.scheduledAt}</span>
                   )}
                 </div>
                 {v.reason && <p className="mt-1 text-sm text-muted-foreground">{v.reason}</p>}

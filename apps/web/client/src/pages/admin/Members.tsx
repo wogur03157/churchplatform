@@ -593,22 +593,26 @@ export default function AdminMembers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">교인 관리</h1>
-          <Badge variant="secondary">{total}명</Badge>
+      {/* 모바일: 제목과 버튼이 줄바꿈되도록 (wrap 없으면 제목이 최소폭까지 눌려 세로로 깨진다) */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Users className="h-6 w-6 shrink-0" />
+          <h1 className="whitespace-nowrap text-2xl font-bold">교인 관리</h1>
+          <Badge variant="secondary" className="shrink-0">{total}명</Badge>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImport} />
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
-            <Upload className="h-4 w-4 mr-1" /> 엑셀 임포트
+            <Upload className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">엑셀 </span>임포트
           </Button>
           <Button variant="outline" onClick={() => window.open("/api/members/export", "_blank")}>
-            <Download className="h-4 w-4 mr-1" /> 엑셀 다운로드
+            <Download className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">엑셀 </span>다운로드
           </Button>
           <Button onClick={() => { setForm({ ...EMPTY_FORM, registeredAt: new Date().toISOString().slice(0, 10) }); setIsCreateOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> 교인 등록
+            <Plus className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">교인 </span>등록
           </Button>
         </div>
       </div>

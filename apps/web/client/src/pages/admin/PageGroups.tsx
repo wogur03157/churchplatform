@@ -64,7 +64,7 @@ export default function AdminPageGroups() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">소그룹 관리</h1>
           <p className="text-muted-foreground mt-1">부서·사역 소그룹 페이지를 관리합니다</p>

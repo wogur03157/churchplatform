@@ -141,7 +141,7 @@ export default function AdminMemberGroups() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">조직 관리</h1>
           <p className="text-muted-foreground">교구·구역·부서·팀을 트리로 관리하고 교인을 배정합니다</p>

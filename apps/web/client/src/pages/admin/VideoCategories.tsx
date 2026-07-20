@@ -115,7 +115,7 @@ export default function AdminVideoCategories() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">미디어 카테고리</h1>
           <p className="text-muted-foreground mt-1">영상과 이미지가 함께 사용하는 공통 카테고리를 관리합니다.</p>
