@@ -620,9 +620,21 @@ export default function AdminMembers() {
             <div className="text-sm text-muted-foreground">출석 교인</div>
             <div className="text-2xl font-bold">{dashboard.statusCounts.active ?? 0}명</div>
           </CardContent></Card>
+          {/*
+            '장기결석'은 실제 상태(absent_long) 인원.
+            absentees는 "아직 출석 상태인데 N주째 안 나온" 자동 감지 목록이라
+            상태를 장기결석으로 바꾸면 오히려 감지에서 빠진다 — 둘을 분리해 보여준다.
+          */}
           <Card><CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">장기결석 감지 ({dashboard.absentWeeks}주)</div>
-            <div className="text-2xl font-bold text-orange-600">{dashboard.absentees.length}명</div>
+            <div className="text-sm text-muted-foreground">장기결석</div>
+            <div className="text-2xl font-bold text-orange-600">
+              {dashboard.statusCounts.absent_long ?? 0}명
+            </div>
+            {dashboard.absentees.length > 0 && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {dashboard.absentWeeks}주째 미출석 {dashboard.absentees.length}명 감지 (상태: 출석)
+              </div>
+            )}
           </CardContent></Card>
           <Card><CardContent className="pt-4">
             <div className="text-sm text-muted-foreground">새가족 진행 중</div>

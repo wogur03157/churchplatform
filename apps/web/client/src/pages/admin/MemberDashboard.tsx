@@ -57,10 +57,16 @@ export default function AdminMemberDashboard() {
             <p className="text-2xl font-bold">{counts.active ?? 0}명</p>
           </CardContent>
         </Card>
+        {/* 상태가 장기결석인 인원. 아래 '돌봄이 필요한 성도'는 아직 출석 상태인 감지 목록 */}
         <Card>
           <CardContent className="pt-5">
-            <p className="text-sm text-muted-foreground">장기결석 ({summary?.absentWeeks ?? 4}주 기준)</p>
-            <p className="text-2xl font-bold text-amber-600">{summary?.absentees.length ?? 0}명</p>
+            <p className="text-sm text-muted-foreground">장기결석</p>
+            <p className="text-2xl font-bold text-amber-600">{counts.absent_long ?? 0}명</p>
+            {(summary?.absentees.length ?? 0) > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {summary?.absentWeeks ?? 4}주째 미출석 {summary?.absentees.length}명 감지
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -75,9 +81,14 @@ export default function AdminMemberDashboard() {
         {/* 장기결석 — 행동으로 연결 */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <TriangleAlert className="h-4 w-4 text-amber-600" /> 돌봄이 필요한 성도
-            </CardTitle>
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <TriangleAlert className="h-4 w-4 text-amber-600" /> 돌봄이 필요한 성도
+              </CardTitle>
+              <p className="mt-1 text-xs font-normal text-muted-foreground">
+                아직 &lsquo;출석&rsquo; 상태인데 {summary?.absentWeeks ?? 4}주째 안 나온 성도입니다
+              </p>
+            </div>
             <Button size="sm" variant="outline" onClick={() => setLocation("/admin/members/visitations")}>
               <HeartHandshake className="mr-1 h-4 w-4" /> 심방 관리
             </Button>
