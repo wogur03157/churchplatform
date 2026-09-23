@@ -58,6 +58,7 @@ export let IMAGES: any[] = [
 export let VIDEOS: any[] = [
   {
     id: 1, title: "주일예배 설교 — 은혜의 강", description: "주님의 은혜를 나누는 주일예배입니다.",
+    scripture: "요한복음 4:14", sermonDate: "2026-06-08",
     videoType: "youtube", fileKey: null, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     thumbnailUrl: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
     mimeType: null, fileSize: null, duration: 2820,
@@ -66,6 +67,7 @@ export let VIDEOS: any[] = [
   },
   {
     id: 2, title: "수요예배 설교 — 믿음의 길", description: "수요예배 말씀 나눔입니다.",
+    scripture: "히브리서 11:1", sermonDate: "2026-06-04",
     videoType: "youtube", fileKey: null, url: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     thumbnailUrl: "https://img.youtube.com/vi/ysz5S6PUM-U/hqdefault.jpg",
     mimeType: null, fileSize: null, duration: 1800,
@@ -74,6 +76,7 @@ export let VIDEOS: any[] = [
   },
   {
     id: 3, title: "금요기도회 말씀", description: "금요기도회 설교입니다.",
+    scripture: "시편 46:1", sermonDate: "2026-06-06",
     videoType: "youtube", fileKey: null, url: "https://www.youtube.com/watch?v=9bZkp7q19f0",
     thumbnailUrl: "https://img.youtube.com/vi/9bZkp7q19f0/hqdefault.jpg",
     mimeType: null, fileSize: null, duration: 2100,
@@ -255,17 +258,40 @@ export let INVITATIONS: { id: number; churchId: number; email: string; token: st
 
 export let HERO_SLIDES: any[] = [
   {
-    id: 1,
-    type: "text",
-    title: "영신교회에 오신 것을 환영합니다",
-    subtitle: "하나님을 사랑하고 이웃을 사랑하는 행복한 공동체",
-    imageUrl: null,
-    imageKey: null,
-    displayOrder: 1,
-    status: "visible",
-    churchId: null,
-    createdAt: past(10),
-    updatedAt: past(10),
+    id: 1, churchId: null, type: "image",
+    subtitle: "YOUNGSHIN CHURCH",
+    title: "하나님을 기쁘시게\n사람을 행복하게",
+    description: "영신교회는 복음의 기쁨을 누리고 따뜻한 공동체를 세워가는 축복의 통로입니다.",
+    primaryButtonText: "처음 오셨나요?",
+    primaryButtonLink: "#예배안내",
+    secondaryButtonText: "실시간 예배 참여",
+    secondaryButtonLink: "video:https://www.youtube.com/watch?v=5qap5aO4i9A",
+    imageUrl: "https://images.unsplash.com/photo-1510673398445-94f476ef2cbc?q=80&w=2670&auto=format&fit=crop",
+    imageKey: null, displayOrder: 1, status: "visible", createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 2, churchId: null, type: "image",
+    subtitle: "WORSHIP & PRAISE",
+    title: "예배의 감격이 살아있고\n찬양이 넘치는 교회",
+    description: "신령과 진정으로 드리는 예배를 통해 하나님의 살아 계심과 하늘의 큰 평안을 누립니다.",
+    primaryButtonText: "예배 시간 안내",
+    primaryButtonLink: "#예배안내",
+    secondaryButtonText: "지난 설교 보기",
+    secondaryButtonLink: "#설교말씀",
+    imageUrl: "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=2671&auto=format&fit=crop",
+    imageKey: null, displayOrder: 2, status: "visible", createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 3, churchId: null, type: "image",
+    subtitle: "NEXT GENERATION",
+    title: "믿음의 다음세대를\n사랑으로 세워가는 교회",
+    description: "어린이부터 청소년, 귀한 청년들까지 하나님의 꿈과 비전 속에서 아름답게 동역하며 기쁨으로 자라납니다.",
+    primaryButtonText: "다음세대 부서 소개",
+    primaryButtonLink: "#다음세대",
+    secondaryButtonText: "청년 공동체 보기",
+    secondaryButtonLink: "#nextgen/3",
+    imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2670&auto=format&fit=crop",
+    imageKey: null, displayOrder: 3, status: "visible", createdAt: past(10), updatedAt: past(10),
   },
 ];
 
@@ -282,21 +308,134 @@ export let SITE_CONFIG: any[] = [
   { id: 8, churchId: null, key: "hero_icon_4_url",value: "",                                 description: "홈 퀵메뉴 아이콘 4 (온라인 예배)" },
 ];
 
+// ─── Home Ministry Items ──────────────────────────────────────────────────────
+
+export let HOME_MINISTRY_ITEMS: any[] = [
+  {
+    id: 1, churchId: null, title: "행복한대학", displayOrder: 1, status: "active",
+    description: "배움과 웃음이 가득한 시니어들을 위한 선교 공동체입니다.",
+    imageUrl: "https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 2, churchId: null, title: "뮤직아카데미", displayOrder: 2, status: "active",
+    description: "음악을 통해 재능을 나누며 영혼의 치유와 성장을 이룹니다.",
+    imageUrl: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 3, churchId: null, title: "사랑나눔박스", displayOrder: 3, status: "active",
+    description: "지역 사회와 이웃들에게 따뜻한 전도의 사랑과 도움을 전합니다.",
+    imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, createdAt: past(10), updatedAt: past(10),
+  },
+];
+
+// ─── Home Next Gen Items ──────────────────────────────────────────────────────
+
+export let HOME_NEXT_GEN_ITEMS: any[] = [
+  {
+    id: 1, churchId: null, title: "유아부", subtitle: "Yes Kids of Grace",
+    targetAge: "4세 ~ 7세 유아", worshipTime: "주일 오전 11:00", location: "본당 1층 영아실",
+    description: "하나님의 예쁜 꼬마들이 생애 첫 예배와 신앙 공동체 속에서 아름다운 배움과 기쁨을 누리는 사랑스런 모임입니다.",
+    imageUrl: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, displayOrder: 1, status: "active",
+    motto: "마땅히 행할 길을 아이에게 가르치라 그리하면 늙어도 그것을 떠나지 아니하리라 (잠언 22:6)",
+    scheduleJson: [
+      { time: "10:30 ~ 10:50", activity: "영접 및 찬양 율동", detail: "신나는 찬양과 율동으로 예수님의 마음을 열어요" },
+      { time: "10:50 ~ 11:15", activity: "말씀 선포 및 예배", detail: "그림성경과 동화를 활용하여 쉽게 하나님의 말씀을 배워요" },
+      { time: "11:15 ~ 11:45", activity: "분반 성경 공부 및 크래프트 활동", detail: "오늘 전해진 말씀을 다양한 오감 공작 활동으로 기억해요" },
+      { time: "11:45 ~ 12:00", activity: "기도와 간식 나눔", detail: "다정하게 선생님, 친구들과 주님의 사랑을 나눠요" },
+    ],
+    calendarJson: [
+      { month: "2월", title: "겨울 유아 성경학교", desc: "온 가족이 함께하는 일일 성경체험 캠프" },
+      { month: "5월", title: "어린이날 페스티벌", desc: "꿈 가득 야외 포토존 및 선물 가득 풍성한 패밀리 데이" },
+      { month: "7월", title: "여름 유아 성경학교", desc: "워터 슬라이드와 오감 말씀 풍덩 놀이 캠프" },
+      { month: "12월", title: "성탄 축하 발표회", desc: "귀여운 찬양 율동 피날레로 예수님을 축하해요" },
+    ],
+    staffInfo: "김미래 전도사 | 강사랑 부장집사 | 8명의 사랑 충만한 교사진",
+    createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 2, churchId: null, title: "초등부", subtitle: "Yes Disciples of Jesus",
+    targetAge: "초등 1학년 ~ 6학년", worshipTime: "주일 오전 11:00", location: "교육관 2층 초등부실",
+    description: "예수님의 빛나는 성품과 풍성한 사랑을 닮으며, 말씀 묵상과 즐거운 전례, 찬양을 통해 주님의 제자로 성장합니다.",
+    imageUrl: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, displayOrder: 2, status: "active",
+    motto: "예수는 지혜와 키가 자라가며 하나님과 사람에게 더욱 사랑스러워 가시더라 (누가복음 2:52)",
+    scheduleJson: [],
+    calendarJson: [],
+    staffInfo: "이한림 강도사 | 박정성 장로 | 12명의 열정적인 멘토 교사진",
+    createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 3, churchId: null, title: "중고등부 (SFC)", subtitle: "Yes Dreamers of Praise",
+    targetAge: "중·고등학생 (14~19세)", worshipTime: "주일 오전 11:00", location: "교육관 3층 예드림홀",
+    description: "인생의 가장 찬란하고 감성 가득한 사춘기 시절에 찬양과 사랑을 나누며 하나님 안에서 깊은 비전과 소명을 발견합니다.",
+    imageUrl: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, displayOrder: 3, status: "active",
+    motto: "네 창조주를 기억하라 (전도서 12:1)",
+    scheduleJson: [],
+    calendarJson: [],
+    staffInfo: "최하늘 전도사 | 안다정 부장안수집사 | 6명의 젊고 친근한 멘토 교사 공동체",
+    createdAt: past(10), updatedAt: past(10),
+  },
+  {
+    id: 4, churchId: null, title: "대학청년부", subtitle: "Yes Lights of Grace",
+    targetAge: "20세 이상 싱글 청년", worshipTime: "주일 오후 02:30", location: "본당 2층 글로리홀",
+    description: "학업과 청년 실업 등 다양한 고민과 일정을 마주한 세대들이 뜨거운 예배와 따스한 소통의 교제를 빌어 삶의 가치를 세웁니다.",
+    imageUrl: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
+    imageKey: null, displayOrder: 4, status: "active",
+    motto: "청년이 무엇으로 그의 행실을 깨끗하게 하리이까 (시편 119:9)",
+    scheduleJson: [],
+    calendarJson: [],
+    staffInfo: "홍목양 목사 | 김하람 회장 외 대학청년부 리더단 및 셀 리더 일동",
+    createdAt: past(10), updatedAt: past(10),
+  },
+];
+
+// ─── Home Canaan ──────────────────────────────────────────────────────────────
+
+export let HOME_CANAAN: any[] = [
+  {
+    id: 1, churchId: null,
+    backgroundImageUrl: "https://images.unsplash.com/photo-1498758536662-35b82cd15e29?q=80&w=1200&auto=format&fit=crop",
+    backgroundImageKey: null,
+    title: "언제나 찾아오셔도 좋습니다. 당신의 영혼이 잠시 머물 수 있는 곳이기를.",
+    description: "신앙이 고민될 때, 혹은 제도적 교회에 지쳤을 때 부담 없이 오셔서 차 한 잔 마시며 책을 읽거나 조용히 기도의 시간을 가질 수 있는 열린 공간입니다.",
+    button1Text: "Digital Prayer Room",
+    button1Link: "#prayer",
+    button2Text: "Open Conversation",
+    button2Link: "/canaan/online-consultation",
+    createdAt: past(10), updatedAt: past(10),
+  },
+];
+
+// ─── Home Worship Schedule ────────────────────────────────────────────────────
+
+export let HOME_WORSHIP_SCHEDULE: any[] = [
+  { id: 1, churchId: null, name: "주일 1부 예배", time: "09:30", location: "본당 2층", displayOrder: 1, status: "active", createdAt: past(10), updatedAt: past(10) },
+  { id: 2, churchId: null, name: "주일 2부 예배", time: "11:30", location: "본당 2층", displayOrder: 2, status: "active", createdAt: past(10), updatedAt: past(10) },
+  { id: 3, churchId: null, name: "주일 청년부 예배", time: "14:30", location: "본당 2층", displayOrder: 3, status: "active", createdAt: past(10), updatedAt: past(10) },
+  { id: 4, churchId: null, name: "수요 성경 대학", time: "19:30", location: "본당 2층", displayOrder: 4, status: "active", createdAt: past(10), updatedAt: past(10) },
+  { id: 5, churchId: null, name: "금요 기도회", time: "20:30", location: "본당 2층", displayOrder: 5, status: "active", createdAt: past(10), updatedAt: past(10) },
+];
+
 // Content pages mock data
 export let CONTENT_CATEGORIES: any[] = [
-  { id: 1, churchId: null, parentId: null, name: "��ȸ�Ұ�", slug: "church", depth: 1, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 2, churchId: null, parentId: 1, name: "��ȸ �Ұ�", slug: "about", depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 3, churchId: null, parentId: 1, name: "���� �ȳ�", slug: "worship", depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 4, churchId: null, parentId: 1, name: "���ô� ��", slug: "directions", depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 1, churchId: null, parentId: null, name: "��ȸ�Ұ�", slug: "church", depth: 1, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 2, churchId: null, parentId: 1, name: "��ȸ �Ұ�", slug: "about", depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 3, churchId: null, parentId: 1, name: "���� �ȳ�", slug: "worship", depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 4, churchId: null, parentId: 1, name: "���ô� ��", slug: "directions", depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
 ];
 
 export let CONTENT_PAGES: any[] = [
-  { id: 1, categoryId: 2, churchId: null, templateCode: "content", title: "��ȸ �Ұ�", content: "<h2>��ȸ �Ұ�</h2><p>���ű�ȸ�� ����� ����, �Ʒ��� ���� �Բ� �����ϴ� ����ü�Դϴ�.</p><h2>����</h2><p>�ϳ��� ����� �̿� ����� ���� �翪���� �����մϴ�.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
-  { id: 2, categoryId: 3, churchId: null, templateCode: "hero", title: "���� �ȳ�", content: "<h2>���� ����</h2><p>1�� 09:00, 2�� 11:00</p><h2>���� ����</h2><p>������ 19:30, �ݿ��� 19:30</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
-  { id: 3, categoryId: 4, churchId: null, templateCode: "content", title: "���ô� ��", content: "<h2>�ּ�</h2><p>����Ư���� ��õ�� �񵿷� 19�� 28</p><p>īī���ʰ� ���̹������� ���� ã�� �� �ֽ��ϴ�.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+  { id: 1, categoryId: 2, churchId: null, templateCode: "content", title: "��ȸ �Ұ�", content: "<h2>��ȸ �Ұ�</h2><p>���ű�ȸ�� ����� ����, �Ʒ��� ���� �Բ� �����ϴ� ����ü�Դϴ�.</p><h2>����</h2><p>�ϳ��� ����� �̿� ����� ���� �翪���� �����մϴ�.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+  { id: 2, categoryId: 3, churchId: null, templateCode: "hero", title: "���� �ȳ�", content: "<h2>���� ����</h2><p>1�� 09:00, 2�� 11:00</p><h2>���� ����</h2><p>������ 19:30, �ݿ��� 19:30</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
+  { id: 3, categoryId: 4, churchId: null, templateCode: "content", title: "���ô� ��", content: "<h2>�ּ�</h2><p>����Ư���� ��õ�� �񵿷� 19�� 28</p><p>īī���ʰ� ���̹������� ���� ã�� �� �ֽ��ϴ�.</p>", status: "published", createdAt: past(18), updatedAt: past(18) },
 ];
 
 export let CONTENT_PAGE_MEDIA: any[] = [
-  { id: 1, pageId: 1, slotKey: "side_img", mediaType: "image", url: "https://picsum.photos/seed/church-about/1200/800", thumbnailUrl: null, altText: "��ȸ �Ұ�", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
-  { id: 2, pageId: 2, slotKey: "hero", mediaType: "image", url: "https://picsum.photos/seed/church-worship/1400/700", thumbnailUrl: null, altText: "���� �ȳ�", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
+  { id: 1, pageId: 1, slotKey: "side_img", mediaType: "image", url: "https://picsum.photos/seed/church-about/1200/800", thumbnailUrl: null, altText: "��ȸ �Ұ�", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
+  { id: 2, pageId: 2, slotKey: "hero", mediaType: "image", url: "https://picsum.photos/seed/church-worship/1400/700", thumbnailUrl: null, altText: "���� �ȳ�", sortOrder: 1, createdAt: past(18), updatedAt: past(18) },
 ];

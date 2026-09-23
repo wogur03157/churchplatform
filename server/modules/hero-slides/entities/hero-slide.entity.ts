@@ -18,6 +18,21 @@ export class HeroSlide {
   subtitle!: string | null;
 
   @Column({ type: "text", nullable: true })
+  description!: string | null;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  primaryButtonText!: string | null;
+
+  @Column({ type: "varchar", length: 500, nullable: true })
+  primaryButtonLink!: string | null;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  secondaryButtonText!: string | null;
+
+  @Column({ type: "varchar", length: 500, nullable: true })
+  secondaryButtonLink!: string | null;
+
+  @Column({ type: "text", nullable: true })
   imageUrl!: string | null;
 
   @Column({ type: "varchar", length: 500, nullable: true })

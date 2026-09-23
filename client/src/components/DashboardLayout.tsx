@@ -26,6 +26,7 @@ import {
   FileText,
   FormInput,
   Globe,
+  Home,
   Image as ImageIcon,
   Layers,
   LayoutDashboard,
@@ -58,6 +59,7 @@ const NAV_ITEMS = [
   { icon: FileText, label: "페이지 카테고리", path: "/admin/content-categories", permKey: null },
   { icon: FileText, label: "페이지 내용", path: "/admin/content-pages", permKey: null },
   { icon: Globe, label: "사이트 설정", path: "/admin/site-settings", permKey: "layout_settings" },
+  { icon: Home, label: "홈 섹션 관리", path: "/admin/home-settings", permKey: null },
 ] as const;
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

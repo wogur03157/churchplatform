@@ -3,50 +3,87 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* S-CoreDream (참고자료 서체) */
+@font-face {
+  font-family: 'S-CoreDream';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'S-CoreDream';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'S-CoreDream';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-5Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'S-CoreDream';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
-/* Tailwind 유틸리티 클래스가 참조하는 CSS 변수들 (직접 값 정의, var() 체인 없음) */
 @theme {
   --radius-sm: 0.75rem;
   --radius-md: 0.875rem;
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
 
-  --color-background: #ffffff;
-  --color-foreground: #020617;
-  --color-card: #ffffff;
-  --color-card-foreground: #020617;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #020617;
-  --color-primary: #002147;
-  --color-primary-foreground: #ffffff;
-  --color-muted: #f8fafc;
-  --color-muted-foreground: #64748b;
-  --color-accent-gold: #facc15;
-  --color-border: #e2e8f0;
-  --color-secondary: #f1f5f9;
+  /* 본문 서체: Pretendard (가독성) */
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* 제목 서체: S-CoreDream (참고자료 분위기) */
+  --font-serif: 'S-CoreDream', 'Pretendard Variable', Pretendard, sans-serif;
+
+  /* 브랜드 컬러 (참고자료 기준 디폴트) */
+  --color-brand-cream: #FDFBF7;
+  --color-brand-brown: #675D50;
+  --color-brand-sage:  #8E9775;
+  --color-brand-gold:  #E2C799;
+
+  /* 시스템 컬러 — 브랜드 컬러 기반 디폴트, 어드민 테마에서 오버라이드 가능 */
+  --color-background:        #FDFBF7;
+  --color-foreground:        #675D50;
+  --color-card:              #ffffff;
+  --color-card-foreground:   #675D50;
+  --color-popover:           #ffffff;
+  --color-popover-foreground: #675D50;
+  --color-primary:           #675D50;
+  --color-primary-foreground: #FDFBF7;
+  --color-secondary:         #8E9775;
+  --color-secondary-foreground: #ffffff;
+  --color-muted:             #F0EBE3;
+  --color-muted-foreground:  #8E9775;
+  --color-accent-gold:       #E2C799;
+  --color-border:            #E2C79940;
 }
 
 :root {
-  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   --radius: 1rem;
 }
 
 /* 다크 모드 */
 .dark {
-  --color-background: #020617;
-  --color-foreground: #f8fafc;
-  --color-card: #0f172a;
-  --color-card-foreground: #f8fafc;
-  --color-popover: #0f172a;
-  --color-popover-foreground: #f8fafc;
-  --color-primary: #facc15;
-  --color-primary-foreground: #020617;
-  --color-accent-gold: #fbbf24;
-  --color-muted: #1e293b;
-  --color-muted-foreground: #94a3b8;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-secondary: #1e293b;
+  --color-background:        #1C1812;
+  --color-foreground:        #F0EBE3;
+  --color-card:              #2A2420;
+  --color-card-foreground:   #F0EBE3;
+  --color-popover:           #2A2420;
+  --color-popover-foreground: #F0EBE3;
+  --color-primary:           #E2C799;
+  --color-primary-foreground: #1C1812;
+  --color-secondary:         #8E9775;
+  --color-muted:             #2A2420;
+  --color-muted-foreground:  #A09080;
+  --color-accent-gold:       #E2C799;
+  --color-border:            rgba(226, 199, 153, 0.15);
 }
 
 @layer base {
@@ -65,6 +102,10 @@
 
 @layer components {
   .container { @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl; }
-  .elegant-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 10px -2px rgba(0, 0, 0, 0.02); }
-  .elegant-shadow-lg { box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04); }
+  .elegant-shadow    { box-shadow: 0 4px 20px -2px rgba(103,93,80,0.06), 0 2px 10px -2px rgba(103,93,80,0.04); }
+  .elegant-shadow-lg { box-shadow: 0 12px 30px -4px rgba(103,93,80,0.12), 0 4px 12px -2px rgba(103,93,80,0.06); }
+
+  /* 섹션 배경 커브 */
+  .curve-bottom { clip-path: ellipse(100% 100% at 50% 0%); }
+  .curve-top    { clip-path: ellipse(100% 100% at 50% 100%); }
 }

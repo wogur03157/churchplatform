@@ -18,6 +18,11 @@ import {
   MockInvitationsController,
   MockHeroSlidesController,
   MockContentPagesController,
+  MockHomeMinistryController,
+  MockHomeNextGenController,
+  MockHomeCanaanController,
+  MockHomeWorshipController,
+  MockPublicHomeController,
 } from "./mock-data.controller";
 
 @Module({
@@ -40,6 +45,11 @@ import {
     MockInvitationsController,
     MockHeroSlidesController,
     MockContentPagesController,
+    MockHomeMinistryController,
+    MockHomeNextGenController,
+    MockHomeCanaanController,
+    MockHomeWorshipController,
+    MockPublicHomeController,
   ],
 })
 export class MockModule {}

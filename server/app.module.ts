@@ -44,6 +44,14 @@ import { ContentPage } from "./modules/content-pages/entities/content-page.entit
 import { ContentPageMedia } from "./modules/content-pages/entities/content-page-media.entity";
 import { Media } from "./modules/media/entities/media.entity";
 import { PublicHomeModule } from "./modules/public-home/public-home.module";
+import { HomeMinistryItem } from "./modules/home-ministry/entities/home-ministry-item.entity";
+import { HomeMinistryModule } from "./modules/home-ministry/home-ministry.module";
+import { HomeNextGenItem } from "./modules/home-next-gen/entities/home-next-gen-item.entity";
+import { HomeNextGenModule } from "./modules/home-next-gen/home-next-gen.module";
+import { HomeCanaan } from "./modules/home-canaan/entities/home-canaan.entity";
+import { HomeCanaanModule } from "./modules/home-canaan/home-canaan.module";
+import { HomeWorshipSchedule } from "./modules/home-worship/entities/home-worship-schedule.entity";
+import { HomeWorshipModule } from "./modules/home-worship/home-worship.module";
 
 const dbUrl = process.env.DATABASE_URL ?? "";
 const isDbEnabled =
@@ -84,6 +92,10 @@ const dbModules = isDbEnabled
           ContentPage,
           ContentPageMedia,
           Media,
+          HomeMinistryItem,
+          HomeNextGenItem,
+          HomeCanaan,
+          HomeWorshipSchedule,
         ],
         synchronize: false,
         logging: process.env.NODE_ENV === "development",
@@ -109,6 +121,10 @@ const dbModules = isDbEnabled
       HeroSlidesModule,
       ContentPagesModule,
       PublicHomeModule,
+      HomeMinistryModule,
+      HomeNextGenModule,
+      HomeCanaanModule,
+      HomeWorshipModule,
     ]
   : [];
 

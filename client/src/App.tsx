@@ -19,6 +19,7 @@ import AdminFormSubmissions from "./pages/admin/FormSubmissions";
 import AdminSiteSettings from "./pages/admin/SiteSettings";
 import AdminContentCategories from "./pages/admin/ContentCategories";
 import AdminContentPages from "./pages/admin/ContentPages";
+import AdminHomeSettings from "./pages/admin/HomeSettings";
 import PublicView from "./pages/PublicView";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import AdminLogin from "./pages/AdminLogin";
@@ -85,13 +86,16 @@ function Router() {
       <Route path="/admin/content-pages">
         <DashboardLayout><AdminContentPages /></DashboardLayout>
       </Route>
+      <Route path="/admin/home-settings">
+        <DashboardLayout><AdminHomeSettings /></DashboardLayout>
+      </Route>
       <Route path="/admin">
         <DashboardLayout><Home /></DashboardLayout>
       </Route>
 
-      <Route path="/church/:slug1/:slug2/:slug3" component={DynamicContentPage} />
-      <Route path="/church/:slug1/:slug2" component={DynamicContentPage} />
-      <Route path="/church/:slug1" component={DynamicContentPage} />
+      <Route path="/church/:slug1/:slug2/:slug3">{() => <DynamicContentPage />}</Route>
+      <Route path="/church/:slug1/:slug2">{() => <DynamicContentPage />}</Route>
+      <Route path="/church/:slug1">{() => <DynamicContentPage />}</Route>
       <Route path="/sermons/sunday" component={SundaySermons} />
       <Route path="/sermons/midweek" component={MidweekSermons} />
       <Route path="/sermons/special" component={SpecialSermons} />

@@ -56,6 +56,20 @@ export class Video {
   @Column({ type: "varchar", length: 100, nullable: true })
   category!: string | null;
 
+  /**
+   * 설교 본문 (성경 구절 참조, 예: "요한복음 4:14")
+   * ALTER TABLE videos ADD COLUMN scripture varchar(255) DEFAULT NULL;
+   */
+  @Column({ type: "varchar", length: 255, nullable: true })
+  scripture!: string | null;
+
+  /**
+   * 설교 날짜 (예배 날짜, 예: "2024-11-03")
+   * ALTER TABLE videos ADD COLUMN sermon_date date DEFAULT NULL;
+   */
+  @Column({ type: "date", nullable: true })
+  sermonDate!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

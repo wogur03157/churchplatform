@@ -21,6 +21,8 @@ type VideoType = "upload" | "youtube" | "vimeo" | "url";
 interface VideoForm {
   title: string;
   description: string;
+  scripture: string;
+  sermonDate: string;
   videoType: VideoType;
   url: string;
   thumbnailUrl: string;
@@ -32,6 +34,8 @@ interface VideoForm {
 const DEFAULT_FORM: VideoForm = {
   title: "",
   description: "",
+  scripture: "",
+  sermonDate: "",
   videoType: "youtube",
   url: "",
   thumbnailUrl: "",
@@ -90,6 +94,8 @@ export default function AdminVideos() {
     setForm({
       title: video.title,
       description: video.description ?? "",
+      scripture: (video as any).scripture ?? "",
+      sermonDate: (video as any).sermonDate ?? "",
       videoType: video.videoType as VideoType,
       url: video.url,
       thumbnailUrl: video.thumbnailUrl ?? "",
@@ -137,6 +143,16 @@ export default function AdminVideos() {
       <div>
         <Label htmlFor="description">설명</Label>
         <Textarea id="description" value={form.description} onChange={(e) => setField("description", e.target.value)} placeholder="영상 설명 (선택사항)" rows={3} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="sermonDate">설교 날짜</Label>
+          <Input id="sermonDate" type="date" value={form.sermonDate} onChange={(e) => setField("sermonDate", e.target.value)} />
+        </div>
+        <div>
+          <Label htmlFor="scripture">설교 본문</Label>
+          <Input id="scripture" value={form.scripture} onChange={(e) => setField("scripture", e.target.value)} placeholder="예: 요한복음 4:14" />
+        </div>
       </div>
       <div>
         <Label htmlFor="thumbnailUrl">썸네일 URL (선택사항)</Label>

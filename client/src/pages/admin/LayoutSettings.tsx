@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -13,12 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ImageInput } from "@/components/ImageInput";
 import {
   ArrowDown,
   ArrowUp,
   EyeOff,
   GripVertical,
-  ImageIcon,
   Plus,
   Save,
   Trash2,
@@ -227,22 +228,6 @@ function HeroSlideForm({
   onSave: () => void;
   isPending: boolean;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const uploadFile = async (file: File) => {
-    const res = await fetch("/api/layout-settings/upload-image", {
-      method: "POST",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-    if (!res.ok) {
-      toast.error("슬라이드 이미지를 업로드하지 못했습니다.");
-      return;
-    }
-    const payload = (await res.json()) as { url: string; key: string };
-    setForm({ ...form, imageUrl: payload.url, imageKey: payload.key });
-  };
-
   return (
     <div className="space-y-4 rounded-lg border p-4">
       <div className="grid gap-2 md:grid-cols-4">
@@ -262,46 +247,46 @@ function HeroSlideForm({
       {form.type !== "text" && (
         <div className="space-y-2">
           <Label>슬라이드 이미지</Label>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) uploadFile(file);
-              event.target.value = "";
-            }}
+          <ImageInput
+            value={form.imageUrl ?? null}
+            onChange={(url, key) => setForm({ ...form, imageUrl: url, imageKey: key ?? null })}
           />
-          {form.imageUrl ? (
-            <div className="relative overflow-hidden rounded-lg border">
-              <img src={form.imageUrl} alt="" className="h-40 w-full object-cover" />
-              <div className="absolute right-3 top-3 flex gap-2">
-                <Button type="button" size="sm" variant="secondary" onClick={() => fileRef.current?.click()}>
-                  변경
-                </Button>
-                <Button type="button" size="sm" variant="destructive" onClick={() => setForm({ ...form, imageUrl: null, imageKey: null })}>
-                  제거
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
-              <ImageIcon className="mr-2 h-4 w-4" />
-              이미지 업로드
-            </Button>
-          )}
         </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>제목</Label>
-          <Input value={form.title ?? ""} onChange={(event) => setForm({ ...form, title: event.target.value })} />
+          <Label>제목 <span className="text-xs text-muted-foreground">(엔터로 줄바꿈)</span></Label>
+          <Textarea value={form.title ?? ""} onChange={(event) => setForm({ ...form, title: event.target.value })} placeholder="메인 타이틀" rows={3} />
         </div>
         <div className="space-y-2">
-          <Label>부제목</Label>
-          <Input value={form.subtitle ?? ""} onChange={(event) => setForm({ ...form, subtitle: event.target.value })} />
+          <Label>부제목 (영문 소제목)</Label>
+          <Input value={form.subtitle ?? ""} onChange={(event) => setForm({ ...form, subtitle: event.target.value })} placeholder="예: YOUNGSHIN CHURCH" />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>설명 문구 <span className="text-xs text-muted-foreground">(엔터로 줄바꿈)</span></Label>
+        <Textarea value={form.description ?? ""} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="제목 아래 짧은 소개 문구" rows={3} />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 rounded-lg border border-dashed p-3">
+        <p className="col-span-2 text-xs font-medium text-muted-foreground">버튼 (선택사항 — 비워두면 버튼 미표시)</p>
+        <div className="space-y-2">
+          <Label>Primary 버튼 텍스트</Label>
+          <Input value={form.primaryButtonText ?? ""} onChange={(e) => setForm({ ...form, primaryButtonText: e.target.value })} placeholder="예: 처음 오셨나요?" />
+        </div>
+        <div className="space-y-2">
+          <Label>Primary 버튼 링크</Label>
+          <Input value={form.primaryButtonLink ?? ""} onChange={(e) => setForm({ ...form, primaryButtonLink: e.target.value })} placeholder="#예배안내 또는 /church/worship" />
+        </div>
+        <div className="space-y-2">
+          <Label>Secondary 버튼 텍스트</Label>
+          <Input value={form.secondaryButtonText ?? ""} onChange={(e) => setForm({ ...form, secondaryButtonText: e.target.value })} placeholder="예: 실시간 예배 참여" />
+        </div>
+        <div className="space-y-2">
+          <Label>Secondary 버튼 링크</Label>
+          <Input value={form.secondaryButtonLink ?? ""} onChange={(e) => setForm({ ...form, secondaryButtonLink: e.target.value })} placeholder="video:https://youtube.com/... 또는 #설교말씀" />
         </div>
       </div>
 
@@ -480,7 +465,6 @@ function CanvasItem({
 
 export default function AdminLayoutSettings() {
   const qc = useQueryClient();
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -592,22 +576,6 @@ export default function AdminLayoutSettings() {
   const removeSelected = () => {
     if (!selectedItem) return;
     removeItem(getSectionKey(selectedItem));
-  };
-
-  const uploadSectionImage = async (file: File) => {
-    if (!selectedItem) return;
-    const res = await fetch("/api/layout-settings/upload-image", {
-      method: "POST",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-    if (!res.ok) {
-      toast.error("이미지를 업로드하지 못했습니다.");
-      return;
-    }
-    const payload = (await res.json()) as { url: string; key: string };
-    updateItem(getSectionKey(selectedItem), { imageUrl: payload.url, imageKey: payload.key });
-    toast.success("이미지를 업로드했습니다.");
   };
 
   const saveMutation = useMutation({
@@ -745,47 +713,23 @@ export default function AdminLayoutSettings() {
                 )}
 
                 {(selectedItem.sectionType === "image_a" || selectedItem.sectionType === "image_b") && (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Label>배너 이미지</Label>
-                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) uploadSectionImage(file);
-                      event.target.value = "";
-                    }} />
-                    {selectedItem.imageUrl ? (
-                      <div className="relative overflow-hidden rounded-xl border">
-                        <img src={selectedItem.imageUrl} alt="" className="h-48 w-full object-cover" />
-                        <div className="absolute right-3 top-3 flex gap-2">
-                          <Button type="button" size="sm" variant="secondary" onClick={() => imageInputRef.current?.click()}>변경</Button>
-                          <Button type="button" size="sm" variant="destructive" onClick={() => updateItem(getSectionKey(selectedItem), { imageUrl: null, imageKey: null })}>제거</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()}><ImageIcon className="mr-2 h-4 w-4" />이미지 업로드</Button>
-                    )}
+                    <ImageInput
+                      value={selectedItem.imageUrl}
+                      onChange={(url, key) => updateItem(getSectionKey(selectedItem), { imageUrl: url, imageKey: key ?? null })}
+                    />
                   </div>
                 )}
 
                 {selectedItem.sectionType !== "hero" && selectedItem.sectionType !== "image_a" && selectedItem.sectionType !== "image_b" && (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Label>섹션 배경 이미지</Label>
                     <p className="text-xs text-muted-foreground">섹션 전체 배경에 이미지가 깔립니다. 반투명 어두운 오버레이가 자동 적용됩니다.</p>
-                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) uploadSectionImage(file);
-                      event.target.value = "";
-                    }} />
-                    {selectedItem.imageUrl ? (
-                      <div className="relative overflow-hidden rounded-xl border">
-                        <img src={selectedItem.imageUrl} alt="" className="h-32 w-full object-cover" />
-                        <div className="absolute right-3 top-3 flex gap-2">
-                          <Button type="button" size="sm" variant="secondary" onClick={() => imageInputRef.current?.click()}>변경</Button>
-                          <Button type="button" size="sm" variant="destructive" onClick={() => updateItem(getSectionKey(selectedItem), { imageUrl: null, imageKey: null })}>제거</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()}><ImageIcon className="mr-2 h-4 w-4" />배경 이미지 업로드</Button>
-                    )}
+                    <ImageInput
+                      value={selectedItem.imageUrl}
+                      onChange={(url, key) => updateItem(getSectionKey(selectedItem), { imageUrl: url, imageKey: key ?? null })}
+                    />
                   </div>
                 )}
 
