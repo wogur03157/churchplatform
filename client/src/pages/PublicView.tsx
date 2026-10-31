@@ -28,9 +28,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import PublicHeader from "@/components/PublicHeader";
-import QuickActionFab from "@/components/QuickActionFab";
 import FontSizePicker from "@/components/FontSizePicker";
 import VideoModal from "@/components/home/VideoModal";
+import HeroLights from "@/components/HeroLights";
+import FloatingHelp from "@/components/FloatingHelp";
+import FaithJourney from "@/components/FaithJourney";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -118,6 +120,7 @@ function HeroCarousel({
       `}</style>
 
       <div className="relative h-screen overflow-hidden">
+        <HeroLights />
         {/* ── 배경 레이어 (crossfade + Ken Burns scale) ── */}
         {slides.map((s, i) => (
           <div
@@ -1108,7 +1111,10 @@ export default function PublicView() {
           </div>
         </section>
 
-        {/* 6. 다음세대 */}
+        {/* 6. FaithJourney — 예수님은 누구신가요? */}
+        <FaithJourney />
+
+        {/* 7. 다음세대 */}
         {activeNextGenItems.length > 0 && (
           <section
             id="다음세대"
@@ -1659,7 +1665,12 @@ export default function PublicView() {
         </div>
       )}
 
-      <QuickActionFab />
+      <FloatingHelp
+        onPrayerRequest={() => {
+          setIsPrayerModalOpen(true);
+          setIsSubmitted(false);
+        }}
+      />
     </div>
   );
 }

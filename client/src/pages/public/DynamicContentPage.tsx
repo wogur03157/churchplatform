@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "wouter";
 import { api } from "@/lib/api";
 import PublicPageLayout from "@/components/PublicPageLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import type { ContentCategory, ContentPage, ContentPageMedia } from "@shared/entities";
 
 type PublicContentPage = ContentPage & {
@@ -52,8 +50,8 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
     return (
       <PublicPageLayout>
         <div className="container py-16">
-          <div className="mb-4 h-8 w-48 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-96 animate-pulse rounded bg-muted" />
+          <div className="mb-4 h-8 w-48 animate-pulse rounded bg-brand-cream" />
+          <div className="h-4 w-96 animate-pulse rounded bg-brand-cream" />
         </div>
       </PublicPageLayout>
     );
@@ -62,12 +60,8 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
   if (!data) {
     return (
       <PublicPageLayout>
-        <div className="container max-w-3xl py-16">
-          <Card>
-            <CardContent className="py-16 text-center text-muted-foreground">
-              아직 공개된 페이지가 없습니다.
-            </CardContent>
-          </Card>
+        <div className="container max-w-3xl py-16 text-center">
+          <p className="text-brand-brown/50">아직 공개된 페이지가 없습니다.</p>
         </div>
       </PublicPageLayout>
     );
@@ -81,24 +75,34 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
 
   return (
     <PublicPageLayout>
-      <div className="container space-y-10 py-12">
-        <div className="flex flex-wrap gap-2">
-          {data.siblings.map((item) => (
-            <Link key={item.id} href={`${siblingBasePath}/${item.slug}`}>
-              <Button variant={item.id === data.category.id ? "default" : "outline"}>{item.name}</Button>
-            </Link>
-          ))}
-        </div>
-
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-primary">
-            {[data.rootCategory.name, ...parentTrail.map((item) => item.name)].join(" / ")}
+      {/* Page header */}
+      <div className="bg-brand-cream/60 border-b border-brand-gold/20 py-10">
+        <div className="container max-w-4xl">
+          <p className="text-xs uppercase tracking-widest text-brand-sage font-medium mb-2">
+            {[data.rootCategory.name, ...parentTrail.map((item) => item.name)].join(" · ")}
           </p>
-          <h1 className="text-4xl font-bold tracking-tight">{data.title}</h1>
+          <h1 className="font-serif text-3xl md:text-4xl font-bold text-brand-brown">{data.title}</h1>
+          {data.siblings.length > 1 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {data.siblings.map((item) => (
+                <Link key={item.id} href={`${siblingBasePath}/${item.slug}`}>
+                  <a className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    item.id === data.category.id
+                      ? "bg-brand-brown text-brand-cream"
+                      : "bg-white/70 text-brand-brown/70 hover:bg-white border border-brand-gold/30"
+                  }`}>
+                    {item.name}
+                  </a>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
+      </div>
+      <div className="container space-y-10 py-12">
 
         {data.templateCode === "hero" && hero && (
-          <div className="aspect-[16/7] overflow-hidden rounded-3xl border bg-muted">
+          <div className="aspect-[16/7] overflow-hidden rounded-3xl border border-brand-gold/20 bg-brand-cream/50">
             {hero.mediaType === "video" ? renderVideo(hero.url, data.title) : <img src={hero.url} alt={hero.altText ?? data.title} className="h-full w-full object-cover" />}
           </div>
         )}
@@ -106,7 +110,7 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
         {data.templateCode === "gallery" && (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {gallery.map((item) => (
-              <div key={item.id} className="aspect-[4/3] overflow-hidden rounded-2xl border bg-muted">
+              <div key={item.id} className="aspect-[4/3] overflow-hidden rounded-2xl border border-brand-gold/20 bg-brand-cream/50">
                 {item.mediaType === "video" ? renderVideo(item.url, data.title) : <img src={item.url} alt={item.altText ?? data.title} className="h-full w-full object-cover" />}
               </div>
             ))}
@@ -116,13 +120,11 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
         {data.templateCode === "board" && (
           <div className="grid gap-4 md:grid-cols-2">
             {boardItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="aspect-[16/9] overflow-hidden bg-muted">
-                    {item.mediaType === "video" ? renderVideo(item.url, data.title) : <img src={item.url} alt={item.altText ?? data.title} className="h-full w-full object-cover" />}
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={item.id} className="rounded-2xl overflow-hidden border border-brand-gold/20 bg-white shadow-sm">
+                <div className="aspect-[16/9] overflow-hidden bg-brand-cream/50">
+                  {item.mediaType === "video" ? renderVideo(item.url, data.title) : <img src={item.url} alt={item.altText ?? data.title} className="h-full w-full object-cover" />}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -134,12 +136,12 @@ export default function DynamicContentPage({ rootSlug = "church" }: { rootSlug?:
               {inlineImages.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2">
                   {inlineImages.map((item) => (
-                    <img key={item.id} src={item.url} alt={item.altText ?? data.title} className="w-full rounded-2xl border object-cover" />
+                    <img key={item.id} src={item.url} alt={item.altText ?? data.title} className="w-full rounded-2xl border border-brand-gold/20 object-cover" />
                   ))}
                 </div>
               )}
             </div>
-            <div className="overflow-hidden rounded-2xl border bg-muted">
+            <div className="overflow-hidden rounded-2xl border border-brand-gold/20 bg-brand-cream/50">
               <img src={sideImage.url} alt={sideImage.altText ?? data.title} className="h-full w-full object-cover" />
             </div>
           </div>

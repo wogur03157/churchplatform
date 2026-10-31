@@ -472,8 +472,11 @@ export class MockPageGroupsController {
 @Controller("form-fields")
 export class MockFormFieldsController {
   @Get()
-  findAll(@Query("activeOnly") activeOnly?: string) {
-    return activeOnly === "true" ? FORM_FIELDS.filter((f) => f.status === "active") : FORM_FIELDS;
+  findAll(@Query("activeOnly") activeOnly?: string, @Query("formType") formType?: string) {
+    let result = [...FORM_FIELDS];
+    if (activeOnly === "true") result = result.filter((f) => f.status === "active");
+    if (formType) result = result.filter((f) => f.formType === formType);
+    return result.sort((a, b) => a.displayOrder - b.displayOrder);
   }
 
   @Post()
@@ -669,6 +672,23 @@ export class MockContentPagesController {
     }
 
     return all.filter((item) => allowed.has(item.id));
+  }
+
+  @Get("categories/tree")
+  findCategoryForest() {
+    const all = [...CONTENT_CATEGORIES].sort((a, b) => a.depth - b.depth || a.sortOrder - b.sortOrder || a.id - b.id);
+    const pageByCategory = new Map(CONTENT_PAGES.map((page) => [page.categoryId, page] as const));
+    const nodes = new Map(all.map((c) => [c.id, { ...c, page: pageByCategory.get(c.id) ?? null, children: [] as any[] }]));
+
+    const roots: any[] = [];
+    for (const node of Array.from(nodes.values())) {
+      if (node.parentId === null) {
+        roots.push(node);
+      } else {
+        nodes.get(node.parentId)?.children.push(node);
+      }
+    }
+    return roots.sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
   @Get("categories/tree/:rootSlug")

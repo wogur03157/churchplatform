@@ -1,0 +1,138 @@
+.faith-journey {
+  position: relative;
+  height: 1000svh;
+  background: #080e1b;
+  color: #fff;
+}
+.faith-stage {
+  position: sticky;
+  top: var(--site-header-height, 4.9375rem);
+  height: calc(100svh - var(--site-header-height, 4.9375rem));
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.faith-landscape, .faith-sunset, .faith-night, .faith-stars, .faith-shade, .faith-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.faith-landscape {
+  background: url('/images/faith-landscape.png') center center / cover no-repeat;
+}
+.faith-sunset {
+  background: linear-gradient(180deg, #79519c 0%, #ef8eaf 23%, #ffc2a0 37%, rgb(204 103 129 / 35%) 55%, rgb(71 29 63 / 35%) 100%);
+}
+.faith-night { background: linear-gradient(180deg, #070c21 0%, #111a32 35%, rgb(8 14 27 / 92%) 100%); }
+.faith-stars {
+  background-image: radial-gradient(circle at 12% 12%, white 0 1px, transparent 1.6px), radial-gradient(circle at 29% 7%, white 0 1px, transparent 1.5px), radial-gradient(circle at 43% 18%, white 0 .8px, transparent 1.5px), radial-gradient(circle at 64% 9%, white 0 1px, transparent 1.5px), radial-gradient(circle at 86% 20%, white 0 1px, transparent 1.5px), radial-gradient(circle at 77% 4%, white 0 .7px, transparent 1.4px), radial-gradient(circle at 94% 8%, white 0 .7px, transparent 1.4px);
+}
+.faith-shade { background: #080e1b; }
+.faith-vignette { background: linear-gradient(180deg, rgb(8 14 27 / 15%), transparent 25%, rgb(8 14 27 / 18%) 50%, rgb(8 14 27 / 70%) 100%); }
+.faith-heading { position: absolute; top: clamp(1.625rem, 2.5vw, 2.25rem); left: 5%; }
+.faith-heading > span, .faith-eyebrow { font-size: var(--text-2xs); letter-spacing: .24em; color: #ead4be; }
+.faith-heading h2 { margin-top: 0.5rem; font-size: var(--text-base); font-weight: 400; }
+.faith-skip { cursor: pointer; position: absolute; bottom: clamp(2.875rem, 5vw, 3.75rem); left: 50%; transform: translateX(-50%); z-index: 1; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; font-size: var(--text-xs); color: #fff; }
+.faith-scenes { position: absolute; inset: clamp(6.875rem, 10vw, 8.125rem) clamp(1.5rem, 4vw, 2.5rem) clamp(4.0625rem, 8vw, 6.25rem); display: grid; place-items: center; }
+.faith-scene { grid-area: 1 / 1; text-align: center; max-width: 48.75rem; width: 100%; pointer-events: none; text-shadow: 0 2px 22px rgb(0 0 0 / 40%); }
+.faith-chapter { display: block; font-size: var(--text-xs); letter-spacing: .3em; color: #f6dfcb; margin-bottom: clamp(1.25rem, 2vw, 1.625rem); }
+.faith-scene h3 { font-family: var(--font-serif); font-size: var(--font-size-fluid-narrative); line-height: 1.45; font-weight: 400; word-break: keep-all; }
+.faith-scene p { max-width: 41.25rem; margin: clamp(1.375rem, 2.5vw, 1.875rem) auto 0; font-size: var(--font-size-fluid-copy-lg); line-height: 1.95; word-break: keep-all; color: #fff; }
+.faith-footer { position: absolute; bottom: clamp(1.5625rem, 3vw, 2.25rem); left: 5%; right: 5%; display: flex; align-items: center; gap: clamp(0.75rem, 2vw, 1.5rem); font-size: var(--text-2xs); letter-spacing: .16em; color: #e3dcd7; }
+.faith-progress { height: 1px; flex: 1; background: rgb(255 255 255 / 25%); }
+.faith-progress > div { height: 100%; background: #f2d6c0; transform-origin: left; }
+.faith-stories { background: #080e1b; color: #fff; padding: clamp(4.6875rem, 8vw, 6.875rem) clamp(1.5rem, 4vw, 2.5rem) clamp(4.5rem, 7vw, 5.625rem); scroll-margin-top: calc(var(--site-header-height, 4.9375rem) + 1.25rem); }
+.faith-stories-inner { max-width: 81.25rem; margin: auto; }
+.faith-stories header { text-align: center; margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+.faith-stories h2 { font-family: var(--font-serif); font-size: var(--font-size-fluid-section); margin: 1.125rem 0; font-weight: 400; }
+.faith-stories header p { font-size: var(--text-base); color: #b1b7c2; line-height: 1.8; word-break: keep-all; }
+.faith-video-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.5rem, 2.5vw, 1.875rem); }
+.faith-video-media { aspect-ratio: 16 / 9; background: #172033; overflow: hidden; border-radius: 8px; }
+.faith-video-media button { position: relative; display: block; width: 100%; height: 100%; cursor: pointer; }
+.faith-video-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+.faith-video-media button:hover img { transform: scale(1.04); }
+.faith-video-media iframe { width: 100%; height: 100%; border: 0; }
+.faith-play { position: absolute; inset: 0; margin: auto; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: rgb(8 14 27 / 75%); border: 1px solid rgb(255 255 255 / 55%); }
+.faith-video-number { display: block; font-size: var(--text-2xs); letter-spacing: .2em; color: #d8bea6; margin: 1.5rem 0 0.75rem; }
+.faith-video-card h3 { font-size: var(--text-xl); line-height: 1.5; font-weight: 400; margin-bottom: 0.625rem; word-break: keep-all; }
+.faith-video-card a { display: inline-flex; align-items: center; gap: 0.3125rem; color: #c7cbd3; font-size: var(--text-sm); }
+.faith-video-card > p { color: #929cad; font-size: var(--text-xs); margin-top: 0.375rem; }
+.faith-welcome { display: flex; width: fit-content; align-items: center; gap: 0.875rem; margin: clamp(3.5rem, 6vw, 4.375rem) auto 0; border-bottom: 1px solid #667080; padding-bottom: 0.625rem; font-size: var(--text-sm); color: #e7d4c2; }
+.faith-journey a:focus-visible, .faith-journey button:focus-visible, .faith-stories a:focus-visible, .faith-stories button:focus-visible { outline: 2px solid #f4d4b6; outline-offset: 5px; }
+.faith-journey-reduced { height: auto; }
+.faith-journey-reduced .faith-stage { position: relative; top: 0; height: auto; padding: clamp(7.5rem, 11vw, 9.375rem) clamp(1.5rem, 4vw, 2.5rem) clamp(5rem, 7vw, 7.5rem); }
+.faith-static-questions { position: relative; max-width: 45rem; margin: auto; }
+.faith-static-questions article { margin: 0 0 clamp(3rem, 5vw, 4.0625rem); }
+.faith-static-questions span { font-size: var(--text-xs); letter-spacing: .2em; }
+.faith-static-questions h3 { font-size: var(--text-3xl-compact); margin: 1rem 0; }
+.faith-static-questions p { font-size: var(--text-lg); line-height: 1.9; }
+.faith-journey-reduced .faith-landscape { opacity: .25; }
+.faith-journey-reduced .faith-footer { display: none; }
+
+#jesus-introduction { scroll-margin-top: var(--site-header-height, 4.9375rem); }
+.faith-section-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 48px;
+  padding: 0.75rem 1.375rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 2;
+}
+.faith-section-button:hover { background: rgb(255 255 255 / 10%); }
+.faith-section-button svg { width: 20px; height: 20px; flex-shrink: 0; }
+.faith-previous { position: absolute; top: 1.75rem; right: 5%; }
+
+.faith-video-title-button { display: inline-flex; align-items: center; gap: 0.3125rem; color: #c7cbd3; font-size: var(--text-sm); cursor: pointer; }
+.faith-video-popup { position: fixed; inset: 0; margin: auto; padding: 0; width: min(62.5rem, calc(100vw - 2rem), calc((100dvh - 6.875rem) * 16 / 9)); max-width: none; max-height: calc(100dvh - 2rem); border: 1px solid #394256; border-radius: 14px; background: #080e1b; color: #fff; box-shadow: 0 24px 90px rgb(0 0 0 / 50%); }
+.faith-video-popup::backdrop { background: rgb(0 0 0 / 80%); backdrop-filter: blur(6px); }
+.faith-video-popup-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; }
+.faith-video-popup-header h2 { margin: 0; font-family: inherit; font-size: var(--text-base); line-height: 1.5; font-weight: 500; }
+.faith-video-popup-header button { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; }
+.faith-video-popup-header button:hover { background: #252e3e; }
+.faith-video-popup-player { aspect-ratio: 16 / 9; background: #000; }
+.faith-video-popup-player iframe { display: block; width: 100%; height: 100%; border: 0; }
+@media (max-width: 767px) {
+  .faith-journey:not(.faith-journey-reduced) { height: 850svh; }
+  .faith-heading { top: 1.625rem; }
+  .faith-skip { bottom: 2.875rem; font-size: var(--text-2xs); }
+  .faith-scenes { inset: 6.875rem var(--mobile-page-gutter, 1.5rem) 4.0625rem; }
+  .faith-chapter { margin-bottom: 1.25rem; }
+  .faith-scene p { margin-top: 1.375rem; line-height: 1.85; }
+  .faith-footer { bottom: 1.5625rem; gap: 0.75rem; font-size: var(--text-3xs); }
+  .faith-video-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .faith-stories { padding: clamp(4rem, 19vw, 4.6875rem) var(--mobile-page-gutter, 1.5rem); }
+  .faith-section-button { font-size: var(--text-xs); padding: 0.625rem 0.75rem; min-height: 44px; gap: 0.375rem; }
+  .faith-section-button svg { width: 16px; height: 16px; }
+  .faith-previous { top: 1.25rem; right: 1rem; }
+  .faith-heading { max-width: calc(100% - 12.5rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .faith-video-media img { transition: none; }
+  .faith-video-media button:hover img { transform: none; }
+}
+@media (max-height: 620px) and (prefers-reduced-motion: no-preference) {
+  .faith-scenes { inset: 4.6875rem 1.5rem 2.5rem; }
+  .faith-heading { top: 0.875rem; }
+  .faith-heading h2 { display: none; }
+  .faith-skip { bottom: 2rem; }
+  .faith-chapter { margin-bottom: 0.625rem; }
+  .faith-scene h3 { font-size: var(--text-2xl); }
+  .faith-scene p { margin-top: 0.75rem; font-size: var(--text-sm); line-height: 1.6; }
+  .faith-footer { bottom: 0.875rem; }
+}
+@media (min-width: 768px) and (max-width: 1023px), (min-width: 1024px) and (max-width: 1366px) and (pointer: coarse) {
+  .faith-skip { bottom: 5.75rem; }
+  .faith-section-button { font-size: var(--text-sm); }
+  .faith-skip svg { width: 18px; height: 18px; }
+  .faith-scenes { bottom: 8.75rem; }
+  .faith-journey-reduced .faith-stage { padding-bottom: 7.5rem; }
+}

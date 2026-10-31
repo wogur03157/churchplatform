@@ -1,7 +1,7 @@
 ﻿import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -34,10 +34,21 @@ import SundaySermons from "./pages/public/SundaySermons";
 import MidweekSermons from "./pages/public/MidweekSermons";
 import SpecialSermons from "./pages/public/SpecialSermons";
 import NewMember from "./pages/public/NewMember";
+import ChurchAbout from "./pages/public/ChurchAbout";
+import ChurchWorship from "./pages/public/ChurchWorship";
+import ChurchDirections from "./pages/public/ChurchDirections";
 import NewsAnnouncements from "./pages/public/NewsAnnouncements";
 import MinistryBoard from "./pages/public/MinistryBoard";
 
+// 읽기 전용(공개 데모) 빌드에서는 어드민 화면을 열지 않음
+const ADMIN_ENABLED = import.meta.env.VITE_PUBLIC_READONLY !== "true";
+
 function Router() {
+  const [location] = useLocation();
+  if (!ADMIN_ENABLED && /^\/(admin|super-admin)(\/|$)/.test(location)) {
+    return <NotFound />;
+  }
+
   return (
     <Switch>
       <Route path="/super-admin/churches/:id" component={ChurchDetail} />
@@ -93,6 +104,9 @@ function Router() {
         <DashboardLayout><Home /></DashboardLayout>
       </Route>
 
+      <Route path="/church/about" component={ChurchAbout} />
+      <Route path="/church/worship" component={ChurchWorship} />
+      <Route path="/church/directions" component={ChurchDirections} />
       <Route path="/church/:slug1/:slug2/:slug3">{() => <DynamicContentPage />}</Route>
       <Route path="/church/:slug1/:slug2">{() => <DynamicContentPage />}</Route>
       <Route path="/church/:slug1">{() => <DynamicContentPage />}</Route>

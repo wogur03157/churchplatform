@@ -225,9 +225,11 @@ export let PAGE_GROUPS: any[] = [
 // ─── Form Fields ──────────────────────────────────────────────────────────────
 
 export let FORM_FIELDS: any[] = [
-  { id: 1, fieldType: "text",     label: "이름",     placeholder: "성함을 입력하세요",   required: true,  options: null,                                    allowOther: "none", displayOrder: 1, churchId: null, status: "active" },
-  { id: 2, fieldType: "number",   label: "연락처",   placeholder: "010-0000-0000",     required: true,  options: null,                                    allowOther: "none", displayOrder: 2, churchId: null, status: "active" },
-  { id: 3, fieldType: "dropdown", label: "방문목적", placeholder: "선택해주세요",       required: true,  options: ["예배 참석", "상담 요청", "친구 소개"], allowOther: "text", displayOrder: 3, churchId: null, status: "active" },
+  { id: 1, formType: "new-member", fieldType: "text",     label: "이름",       placeholder: "성함을 입력하세요",    required: true,  options: null,                                           allowOther: "none", displayOrder: 1, churchId: null, status: "active" },
+  { id: 2, formType: "new-member", fieldType: "number",   label: "연락처",     placeholder: "010-0000-0000",      required: true,  options: null,                                           allowOther: "none", displayOrder: 2, churchId: null, status: "active" },
+  { id: 3, formType: "new-member", fieldType: "dropdown", label: "방문 경로",  placeholder: "선택해주세요",        required: false, options: ["지인 소개", "인터넷 검색", "지나치다 발견", "기타"], allowOther: "none", displayOrder: 3, churchId: null, status: "active" },
+  { id: 4, formType: "new-member", fieldType: "dropdown", label: "예배 참석",  placeholder: "희망 예배를 선택하세요", required: false, options: ["1부 (09:00)", "2부 (11:00)", "청년부 (14:00)"],    allowOther: "none", displayOrder: 4, churchId: null, status: "active" },
+  { id: 5, formType: "new-member", fieldType: "textarea", label: "전하고 싶은 말", placeholder: "궁금한 점이나 전하고 싶은 말씀을 자유롭게 적어주세요 (선택)", required: false, options: null, allowOther: "none", displayOrder: 5, churchId: null, status: "active" },
   { id: 4, fieldType: "textarea", label: "메시지",   placeholder: "전달하실 내용 입력", required: false, options: null,                                    allowOther: "none", displayOrder: 4, churchId: null, status: "inactive" },
 ];
 
@@ -263,7 +265,7 @@ export let HERO_SLIDES: any[] = [
     title: "하나님을 기쁘시게\n사람을 행복하게",
     description: "영신교회는 복음의 기쁨을 누리고 따뜻한 공동체를 세워가는 축복의 통로입니다.",
     primaryButtonText: "처음 오셨나요?",
-    primaryButtonLink: "#예배안내",
+    primaryButtonLink: "/community/new-member",
     secondaryButtonText: "실시간 예배 참여",
     secondaryButtonLink: "video:https://www.youtube.com/watch?v=5qap5aO4i9A",
     imageUrl: "https://images.unsplash.com/photo-1510673398445-94f476ef2cbc?q=80&w=2670&auto=format&fit=crop",
@@ -423,10 +425,29 @@ export let HOME_WORSHIP_SCHEDULE: any[] = [
 
 // Content pages mock data
 export let CONTENT_CATEGORIES: any[] = [
-  { id: 1, churchId: null, parentId: null, name: "��ȸ�Ұ�", slug: "church", depth: 1, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 2, churchId: null, parentId: 1, name: "��ȸ �Ұ�", slug: "about", depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 3, churchId: null, parentId: 1, name: "���� �ȳ�", slug: "worship", depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
-  { id: 4, churchId: null, parentId: 1, name: "���ô� ��", slug: "directions", depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  // 교회소개
+  { id: 1,  churchId: null, parentId: null, name: "교회소개",    slug: "church",        depth: 1, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 2,  churchId: null, parentId: 1,    name: "교회 소개",   slug: "about",         depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 3,  churchId: null, parentId: 1,    name: "예배 안내",   slug: "worship",       depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 4,  churchId: null, parentId: 1,    name: "오시는 길",   slug: "directions",    depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  // 설교
+  { id: 5,  churchId: null, parentId: null, name: "설교",        slug: "sermons",       depth: 1, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 6,  churchId: null, parentId: 5,    name: "주일설교",    slug: "sunday",        depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 7,  churchId: null, parentId: 5,    name: "수요/금요",   slug: "midweek",       depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 8,  churchId: null, parentId: 5,    name: "특별설교",    slug: "special",       depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  // 공동체
+  { id: 9,  churchId: null, parentId: null, name: "공동체",      slug: "community",     depth: 1, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 10, churchId: null, parentId: 9,    name: "부서 소개",   slug: "departments",   depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 11, churchId: null, parentId: 9,    name: "작은교회",    slug: "small-church",  depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 12, churchId: null, parentId: 9,    name: "새가족 안내", slug: "new-member",    depth: 2, sortOrder: 3, status: "active", createdAt: past(20), updatedAt: past(20) },
+  // 사역
+  { id: 13, churchId: null, parentId: null, name: "사역",        slug: "ministry",      depth: 1, sortOrder: 4, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 14, churchId: null, parentId: 13,   name: "하나님사랑",  slug: "god-love",      depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 15, churchId: null, parentId: 13,   name: "이웃사랑",    slug: "neighbor-love", depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
+  // 소식
+  { id: 16, churchId: null, parentId: null, name: "소식",        slug: "news",          depth: 1, sortOrder: 5, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 17, churchId: null, parentId: 16,   name: "공지사항",    slug: "announcements", depth: 2, sortOrder: 1, status: "active", createdAt: past(20), updatedAt: past(20) },
+  { id: 18, churchId: null, parentId: 16,   name: "사역게시판",  slug: "ministry-board",depth: 2, sortOrder: 2, status: "active", createdAt: past(20), updatedAt: past(20) },
 ];
 
 export let CONTENT_PAGES: any[] = [

@@ -9,7 +9,8 @@ import cookieParser from "cookie-parser";
 import net from "net";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// 빌드(cjs)에서는 __filename이 있고, 개발(ESM)에서는 import.meta.url을 사용
+const __dirname = typeof __filename !== "undefined" ? dirname(__filename) : dirname(fileURLToPath(import.meta.url));
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,48 @@ async function bootstrap() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.use(cookieParser());
+
+  // 읽기 전용 모드 (공개 데모 배포용): 공개 페이지가 쓰는 GET만 허용, 나머지 쓰기·관리자 API 차단
+  if (process.env.PUBLIC_READONLY === "true") {
+    const READ_ALLOWED = [
+      "/auth/me",
+      "/health",
+      "/site-config",
+      "/videos",
+      "/video-categories",
+      "/page-groups",
+      "/content-pages",
+      "/announcements",
+      "/images",
+      "/popups",
+      "/floating-messages",
+      "/form-fields",
+      "/hero-slides",
+      "/layout-settings",
+      "/public",
+      "/home-canaan",
+      "/home-ministry",
+      "/home-next-gen",
+      "/home-worship",
+    ];
+    const WRITE_ALLOWED = ["/form-submissions"]; // 공개 신청폼 (메모리 저장)
+
+    app.use((req: any, res: any, next: any) => {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+      if (!req.path.startsWith("/api/")) return next();
+      const path = req.path.slice("/api".length);
+
+      if (req.method === "POST" && WRITE_ALLOWED.includes(path)) return next();
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        return res.status(405).json({ message: "읽기 전용 모드에서는 사용할 수 없습니다." });
+      }
+      const allowed = READ_ALLOWED.some((p) => path === p || path.startsWith(p + "/"));
+      if (!allowed) {
+        return res.status(404).json({ message: "Not Found" });
+      }
+      next();
+    });
+  }
 
   // Serve local uploads (fallback before S3 integration)
   app.use("/uploads", express.static(join(process.cwd(), "uploads")));

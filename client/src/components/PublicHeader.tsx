@@ -3,8 +3,9 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { ContentCategory, ContentPage } from "@shared/entities";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, UserPlus, X } from "lucide-react";
 import FontSizePicker from "./FontSizePicker";
+import IconLogo from "./IconLogo";
 
 type CategoryNode = ContentCategory & {
   page: Pick<ContentPage, "id" | "status" | "title" | "templateCode"> | null;
@@ -149,8 +150,10 @@ export default function PublicHeader({
           {/* 로고 */}
           <Link href="/">
             <div className="group flex cursor-pointer items-center gap-2.5">
-              {logoUrl && (
+              {logoUrl ? (
                 <img src={logoUrl} alt={churchName} className="h-9 w-9 shrink-0 object-contain" />
+              ) : (
+                <IconLogo size={36} />
               )}
               <div className="flex flex-col justify-center -space-y-0.5">
                 <span className="font-serif text-xl font-semibold leading-tight tracking-tight text-brand-brown">
@@ -165,6 +168,7 @@ export default function PublicHeader({
 
           {/* 데스크탑 메뉴 */}
           <div className="relative hidden items-center gap-1 lg:gap-2 lg:flex" onMouseLeave={scheduleClose}>
+
             {navMenu.map((item, index) => (
               <button
                 key={item.label}
@@ -191,6 +195,14 @@ export default function PublicHeader({
                 </div>
               </div>
             )}
+
+            {/* 새가족 안내 CTA 버튼 */}
+            <Link href="/community/new-member">
+              <a className="ml-2 flex items-center gap-1.5 rounded-full bg-brand-brown px-4 py-2 text-sm font-medium text-brand-cream whitespace-nowrap hover:bg-brand-sage transition-colors duration-200 shadow-sm">
+                <UserPlus className="h-3.5 w-3.5" />
+                새가족 안내
+              </a>
+            </Link>
           </div>
 
           {/* 모바일 햄버거 */}
@@ -256,6 +268,15 @@ export default function PublicHeader({
               )}
             </div>
           ))}
+
+          <div className="px-5 pt-4 pb-2">
+            <Link href="/community/new-member">
+              <a className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-brand-brown text-brand-cream text-base font-semibold hover:bg-brand-sage transition-colors">
+                <UserPlus className="h-4 w-4" />
+                새가족 안내
+              </a>
+            </Link>
+          </div>
 
           <div className="border-t border-brand-gold/15 px-5 py-4">
             <FontSizePicker />

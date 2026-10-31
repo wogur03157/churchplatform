@@ -109,3 +109,119 @@
   .curve-bottom { clip-path: ellipse(100% 100% at 50% 0%); }
   .curve-top    { clip-path: ellipse(100% 100% at 50% 100%); }
 }
+
+/* ─── Fluid typography / layout tokens (from design) ─────────────────────── */
+:root {
+  --content-max: 81.25rem;
+  --section-space: clamp(5rem, 6.5vw, 6.25rem);
+  --mobile-page-gutter: clamp(1.25rem, 6vw, 1.5625rem);
+  --text-3xs: 0.5rem;
+  --text-2xs: 0.625rem;
+  --text-3xl-compact: 1.75rem;
+  --text-4xl-compact: 2rem;
+  --text-5xl-compact: 2.5rem;
+  --font-size-fluid-body: clamp(0.875rem, calc(0.75rem + 0.5vw), 1rem);
+  --font-size-fluid-body-lg: clamp(1rem, calc(0.875rem + 0.5vw), 1.125rem);
+  --font-size-fluid-copy-lg: clamp(1rem, calc(0.875rem + 0.5vw), 1.25rem);
+  --font-size-fluid-subtitle: clamp(1.125rem, calc(1rem + 0.5vw), 1.25rem);
+  --font-size-fluid-heading-sm: clamp(1.25rem, calc(1.125rem + 0.5vw), 1.5rem);
+  --font-size-fluid-heading-md: clamp(1.5rem, calc(1.25rem + 1vw), 2rem);
+  --font-size-fluid-heading-lg: clamp(1.75rem, calc(1.5rem + 2vw), 3rem);
+  --font-size-fluid-hero: clamp(1.75rem, calc(1.5rem + 1.35vw), 2.5rem);
+  --font-size-fluid-narrative: clamp(1.5rem, calc(1.25rem + 2vw), 2.5rem);
+  --font-size-fluid-section: clamp(1.75rem, calc(1.25rem + 2.25vw), 3rem);
+}
+
+/* ─── Hero Lights ──────────────────────────────────────────────────────────── */
+.hero-lights {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hero-lights-side {
+  position: absolute;
+  top: -25%;
+  height: 125%;
+  width: clamp(2rem, 25vw, 25rem);
+}
+.hero-lights-left { right: 100%; }
+.hero-lights-right { left: 100%; }
+.hero-light {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: 0 0 4px 1px #ffe8aa99, 0 0 10px 2px #ffd88a33;
+  opacity: 0;
+  animation: hero-light-glow ease-in-out both;
+}
+@keyframes hero-light-glow {
+  0%, 100% { opacity: 0; transform: scale(0.3); }
+  35% { opacity: 0.9; transform: scale(1); }
+  55% { opacity: 0.45; transform: scale(0.7); }
+  70% { opacity: 0.8; transform: scale(1.1); }
+}
+@media (max-width: 767px) {
+  .hero-lights-side { width: 2rem; }
+  .hero-lights-left { right: calc(100% - 1.375rem); }
+  .hero-lights-right { left: calc(100% - 1.375rem); }
+}
+
+/* ─── Floating Help ────────────────────────────────────────────────────────── */
+.floating-help {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  z-index: 40;
+  width: 11.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+.floating-help-button {
+  --expanded-width: 11.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  box-shadow: 0 4px 16px rgb(53 47 41 / 18%);
+  cursor: pointer;
+  pointer-events: auto;
+  overflow: hidden;
+  font-size: 0.875rem;
+  transition: width 250ms ease, box-shadow 250ms ease;
+}
+.floating-help-jesus  { background: #8e9775; color: white; }
+.floating-help-welcome { background: #e2c799; color: #352f29; }
+.floating-help-prayer  { background: #534b43; color: white; }
+.floating-help-top     { background: #fdfbf7; color: #352f29; border-color: rgb(53 47 41 / 15%); }
+.floating-help-button svg { flex-shrink: 0; transition: opacity 180ms ease; }
+.floating-help-button span {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.floating-help-button:hover,
+.floating-help-button:focus-visible { width: var(--expanded-width); box-shadow: 0 6px 22px rgb(53 47 41 / 25%); }
+.floating-help-button:hover svg,
+.floating-help-button:focus-visible svg { opacity: 0; }
+.floating-help-button:hover span,
+.floating-help-button:focus-visible span { opacity: 1; }
+.floating-help-button:focus-visible { outline: 2px solid #534b43; outline-offset: 4px; }
+@media (max-width: 767px) {
+  .floating-help { bottom: calc(1.5rem + env(safe-area-inset-bottom)); gap: 0.625rem; }
+  .floating-help-button { width: 44px; height: 44px; }
+  .floating-help-button svg { width: 18px; height: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-help-button, .floating-help-button svg, .floating-help-button span { transition: none; }
+  .hero-lights { display: none; }
+}
