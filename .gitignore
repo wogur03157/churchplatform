@@ -115,4 +115,7 @@ temp/
 # package-lock.json (pnpm 프로젝트, pnpm-lock.yaml 사용)
 package-lock.json
 
-.claude
+
+.claude/
+docs/
+.claude/settings.local.json
