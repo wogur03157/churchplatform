@@ -79,6 +79,18 @@ export class Media {
   @Column({ type: "tinyint", width: 1, default: 0 })
   showOnHome!: boolean;
 
+  /** 설교 날짜 (영상이 설교인 경우) */
+  @Column({ type: "date", nullable: true })
+  sermonDate!: string | null;
+
+  /** 설교 본문 (예: "요한복음 4:14") */
+  @Column({ type: "varchar", length: 255, nullable: true })
+  scripture!: string | null;
+
+  /** 설교자 (관리용, 공개 화면에는 노출하지 않음) */
+  @Column({ type: "varchar", length: 100, nullable: true })
+  preacher!: string | null;
+
   @Column({ type: "varchar", length: 255, nullable: true })
   altText!: string | null;
 

@@ -41,6 +41,9 @@ type VideoInput = {
   displayOrder: number;
   churchId?: number | null;
   category?: string | null;
+  sermonDate?: string | null;
+  scripture?: string | null;
+  preacher?: string | null;
 };
 
 type ImageInput = {
@@ -131,6 +134,9 @@ export class MediaService {
       uploadedBy: input.uploadedBy,
       status: input.status,
       displayOrder: input.displayOrder,
+      sermonDate: input.sermonDate ?? null,
+      scripture: input.scripture ?? null,
+      preacher: input.preacher ?? null,
       showOnHome: false,
       altText: null,
     });
@@ -156,6 +162,9 @@ export class MediaService {
       ...(data.status !== undefined && { status: data.status }),
       ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
       ...(data.videoType !== undefined && { videoType: data.videoType }),
+      ...(data.sermonDate !== undefined && { sermonDate: data.sermonDate }),
+      ...(data.scripture !== undefined && { scripture: data.scripture }),
+      ...(data.preacher !== undefined && { preacher: data.preacher }),
     });
 
     await this.mediaRepo.save(row);
@@ -601,6 +610,9 @@ export class MediaService {
       displayOrder: row.displayOrder,
       categoryId: row.categoryId,
       category: row.category?.slug ?? null,
+      sermonDate: row.sermonDate ?? null,
+      scripture: row.scripture ?? null,
+      preacher: row.preacher ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

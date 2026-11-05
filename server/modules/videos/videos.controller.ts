@@ -20,6 +20,7 @@ import { OptionalAuthGuard } from "../auth/guards/optional-auth.guard";
 import { StorageService } from "../storage/storage.service";
 import type { User } from "../users/entities/user.entity";
 import { VideosService } from "./videos.service";
+import { extractYoutubeVideoId, fetchYoutubeSnippet, parseSermonDescription } from "./youtube-info";
 
 @Controller("videos")
 export class VideosController {
@@ -47,6 +48,30 @@ export class VideosController {
     return item;
   }
 
+  /** 유튜브 URL로 제목·설교 날짜·본문을 가져옵니다 (YouTube Data API 키 필요) */
+  @Post("youtube-info")
+  @UseGuards(AdminGuard)
+  async youtubeInfo(@Body() body: { url: string }) {
+    const videoId = extractYoutubeVideoId(body.url ?? "");
+    if (!videoId) {
+      throw new HttpException("유튜브 주소를 확인해 주세요.", HttpStatus.BAD_REQUEST);
+    }
+    try {
+      const snippet = await fetchYoutubeSnippet(videoId);
+      const parsed = parseSermonDescription(snippet.description, snippet.publishedAt);
+      return {
+        title: parsed.title ?? snippet.youtubeTitle,
+        sermonDate: parsed.sermonDate,
+        scripture: parsed.scripture,
+        preacher: parsed.preacher,
+        thumbnailUrl: snippet.thumbnailUrl,
+        description: snippet.description,
+      };
+    } catch (e) {
+      throw new HttpException((e as Error).message, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
   @Post()
   @UseGuards(AdminGuard)
   async create(
@@ -64,10 +89,16 @@ export class VideosController {
       status?: "published" | "draft";
       displayOrder?: number;
       category?: string | null;
+      sermonDate?: string | null;
+      scripture?: string | null;
+      preacher?: string | null;
     },
     @CurrentUser() user: User
   ) {
     const result = await this.service.create({
+      sermonDate: body.sermonDate ?? null,
+      scripture: body.scripture ?? null,
+      preacher: body.preacher ?? null,
       title: body.title,
       description: body.description,
       videoType: body.videoType,
@@ -115,9 +146,15 @@ export class VideosController {
       status?: "published" | "draft";
       displayOrder?: number;
       category?: string | null;
+      sermonDate?: string | null;
+      scripture?: string | null;
+      preacher?: string | null;
     }
   ) {
     const updateData: Record<string, unknown> = {};
+    if (body.preacher !== undefined) updateData.preacher = body.preacher;
+    if (body.sermonDate !== undefined) updateData.sermonDate = body.sermonDate;
+    if (body.scripture !== undefined) updateData.scripture = body.scripture;
     if (body.title !== undefined) updateData.title = body.title;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.url !== undefined) updateData.url = body.url;

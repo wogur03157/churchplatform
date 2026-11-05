@@ -23,6 +23,7 @@ interface VideoForm {
   description: string;
   scripture: string;
   sermonDate: string;
+  preacher: string;
   videoType: VideoType;
   url: string;
   thumbnailUrl: string;
@@ -36,6 +37,7 @@ const DEFAULT_FORM: VideoForm = {
   description: "",
   scripture: "",
   sermonDate: "",
+  preacher: "",
   videoType: "youtube",
   url: "",
   thumbnailUrl: "",
@@ -77,6 +79,34 @@ export default function AdminVideos() {
     queryFn: () => api.get<Video[]>("/videos"),
   });
 
+  const [fetchingInfo, setFetchingInfo] = useState(false);
+
+  const handleFetchYoutube = async () => {
+    setFetchingInfo(true);
+    try {
+      const info = await api.post<{
+        title: string | null;
+        sermonDate: string | null;
+        scripture: string | null;
+        preacher: string | null;
+        thumbnailUrl: string | null;
+      }>("/videos/youtube-info", { url: form.url.trim() });
+      setForm((prev) => ({
+        ...prev,
+        title: info.title ?? prev.title,
+        sermonDate: info.sermonDate ?? prev.sermonDate,
+        scripture: info.scripture ?? prev.scripture,
+        preacher: info.preacher ?? prev.preacher,
+        thumbnailUrl: prev.thumbnailUrl || info.thumbnailUrl || "",
+      }));
+      toast.success("유튜브 정보를 가져왔습니다. 확인 후 저장하세요.");
+    } catch (e) {
+      toast.error((e as Error).message || "가져오지 못했습니다.");
+    } finally {
+      setFetchingInfo(false);
+    }
+  };
+
   const handleCreate = () => {
     if (!form.title.trim() || !form.url.trim()) {
       toast.error("제목과 URL을 입력해주세요");
@@ -84,6 +114,9 @@ export default function AdminVideos() {
     }
     createMutation.mutate({
       ...form,
+      sermonDate: form.sermonDate || null,
+      scripture: form.scripture || null,
+      preacher: form.preacher || null,
       thumbnailUrl: form.thumbnailUrl || undefined,
       category: form.category === "none" ? null : form.category || null,
     });
@@ -96,6 +129,7 @@ export default function AdminVideos() {
       description: video.description ?? "",
       scripture: (video as any).scripture ?? "",
       sermonDate: (video as any).sermonDate ?? "",
+      preacher: (video as any).preacher ?? "",
       videoType: video.videoType as VideoType,
       url: video.url,
       thumbnailUrl: video.thumbnailUrl ?? "",
@@ -114,6 +148,9 @@ export default function AdminVideos() {
     updateMutation.mutate({
       id: editingId,
       ...form,
+      sermonDate: form.sermonDate || null,
+      scripture: form.scripture || null,
+      preacher: form.preacher || null,
       thumbnailUrl: form.thumbnailUrl || undefined,
       category: form.category === "none" ? null : form.category || null,
     });
@@ -134,7 +171,12 @@ export default function AdminVideos() {
       </div>
       <div>
         <Label htmlFor="url">영상 URL</Label>
-        <Input id="url" value={form.url} onChange={(e) => setField("url", e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+        <div className="flex gap-2">
+          <Input id="url" value={form.url} onChange={(e) => setField("url", e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+          <Button type="button" variant="outline" className="shrink-0" disabled={!form.url.trim() || fetchingInfo} onClick={handleFetchYoutube}>
+            {fetchingInfo ? "가져오는 중..." : "유튜브에서 가져오기"}
+          </Button>
+        </div>
       </div>
       <div>
         <Label htmlFor="title">제목</Label>
@@ -152,6 +194,10 @@ export default function AdminVideos() {
         <div>
           <Label htmlFor="scripture">설교 본문</Label>
           <Input id="scripture" value={form.scripture} onChange={(e) => setField("scripture", e.target.value)} placeholder="예: 요한복음 4:14" />
+        </div>
+        <div>
+          <Label htmlFor="preacher">설교자</Label>
+          <Input id="preacher" value={form.preacher} onChange={(e) => setField("preacher", e.target.value)} placeholder="예: 김상호 담임목사" />
         </div>
       </div>
       <div>

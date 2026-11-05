@@ -1,64 +1,96 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { ContentCategory, ContentPage } from "@shared/entities";
-import { ChevronDown, Menu, UserPlus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, UserPlus, X } from "lucide-react";
 import FontSizePicker from "./FontSizePicker";
 import IconLogo from "./IconLogo";
 
-type CategoryNode = ContentCategory & {
-  page: Pick<ContentPage, "id" | "status" | "title" | "templateCode"> | null;
-  children: CategoryNode[];
-};
+/* 디자인 프로젝트(ys)의 사이트맵과 동일한 메뉴 구조. 하위 항목은 페이지 안의 인덱스(#n)로 이동합니다. */
+type SitemapItem = { name: string; href: string; subItems?: { name: string; href: string }[] };
+type SitemapCategory = { title: string; items: SitemapItem[] };
 
-type NavGrandChild = { label: string; href: string };
-type NavChild = { label: string; href: string; children: NavGrandChild[] };
-type NavItem = { label: string; children: NavChild[] };
+export const SITEMAP: SitemapCategory[] = [
+  {
+    title: "교회소개",
+    items: [
+      { name: "영신교회", href: "/church/about" },
+      { name: "예배안내", href: "/church/worship" },
+      { name: "오시는길", href: "/church/directions" },
+    ],
+  },
+  {
+    title: "설교",
+    items: [
+      { name: "주일/금요 설교", href: "/sermons/sunday" },
+      { name: "수요/특별 설교", href: "/sermons/midweek" },
+    ],
+  },
+  {
+    title: "공동체",
+    items: [
+      {
+        name: "다음세대",
+        href: "/community/departments",
+        subItems: [
+          { name: "유아부", href: "/community/departments#toddler" },
+          { name: "유치부", href: "/community/departments#kindergarten" },
+          { name: "초등부", href: "/community/departments#elementary" },
+          { name: "청소년부", href: "/community/departments#youth" },
+          { name: "청년부", href: "/community/departments#young-adult" },
+        ],
+      },
+      { name: "작은교회", href: "/community/small-church" },
+      { name: "새가족안내", href: "/community/new-member" },
+    ],
+  },
+  {
+    title: "사역과양육",
+    items: [
+      {
+        name: "하나님사랑",
+        href: "/ministry/god-love",
+        subItems: [
+          { name: "제자반/사역반", href: "/ministry/god-love#disciple-training" },
+          { name: "성경대학", href: "/ministry/god-love#bible-college" },
+          { name: "온라인 독서모임", href: "/ministry/god-love#online-reading" },
+          { name: "마더와이즈/파더와이즈", href: "/ministry/god-love#mothers-fathers-wise" },
+        ],
+      },
+      {
+        name: "이웃사랑",
+        href: "/ministry/neighbor-love",
+        subItems: [
+          { name: "사랑나눔박스", href: "/ministry/neighbor-love#sarang-nanum-box" },
+          { name: "뮤직아카데미", href: "/ministry/neighbor-love#music-academy" },
+          { name: "행복한대학", href: "/ministry/neighbor-love#happy-university" },
+          { name: "결혼예비학교", href: "/ministry/neighbor-love#wedding-school" },
+        ],
+      },
+    ],
+  },
+  {
+    title: "교회소식",
+    items: [
+      { name: "공지사항", href: "/news/announcements" },
+      { name: "사역게시판", href: "/news/ministry-board" },
+    ],
+  },
+];
 
 type PublicHeaderProps = {
-  preloadedSiteConfigs?: any[];
-  preloadedCategoryForest?: CategoryNode[];
+  /** 기존 호출부 호환용 (메뉴는 정적 사이트맵을 사용합니다) */
+  preloadedSiteConfigs?: unknown[];
+  preloadedCategoryForest?: unknown[];
   /** true면 최상단에서 투명, 스크롤 시 솔리드. 홈화면용. */
   transparent?: boolean;
 };
 
-const MENU_COLUMN_WIDTH_REM = 11.5;
+export default function PublicHeader({ transparent = false }: PublicHeaderProps = {}) {
+  const [location, navigate] = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSitemapOpen, setIsSitemapOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-function buildNavigationMenu(roots: CategoryNode[] | undefined): NavItem[] {
-  return (roots ?? [])
-    .filter((root) => root.status === "active")
-    .map((root) => ({
-      label: root.name,
-      children: (root.children ?? [])
-        .filter((child) => child.status === "active")
-        .map((child) => ({
-          label: child.name,
-          href: `/${root.slug}/${child.slug}`,
-          children: (child.children ?? [])
-            .filter((gc) => gc.status === "active")
-            .map((gc) => ({
-              label: gc.name,
-              href: `/${root.slug}/${child.slug}/${gc.slug}`,
-            })),
-        })),
-    }))
-    .filter((item) => item.children.length > 0);
-}
-
-export default function PublicHeader({
-  preloadedSiteConfigs,
-  preloadedCategoryForest,
-  transparent = false,
-}: PublicHeaderProps = {}) {
-  const [mobileOpen, setMobileOpen]     = useState(false);
-  const [openMenu, setOpenMenu]         = useState<number | null>(null);
-  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
-  const [isScrolled, setIsScrolled]     = useState(false);
-  const [location]                      = useLocation();
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  /* 스크롤 감지 */
   useEffect(() => {
     if (!transparent) return;
     const onScroll = () => setIsScrolled(window.scrollY > 50);
@@ -67,222 +99,210 @@ export default function PublicHeader({
     return () => window.removeEventListener("scroll", onScroll);
   }, [transparent]);
 
-  const { data: fetchedSiteConfigs } = useQuery({
-    queryKey: ["site-config"],
-    queryFn: () => api.get<any[]>("/site-config"),
-    staleTime: 5 * 60 * 1000,
-    enabled: !preloadedSiteConfigs,
-  });
-
-  const { data: fetchedCategoryForest } = useQuery<CategoryNode[]>({
-    queryKey: ["content-pages", "tree", "forest"],
-    queryFn: () => api.get<CategoryNode[]>("/content-pages/categories/tree"),
-    staleTime: 5 * 60 * 1000,
-    enabled: !preloadedCategoryForest,
-  });
-
-  const siteConfigs    = preloadedSiteConfigs    ?? fetchedSiteConfigs    ?? [];
-  const categoryForest = preloadedCategoryForest ?? fetchedCategoryForest ?? [];
-  const cfg = (key: string) => siteConfigs.find((item: any) => item.key === key)?.value ?? "";
-
-  const churchName = cfg("church_name") || "영신교회";
-  const logoUrl    = cfg("church_logo_url");
-  const navMenu    = useMemo(() => buildNavigationMenu(categoryForest), [categoryForest]);
-  const menuWidthRem = navMenu.length * MENU_COLUMN_WIDTH_REM + 4;
-
-  const cancelClose  = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; } };
-  const scheduleClose = () => { cancelClose(); closeTimer.current = setTimeout(() => setOpenMenu(null), 180); };
-
+  // 경로가 바뀌면 메뉴를 닫습니다.
   useEffect(() => {
-    setMobileOpen(false); setOpenMenu(null); setOpenAccordion(null); cancelClose();
+    setIsSitemapOpen(false);
+    setIsMenuOpen(false);
   }, [location]);
-  useEffect(() => () => cancelClose(), []);
 
-  /* 헤더 스타일 결정 — 참고자료 기준: 텍스트는 항상 brand-brown, 배경만 전환 */
   const isSolid = !transparent || isScrolled;
-  const headerBg = isSolid
-    ? "bg-[var(--color-brand-cream)]/80 backdrop-blur-md shadow-sm border-b border-[var(--color-brand-gold)]/20"
-    : "bg-transparent";
-  const activeBtn   = "bg-brand-sage/15 text-brand-sage";
-  const inactiveBtn = "text-brand-brown/80 hover:text-brand-sage hover:bg-brand-sage/10";
+  const textMain = isSolid ? "text-brand-brown/85 hover:text-brand-sage" : "text-[#D3C7B5] hover:text-brand-gold";
+  const barBg = isSolid
+    ? "bg-brand-cream/95 backdrop-blur-md py-4 border-b border-brand-gold/20 shadow-lg"
+    : "bg-transparent py-6";
 
-  const megaContent = (
-    <div
-      className="grid gap-8 px-8 py-6"
-      style={{ gridTemplateColumns: `repeat(${navMenu.length}, ${MENU_COLUMN_WIDTH_REM}rem)` }}
-    >
-      {navMenu.map((menuItem, menuIndex) => {
-        const isActive = openMenu === menuIndex;
-        return (
-          <div key={menuItem.label} onMouseEnter={() => { cancelClose(); setOpenMenu(menuIndex); }}>
-            <p className={`mb-3 text-base font-bold ${isActive ? "text-brand-sage" : "text-brand-brown"}`}>
-              {menuItem.label}
-            </p>
-            <div className="space-y-4">
-              {menuItem.children.map((child) => (
-                <div key={`${menuItem.label}-${child.href}`} className="space-y-2">
-                  <Link href={child.href} className="block py-1 text-sm font-medium text-brand-brown/80 transition-colors hover:text-brand-sage">
-                    {child.label}
-                  </Link>
-                  {child.children.length > 0 && (
-                    <div className="space-y-1 pl-3">
-                      {child.children.map((gc) => (
-                        <Link key={gc.href} href={gc.href} className="flex items-center gap-1.5 py-0.5 text-xs text-brand-brown/50 transition-colors hover:text-brand-brown">
-                          <span className="h-1 w-1 rounded-full bg-current opacity-60" />
-                          {gc.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  /* 같은 페이지의 하위 항목(#n)은 해시만 바꾸고, 다른 페이지는 라우팅합니다. */
+  const go = (href: string) => {
+    setIsSitemapOpen(false);
+    setIsMenuOpen(false);
+    const [path, hash] = href.split("#");
+    if (window.location.pathname === path) {
+      if (hash !== undefined) {
+        window.location.hash = hash;
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+    navigate(href);
+  };
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerBg}`}>
-        <div className="container flex h-16 items-center justify-between">
-          {/* 로고 */}
-          <Link href="/">
-            <div className="group flex cursor-pointer items-center gap-2.5">
-              {logoUrl ? (
-                <img src={logoUrl} alt={churchName} className="h-9 w-9 shrink-0 object-contain" />
-              ) : (
-                <IconLogo size={36} />
-              )}
-              <div className="flex flex-col justify-center -space-y-0.5">
-                <span className="font-serif text-xl font-semibold leading-tight tracking-tight text-brand-brown">
-                  {churchName}
-                </span>
-                <span className="whitespace-nowrap text-[0.6rem] font-medium tracking-tight leading-tight text-brand-brown/50">
-                  하나님 사랑 이웃 사랑
-                </span>
-              </div>
+      <nav
+        id="navbar"
+        onMouseEnter={() => setIsSitemapOpen(true)}
+        onMouseLeave={() => setIsSitemapOpen(false)}
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${barBg}`}
+      >
+        <div className="max-w-[var(--content-max)] mx-auto px-6 h-full flex items-center justify-between">
+          <button
+            type="button"
+            id="logo"
+            className="flex items-center gap-1.5 group cursor-pointer"
+            onClick={() => go("/")}
+          >
+            <IconLogo size={30} />
+            <div className="flex items-baseline gap-2">
+              <span
+                className={`font-serif text-3xl-compact font-semibold tracking-tight transition-colors duration-300 mt-1 ${
+                  isSolid ? "text-brand-brown" : "text-brand-gold"
+                }`}
+              >
+                영신교회
+              </span>
+              <span
+                className={`header-tagline hidden sm:inline-block md:hidden lg:inline-block text-sm font-medium tracking-tight whitespace-nowrap transition-colors duration-300 ${
+                  isSolid ? "text-brand-brown/50" : "text-[#B5A795]"
+                }`}
+              >
+                하나님을 기쁘시게, 사람을 행복하게
+              </span>
             </div>
-          </Link>
+          </button>
 
           {/* 데스크탑 메뉴 */}
-          <div className="relative hidden items-center gap-1 lg:gap-2 lg:flex" onMouseLeave={scheduleClose}>
-
-            {navMenu.map((item, index) => (
+          <div className="hidden md:flex items-center md:gap-4 lg:gap-8 xl:gap-10">
+            {SITEMAP.map((category) => (
               <button
-                key={item.label}
-                className={`flex items-center justify-center gap-1 rounded-full px-3 py-2 text-base font-medium transition-all duration-200 whitespace-nowrap ${
-                  openMenu === index ? activeBtn : inactiveBtn
-                }`}
-                onMouseEnter={() => { cancelClose(); setOpenMenu(index); }}
+                key={category.title}
+                type="button"
+                onClick={() => setIsSitemapOpen(true)}
+                className={`text-base font-medium transition-colors relative group whitespace-nowrap py-2 cursor-pointer ${textMain}`}
               >
-                {item.label}
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${openMenu === index ? "rotate-180" : ""}`} />
+                {category.title}
+                <span
+                  className={`absolute -bottom-1 left-0 w-0 h-0.5 transition-all group-hover:w-full ${
+                    isSolid ? "bg-brand-sage" : "bg-brand-gold"
+                  }`}
+                />
               </button>
             ))}
-
-            {openMenu !== null && (
-              <div
-                className="absolute right-0 top-full z-50 animate-in fade-in slide-in-from-top-2 pt-2 duration-200"
-                onMouseEnter={cancelClose}
-              >
-                <div
-                  className="max-w-[calc(100vw-3rem)] overflow-hidden rounded-[1.5rem] border border-brand-gold/15 bg-white/95 shadow-xl backdrop-blur-md"
-                  style={{ width: `${menuWidthRem}rem` }}
-                >
-                  {megaContent}
-                </div>
-              </div>
-            )}
-
-            {/* 새가족 안내 CTA 버튼 */}
-            <Link href="/community/new-member">
-              <a className="ml-2 flex items-center gap-1.5 rounded-full bg-brand-brown px-4 py-2 text-sm font-medium text-brand-cream whitespace-nowrap hover:bg-brand-sage transition-colors duration-200 shadow-sm">
-                <UserPlus className="h-3.5 w-3.5" />
-                새가족 안내
-              </a>
-            </Link>
+            <button
+              type="button"
+              onClick={() => go("/community/new-member")}
+              className="bg-brand-brown text-brand-cream md:px-4 md:py-2 lg:px-6 lg:py-2.5 rounded-full text-base font-medium hover:bg-brand-sage transition-all hover:shadow-lg whitespace-nowrap ml-2"
+            >
+              새가족 안내
+            </button>
           </div>
 
-          {/* 모바일 햄버거 */}
           <button
-            className="rounded-md p-2 transition-colors lg:hidden text-brand-brown hover:bg-brand-sage/10"
-            onClick={() => setMobileOpen((prev) => !prev)}
+            type="button"
             aria-label="메뉴 열기"
+            className={`md:hidden p-2 transition-colors duration-300 ${isSolid ? "text-brand-brown" : "text-brand-gold"}`}
+            onClick={() => setIsMenuOpen((v) => !v)}
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </header>
-
-      {/* 모바일 오버레이 */}
-      <div
-        className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 lg:hidden ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setMobileOpen(false)}
-      />
-
-      {/* 모바일 사이드 드로어 */}
-      <div
-        className={`fixed top-0 right-0 z-50 h-full w-72 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-brand-gold/20">
-          <span className="font-serif text-base font-bold text-brand-brown">메뉴</span>
-          <button
-            className="rounded-md p-1.5 text-brand-brown hover:bg-brand-sage/10 transition-colors"
-            onClick={() => setMobileOpen(false)}
-          >
-            <X className="h-5 w-5" />
+            {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-2">
-          {navMenu.map((item, index) => (
-            <div key={item.label} className="border-b border-brand-gold/10 last:border-b-0">
-              <button
-                className="flex w-full items-center justify-between px-5 py-3.5 text-left text-base font-semibold text-brand-brown transition-colors hover:bg-brand-sage/10"
-                onClick={() => setOpenAccordion(openAccordion === index ? null : index)}
-              >
-                {item.label}
-                <ChevronDown className={`h-4 w-4 text-brand-sage transition-transform duration-200 ${openAccordion === index ? "rotate-180" : ""}`} />
-              </button>
-              {openAccordion === index && (
-                <div className="bg-brand-cream/50 pb-2">
-                  {item.children.map((child) => (
-                    <div key={`${item.label}-${child.href}`}>
-                      <Link href={child.href} className="block px-7 py-2.5 text-base font-medium text-brand-brown/70 transition-colors hover:text-brand-sage">
-                        {child.label}
-                      </Link>
-                      {child.children.map((gc) => (
-                        <Link key={gc.href} href={gc.href} className="block py-1.5 pl-10 pr-5 text-sm text-brand-brown/40 transition-colors hover:text-brand-brown">
-                          {gc.label}
-                        </Link>
+        {/* 데스크탑 전체 사이트맵 (마우스를 올리면 펼쳐짐) */}
+        <AnimatePresence>
+          {isSitemapOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="absolute top-full left-0 w-full bg-brand-cream/98 backdrop-blur-md border-b border-brand-gold/15 shadow-2xl overflow-hidden hidden md:block"
+            >
+              <div className="max-w-[var(--content-max)] mx-auto px-8 py-10 grid grid-cols-5 gap-6 text-left">
+                {SITEMAP.map((category) => (
+                  <div key={category.title} className="flex flex-col gap-4">
+                    <h4 className="font-serif text-lg font-bold text-brand-brown border-b border-brand-gold/25 pb-2 mb-1">
+                      {category.title}
+                    </h4>
+                    <ul className="flex flex-col gap-3">
+                      {category.items.map((item) => (
+                        <li key={item.name} className="flex flex-col">
+                          <button
+                            type="button"
+                            onClick={() => go(item.href)}
+                            className="text-left text-sm lg:text-base font-semibold text-brand-brown/95 hover:text-brand-sage transition-colors leading-normal"
+                          >
+                            {item.name}
+                          </button>
+                          {item.subItems && (
+                            <ul className="pl-2 border-l border-brand-gold/15 flex flex-col gap-1.5 mt-1.5 mb-1">
+                              {item.subItems.map((sub) => (
+                                <li key={sub.name}>
+                                  <button
+                                    type="button"
+                                    onClick={() => go(sub.href)}
+                                    className="text-left text-sm text-brand-brown/80 hover:text-brand-sage transition-colors block leading-tight font-normal"
+                                  >
+                                    • {sub.name}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
                       ))}
-                    </div>
-                  ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 모바일 메뉴 */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="absolute top-full left-0 w-full bg-brand-cream border-b border-brand-gold/20 px-6 pt-6 pb-8 md:hidden flex flex-col gap-4 shadow-xl overflow-y-auto max-h-[calc(100dvh-4rem)]"
+            >
+              {SITEMAP.map((category) => (
+                <div key={category.title} className="flex flex-col gap-2 border-b border-brand-gold/10 pb-3 last:border-b-0">
+                  <span className="text-xl font-serif font-bold text-brand-brown">{category.title}</span>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-1 pl-2">
+                    {category.items.map((item) => (
+                      <div key={item.name} className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => go(item.href)}
+                          className="text-left text-base font-semibold text-brand-brown/80"
+                        >
+                          {item.name}
+                        </button>
+                        {item.subItems?.map((sub) => (
+                          <button
+                            key={sub.name}
+                            type="button"
+                            onClick={() => go(sub.href)}
+                            className="text-left text-sm text-brand-brown/70 pl-2"
+                          >
+                            • {sub.name}
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-
-          <div className="px-5 pt-4 pb-2">
-            <Link href="/community/new-member">
-              <a className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-brand-brown text-brand-cream text-base font-semibold hover:bg-brand-sage transition-colors">
-                <UserPlus className="h-4 w-4" />
-                새가족 안내
-              </a>
-            </Link>
-          </div>
-
-          <div className="border-t border-brand-gold/15 px-5 py-4">
-            <FontSizePicker />
-          </div>
-        </div>
-      </div>
+              ))}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => go("/community/new-member")}
+                  className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-brand-brown text-brand-cream text-base font-semibold"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  새가족 안내
+                </button>
+              </div>
+              <div className="border-t border-brand-gold/15 pt-4">
+                <FontSizePicker />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
     </>
   );
 }

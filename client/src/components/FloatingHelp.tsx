@@ -1,13 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
-import { ArrowUp, Cross, UserPlus, MessageSquare } from "lucide-react";
+import { ArrowUp, Cross, MessageSquare, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function FloatingHelp({
   onPrayerRequest,
-  faithJourneySectionId = "faith-journey-section",
 }: {
   onPrayerRequest: () => void;
-  faithJourneySectionId?: string;
 }) {
   const floatingHelpRef = useRef<HTMLElement>(null);
   const [, navigate] = useLocation();
@@ -29,13 +27,6 @@ export default function FloatingHelp({
     return () => observer.disconnect();
   }, []);
 
-  const scrollToFaithJourney = () => {
-    const el = document.getElementById(faithJourneySectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   return (
     <nav
       ref={floatingHelpRef}
@@ -46,7 +37,7 @@ export default function FloatingHelp({
         type="button"
         className="floating-help-button floating-help-jesus"
         aria-label="예수님은 누구시죠?"
-        onClick={scrollToFaithJourney}
+        onClick={() => navigate("/jesus")}
       >
         <Cross size={22} aria-hidden="true" />
         <span>예수님은 누구시죠?</span>

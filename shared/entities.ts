@@ -20,6 +20,8 @@ export interface Video {
   displayOrder: number;
   categoryId: number | null;
   category: string | null;
+  sermonDate?: string | null;
+  scripture?: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

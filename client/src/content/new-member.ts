@@ -1,0 +1,98 @@
+import type { NewMemberContent } from "./types";
+
+/** 새가족 안내. 하단 등록 폼의 입력 항목은 여기가 아니라 DB에서 옵니다. */
+export const newMemberContent: NewMemberContent = {
+  hero: {
+    image: "/images/light.png",
+    imageAlt: "따뜻한 대화를 나누며 서로를 환영하는 공동체",
+    eyebrow: "WELCOME HOME",
+    titleMobile: "첫 걸음이실 때",
+    titleDesktop: "새가족안내",
+    description: "예수님을 알아가는 첫걸음부터 교회에 방문하는 순간까지, 영신교회가 따뜻하게 동행하겠습니다.",
+    primaryCta: "첫 방문 준비하기",
+    secondaryCta: "메인으로",
+  },
+  firstVisit: {
+    eyebrow: "01 · FIRST VISIT",
+    title: "첫방문 가이드",
+    description: ["낯설지 않도록, 도착부터 예배 후 교제까지", "차근차근 안내해 드립니다."],
+    steps: [
+      { title: "교회 도착", body: "주일 예배 15분 전, 1층 안내 데스크로 오세요.", meta: "서울 양천구 목동로19길 28" },
+      { title: "환영 안내", body: "새가족 도우미가 예배실과 필요한 공간을 안내합니다.", meta: "부담 없는 간단한 안내" },
+      { title: "함께 예배", body: "원하는 자리에 편하게 앉아 예배에 참여하시면 됩니다.", meta: "1부 09:30 · 2부 11:30" },
+      { title: "차 한잔 교제", body: "예배 후 새가족실에서 교회를 소개하고 이야기를 나눕니다.", meta: "등록은 천천히 결정하세요" },
+    ],
+  },
+  registration: {
+    eyebrow: "02 · REGISTRATION",
+    title: "등록과 정착 안내",
+    description: ["등록을 결심하셨다면, 영신교회의 가족으로 함께하는 과정을 안내해 드립니다."],
+    steps: [
+      { image: "/images/new-family/step_5.png", title: "등록을 결심하셨다면", body: "담당 교역자의 심방을 받게 됩니다.", meta: "STEP 1 · 등록 상담" },
+      { image: "/images/new-family/step_6.png", title: "새가족 소그룹(6-7주)", body: "소그룹을 거쳐 공동체에 배정됩니다.", meta: "STEP 2 · 소그룹 배정" },
+      { image: "/images/new-family/step_7.png", title: "정식 등록교인이 되기까지", body: "담임목사와의 만남과 새가족교육(7주) 프로그램을 수료하면 정식으로 등록교인이 됩니다.", meta: "STEP 3 · 공동체에 정착" },
+    ],
+  },
+  books: {
+    eyebrow: "03 · RECOMMENDED BOOKS",
+    title: "처음 믿음을 위한 추천도서",
+    description: ["신앙의 질문을 천천히 풀어가며 예수님을 더 깊이 알아가도록 돕는 책들입니다."],
+    items: [
+      {
+        title: "순전한 기독교",
+        author: "C. S. 루이스",
+        category: "기독교 입문",
+        description: "기독교 신앙의 핵심을 논리적이고 따뜻한 언어로 만나는 고전입니다.",
+        cover: "#69725A",
+        image: "/images/new-family/books/mere_christianity.jfif",
+        accent: "#E7D2A5",
+      },
+      {
+        title: "탕부 하나님",
+        author: "팀 켈러",
+        category: "복음",
+        description: "탕자의 비유를 통해 조건 없이 우리를 맞아 주시는 하나님의 사랑을 발견합니다.",
+        cover: "#7C5E4E",
+        image: "/images/new-family/books/the_prodigal_god.jfif",
+        accent: "#F0DDB8",
+      },
+      {
+        title: "목적이 이끄는 삶",
+        author: "릭 워렌",
+        category: "신앙생활",
+        description: "하나님 안에서 삶의 목적을 찾고 매일의 믿음을 세우도록 돕는 안내서입니다.",
+        cover: "#526B70",
+        image: "/images/new-family/books/the_purpose_driven_life.jfif",
+        accent: "#D6C59A",
+      },
+      {
+        title: "내가 만든 신",
+        author: "팀 켈러",
+        category: "영적 성장",
+        description: "우리 마음이 붙드는 우상을 돌아보고 복음 안의 참된 자유로 나아가게 합니다.",
+        cover: "#6D6275",
+        image: "/images/new-family/books/counterfeit_gods.jfif",
+        accent: "#E6D4B2",
+      },
+      {
+        title: "그리스도를 본받아",
+        author: "토마스 아 켐피스",
+        category: "영성 고전",
+        description: "예수님의 겸손과 사랑을 일상의 태도로 살아내도록 초대하는 묵상 고전입니다.",
+        cover: "#8A6B51",
+        image: "/images/new-family/books/the_imatation_of_christ.jfif",
+        accent: "#F1DEB6",
+      },
+    ],
+  },
+  form: {
+    eyebrow: "REGISTRATION",
+    title: "등록 신청",
+    description: "아래 내용을 작성해 주시면 담당 사역자가 연락드립니다.",
+    submitLabel: "신청하기",
+    pendingLabel: "제출 중...",
+    successTitle: "신청이 완료되었습니다!",
+    successBody: "담당 사역자가 곧 연락드리겠습니다.",
+    successNote: "영신교회에 오신 것을 진심으로 환영합니다.",
+  },
+};

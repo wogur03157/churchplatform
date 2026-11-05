@@ -39,6 +39,11 @@ import ChurchWorship from "./pages/public/ChurchWorship";
 import ChurchDirections from "./pages/public/ChurchDirections";
 import NewsAnnouncements from "./pages/public/NewsAnnouncements";
 import MinistryBoard from "./pages/public/MinistryBoard";
+import JesusPage from "./pages/public/JesusPage";
+import SmallChurch from "./pages/public/SmallChurch";
+import Departments from "./pages/public/Departments";
+import GodsLove from "./pages/public/GodsLove";
+import NeighborLove from "./pages/public/NeighborLove";
 
 // 읽기 전용(공개 데모) 빌드에서는 어드민 화면을 열지 않음
 const ADMIN_ENABLED = import.meta.env.VITE_PUBLIC_READONLY !== "true";
@@ -114,6 +119,10 @@ function Router() {
       <Route path="/sermons/midweek" component={MidweekSermons} />
       <Route path="/sermons/special" component={SpecialSermons} />
       <Route path="/community/new-member" component={NewMember} />
+      <Route path="/community/small-church" component={SmallChurch} />
+      <Route path="/community/departments" component={Departments} />
+      <Route path="/ministry/god-love" component={GodsLove} />
+      <Route path="/ministry/neighbor-love" component={NeighborLove} />
       <Route path="/community/:slug1/:slug2/:slug3">
         {() => <DynamicContentPage rootSlug="community" />}
       </Route>
@@ -147,6 +156,7 @@ function Router() {
 
       <Route path="/news/announcements" component={NewsAnnouncements} />
       <Route path="/news/ministry-board" component={MinistryBoard} />
+      <Route path="/jesus" component={JesusPage} />
 
       <Route path="/" component={PublicView} />
       <Route path="/:churchSlug" component={PublicView} />

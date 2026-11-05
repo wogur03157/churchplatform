@@ -1,34 +1,26 @@
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 
-const TABS = [
-  { label: "교회 소개", href: "/church/about" },
-  { label: "예배 안내", href: "/church/worship" },
-  { label: "오시는 길", href: "/church/directions" },
+/* 디자인(ys) 교회 소개 하위 탭. 같은 자리에서 페이지 주소로 이동합니다. */
+const pages = [
+  { href: "/church/about", hash: "영신교회", label: "영신교회" },
+  { href: "/church/worship", hash: "예배안내", label: "예배안내" },
+  { href: "/church/directions", hash: "오시는길", label: "오시는 길" },
 ];
 
-export default function ChurchNavigation() {
-  const [location] = useLocation();
+export default function ChurchNavigation({ activePage }: { activePage: string }) {
+  const [, navigate] = useLocation();
 
   return (
-    <nav className="border-b border-brand-gold/20 bg-white">
-      <div className="container flex gap-2 overflow-x-auto py-3">
-        {TABS.map((tab) => {
-          const active = location === tab.href;
-          return (
-            <Link key={tab.href} href={tab.href}>
-              <a
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-brand-brown text-brand-cream"
-                    : "text-brand-brown/70 hover:bg-brand-cream/60"
-                }`}
-              >
-                {tab.label}
-              </a>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+    <div className="flex gap-1 md:gap-2 w-full overflow-x-auto">
+      {pages.map((page) => (
+        <button
+          key={page.hash}
+          onClick={() => navigate(page.href)}
+          className={activePage===page.hash? "flex-1 md:w-full text-center py-3 md:py-2.5 px-4 rounded-xl text-[0.8625rem] md:text-[0.8625rem] sm:text-sm font-semibold md:font-medium transition-all cursor-pointer whitespace-nowrap bg-brand-sage text-white shadow-md shadow-brand-sage/20 border border-brand-sage":"flex-1 md:w-full text-center py-3 md:py-2.5 px-4 rounded-xl text-[0.8625rem] md:text-[0.8625rem] sm:text-sm font-semibold md:font-medium transition-all cursor-pointer whitespace-nowrap text-brand-brown bg-brand-sage/10 border border-brand-sage/15 hover:text-brand-sage hover:bg-brand-sage/20 hover:border-brand-sage"}
+        >
+          {page.label}
+        </button>
+      ))}
+    </div>
   );
 }

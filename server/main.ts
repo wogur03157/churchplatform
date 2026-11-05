@@ -74,6 +74,12 @@ async function bootstrap() {
       if (req.method !== "GET" && req.method !== "HEAD") {
         return res.status(405).json({ message: "읽기 전용 모드에서는 사용할 수 없습니다." });
       }
+      // 공개 목록은 항상 발행된 항목만 보여 줍니다 (임시저장 노출 방지)
+      const PUBLISHED_ONLY = ["/announcements", "/images", "/videos"];
+      if (req.method === "GET" && PUBLISHED_ONLY.includes(path)) {
+        req.query = { ...req.query, publishedOnly: "true" };
+      }
+
       const allowed = READ_ALLOWED.some((p) => path === p || path.startsWith(p + "/"));
       if (!allowed) {
         return res.status(404).json({ message: "Not Found" });

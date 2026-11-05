@@ -30,6 +30,9 @@ export class VideosService {
     status: "published" | "draft";
     displayOrder: number;
     category?: string | null;
+    sermonDate?: string | null;
+    scripture?: string | null;
+    preacher?: string | null;
   }) {
     return this.mediaService.createVideo(data);
   }

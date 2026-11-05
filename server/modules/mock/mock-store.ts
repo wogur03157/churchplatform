@@ -105,7 +105,7 @@ export let VIDEOS: any[] = [
 export let FLOATING_MESSAGES: any[] = [
   {
     id: 1, title: "신규 이벤트 진행 중!", content: "지금 가입하면 첫 달 무료!",
-    messageType: "announcement", churchId: null, status: "active",
+    messageType: "announcement", churchId: null, status: "inactive",
     startDate: past(3), endDate: new Date(Date.now() + 7 * 86_400_000),
     displayPosition: "top", createdBy: 1, createdAt: past(3), updatedAt: past(3),
   },
@@ -135,7 +135,7 @@ export let POPUPS: any[] = [
     id: 1, churchId: null, title: "성탄절 예배 안내",
     imageKey: null, imageUrl: "https://picsum.photos/seed/popup1/800/600", linkUrl: null,
     startDate: past(7), endDate: new Date(Date.now() + 7 * 86_400_000),
-    status: "active", createdBy: 1, createdAt: past(7), updatedAt: past(7),
+    status: "inactive", // 디자인 기준: 기본 노출 없음 createdBy: 1, createdAt: past(7), updatedAt: past(7),
   },
   {
     id: 2, churchId: null, title: "[비활성] 신년 행사 팝업",
@@ -261,14 +261,14 @@ export let INVITATIONS: { id: number; churchId: number; email: string; token: st
 export let HERO_SLIDES: any[] = [
   {
     id: 1, churchId: null, type: "image",
-    subtitle: "YOUNGSHIN CHURCH",
-    title: "하나님을 기쁘시게\n사람을 행복하게",
-    description: "영신교회는 복음의 기쁨을 누리고 따뜻한 공동체를 세워가는 축복의 통로입니다.",
+    subtitle: "",
+    title: "예수께서 이르시되 내가 곧\n길이요 진리요 생명이니\n나로 말미암지 않고는\n아버지께로 올 자가 없느니라",
+    description: "요한복음 14장 6절",
     primaryButtonText: "처음 오셨나요?",
     primaryButtonLink: "/community/new-member",
-    secondaryButtonText: "실시간 예배 참여",
-    secondaryButtonLink: "video:https://www.youtube.com/watch?v=5qap5aO4i9A",
-    imageUrl: "https://images.unsplash.com/photo-1510673398445-94f476ef2cbc?q=80&w=2670&auto=format&fit=crop",
+    secondaryButtonText: "우리가 믿는 예수님은?",
+    secondaryButtonLink: "/jesus",
+    imageUrl: "/images/night.png",
     imageKey: null, displayOrder: 1, status: "visible", createdAt: past(10), updatedAt: past(10),
   },
   {

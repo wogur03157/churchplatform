@@ -32,7 +32,9 @@ import FontSizePicker from "@/components/FontSizePicker";
 import VideoModal from "@/components/home/VideoModal";
 import HeroLights from "@/components/HeroLights";
 import FloatingHelp from "@/components/FloatingHelp";
-import FaithJourney from "@/components/FaithJourney";
+import HomeSections from "@/components/HomeSections";
+import IconLogo from "@/components/IconLogo";
+import SiteFooter from "@/components/SiteFooter";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -56,6 +58,9 @@ function formatDate(d: Date | string | null | undefined): string {
 }
 
 // ─── Hero Carousel ─────────────────────────────────────────────────────────────
+
+// 메인 비주얼 노출 개수. 1이면 단일 이미지, 여러 장으로 돌리려면 늘리면 됩니다. (캐러셀 코드는 유지)
+const HERO_MAX_SLIDES = 1;
 
 function HeroCarousel({
   slides,
@@ -119,7 +124,7 @@ function HeroCarousel({
         }
       `}</style>
 
-      <div className="relative h-screen overflow-hidden">
+      <div className="relative h-[110vh] overflow-hidden">
         <HeroLights />
         {/* ── 배경 레이어 (crossfade + Ken Burns scale) ── */}
         {slides.map((s, i) => (
@@ -216,12 +221,12 @@ function HeroCarousel({
                   </p>
                 )}
                 {slide.title && (
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.15] mb-5 drop-shadow-lg whitespace-pre-line">
+                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif text-white leading-[1.12] mb-5 drop-shadow-lg whitespace-pre-line">
                     {slide.title}
                   </h1>
                 )}
                 {slide.description && (
-                  <p className="text-white/90 text-sm md:text-base lg:text-lg font-light max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow-md whitespace-pre-line">
+                  <p className="text-white/90 text-lg md:text-base lg:text-lg font-light max-w-2xl mx-auto mb-10 md:mb-10 leading-relaxed drop-shadow-md whitespace-pre-line">
                     {slide.description}
                   </p>
                 )}
@@ -232,7 +237,7 @@ function HeroCarousel({
                         onClick={() =>
                           onLinkAction?.(slide.primaryButtonLink ?? "")
                         }
-                        className="bg-[var(--color-brand-gold)] text-[var(--color-brand-brown)] px-6 py-3 rounded-full text-sm font-medium hover:bg-white transition-all shadow-xl hover:-translate-y-1 cursor-pointer"
+                        className="bg-white text-[var(--color-brand-brown)] px-8 py-4 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full text-lg md:text-sm lg:text-lg font-medium hover:bg-white/85 transition-all shadow-xl hover:-translate-y-1 cursor-pointer"
                       >
                         {slide.primaryButtonText}
                       </button>
@@ -242,7 +247,7 @@ function HeroCarousel({
                         onClick={() =>
                           onLinkAction?.(slide.secondaryButtonLink ?? "")
                         }
-                        className="px-6 py-3 rounded-full text-sm font-medium transition-all border border-white/50 text-white hover:bg-white/10 backdrop-blur-sm cursor-pointer"
+                        className="bg-transparent border border-white/60 text-white px-8 py-4 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full text-lg md:text-sm lg:text-lg font-medium hover:bg-[var(--color-brand-gold)] hover:border-[var(--color-brand-gold)] hover:text-[var(--color-brand-brown)] transition-all shadow-xl hover:-translate-y-1 cursor-pointer"
                       >
                         {slide.secondaryButtonText}
                       </button>
@@ -774,7 +779,7 @@ export default function PublicView() {
   const fridayVideo = fridayVideos[0];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="site-layout min-h-screen bg-white">
       <PublicHeader
         preloadedSiteConfigs={siteConfigs}
         preloadedCategoryForest={categoryForest}
@@ -783,633 +788,24 @@ export default function PublicView() {
 
       <main>
         {/* 1. Hero */}
-        <section className="bg-[var(--color-brand-cream)] overflow-hidden">
+        <section className="relative bg-[var(--color-brand-cream)] overflow-hidden">
           <HeroCarousel
-            slides={heroSlidesData}
+            slides={heroSlidesData.slice(0, HERO_MAX_SLIDES)}
             onLinkAction={handleHeroAction}
           />
+          {/* Decorative Curve (디자인 curve-top) */}
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-[var(--color-brand-cream)] curve-top z-10" />
         </section>
 
-        {/* 2. Quick Links */}
-        <section className="relative z-20 bg-[var(--color-brand-cream)] px-6 pb-8 md:pb-16">
-          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 lg:gap-8">
-            {quickMenuItems.map((item, idx) => (
-              <Link key={idx} href={item.href}>
-                <div className="group bg-white p-4 md:p-5 lg:p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-between text-center border border-[var(--color-brand-gold)]/10 min-h-[140px] sm:min-h-[160px] md:min-h-[158px] lg:min-h-[220px] transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-                  <div className="flex flex-col items-center gap-1 sm:gap-2 flex-1 w-full">
-                    <div className="text-[var(--color-brand-gold)] transition-transform group-hover:scale-110 duration-500 mb-1 sm:mb-4 md:mb-1.5 lg:mb-4 scale-75 sm:scale-100">
-                      {item.iconUrl ? (
-                        <img
-                          src={item.iconUrl}
-                          alt={item.label}
-                          className="w-12 h-12 object-contain"
-                        />
-                      ) : (
-                        <item.icon className="w-12 h-12" />
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-center items-center w-full">
-                      <h3 className="font-serif text-sm sm:text-lg md:text-lg lg:text-2xl font-bold text-[var(--color-brand-brown)] mb-0.5 sm:mb-2 tracking-tight">
-                        {item.label}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="mt-2 sm:mt-4">
-                    <div className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-[var(--color-brand-gold)] rounded-full flex items-center justify-center text-white shadow-lg transition-all group-hover:bg-[var(--color-brand-sage)] group-hover:scale-110">
-                      <ChevronRight className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* 3. 설교 말씀 */}
-        <section
-          id="설교말씀"
-          className="py-14 md:py-20 bg-white overflow-hidden"
-        >
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="mb-6 md:mb-10">
-              <div className="flex items-center gap-2 text-[var(--color-brand-sage)] font-medium mb-3">
-                <MonitorPlay className="w-5 h-5" />
-                <span className="text-sm">설교 말씀</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-[var(--color-brand-brown)]">
-                  말씀의 은혜
-                </h2>
-                <Link href="/sermons/sunday">
-                  <button className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--color-brand-cream)] border border-[var(--color-brand-gold)]/20 text-[var(--color-brand-brown)] rounded-full hover:bg-[var(--color-brand-brown)] hover:text-[var(--color-brand-cream)] transition-all group font-medium shadow-sm text-xs mt-1">
-                    설교 말씀 더보기{" "}
-                    <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
-              {/* Sunday Sermon */}
-              <div
-                className="group cursor-pointer"
-                onClick={() =>
-                  sundayVideo &&
-                  setActiveVideo({
-                    title: sundayVideo.title,
-                    embedUrl: getYoutubeEmbed(sundayVideo.url),
-                  })
-                }
-              >
-                <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl mb-5 md:mb-8">
-                  <img
-                    src={
-                      sundayVideo?.thumbnailUrl ||
-                      "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=1200&auto=format&fit=crop"
-                    }
-                    alt="Sunday Sermon"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center scale-90 group-hover:scale-100 transition-transform duration-500">
-                      <div className="w-16 h-16 bg-[var(--color-brand-gold)] rounded-full flex items-center justify-center shadow-lg">
-                        <MonitorPlay className="w-8 h-8 fill-current text-white" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-6 left-6 px-4 py-2 bg-[var(--color-brand-brown)]/80 backdrop-blur-sm text-[var(--color-brand-cream)] text-[10px] uppercase tracking-widest rounded-full">
-                    이번주 주일 설교
-                  </div>
-                </div>
-                <h3 className="text-xl md:text-base lg:text-2xl font-serif text-[var(--color-brand-brown)] mb-2 group-hover:text-[var(--color-brand-sage)] transition-colors leading-tight">
-                  {sundayVideo?.title || "주일 설교"}
-                </h3>
-                <div className="flex flex-wrap items-center gap-3 text-[var(--color-brand-brown)]/50 text-sm">
-                  {(sundayVideo?.sermonDate || sundayVideo?.createdAt) && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {formatDate(
-                        sundayVideo.sermonDate || sundayVideo.createdAt
-                      )}
-                    </span>
-                  )}
-                  {sundayVideo?.scripture && (
-                    <span className="flex items-center gap-1 text-[var(--color-brand-sage)]">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      {sundayVideo.scripture}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Friday Prayer */}
-              <div
-                className="hidden md:block group cursor-pointer"
-                onClick={() =>
-                  fridayVideo &&
-                  setActiveVideo({
-                    title: fridayVideo.title,
-                    embedUrl: getYoutubeEmbed(fridayVideo.url),
-                  })
-                }
-              >
-                <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl mb-5 md:mb-8">
-                  <img
-                    src={
-                      fridayVideo?.thumbnailUrl ||
-                      "https://images.unsplash.com/photo-1510563800743-aed236490d08?q=80&w=1200&auto=format&fit=crop"
-                    }
-                    alt="Friday Prayer"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center scale-90 group-hover:scale-100 transition-transform duration-500">
-                      <div className="w-16 h-16 bg-[var(--color-brand-sage)] rounded-full flex items-center justify-center shadow-lg">
-                        <MonitorPlay className="w-8 h-8 fill-current text-white" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-6 left-6 px-4 py-2 bg-[var(--color-brand-brown)]/80 backdrop-blur-sm text-[var(--color-brand-cream)] text-[10px] uppercase tracking-widest rounded-full">
-                    금요 기도회
-                  </div>
-                </div>
-                <h3 className="text-xl md:text-base lg:text-2xl font-serif text-[var(--color-brand-brown)] mb-2 group-hover:text-[var(--color-brand-sage)] transition-colors leading-tight">
-                  {fridayVideo?.title || "금요 기도회"}
-                </h3>
-                <div className="flex flex-wrap items-center gap-3 text-[var(--color-brand-brown)]/50 text-sm">
-                  {(fridayVideo?.sermonDate || fridayVideo?.createdAt) && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {formatDate(
-                        fridayVideo.sermonDate || fridayVideo.createdAt
-                      )}
-                    </span>
-                  )}
-                  {fridayVideo?.scripture && (
-                    <span className="flex items-center gap-1 text-[var(--color-brand-sage)]">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      {fridayVideo.scripture}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. 사역 소개 */}
-        {activeMinistryItems.length > 0 && (
-          <section
-            id="사역소개"
-            className="hidden md:block py-16 bg-[var(--color-brand-cream)] overflow-hidden"
-          >
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid md:grid-cols-2 gap-10 items-stretch">
-                {/* Left: Active image */}
-                <div className="relative h-full">
-                  <div className="absolute -top-10 -left-10 w-40 h-40 bg-[var(--color-brand-sage)]/10 rounded-full blur-3xl" />
-                  <div className="relative z-10 rounded-[4rem] overflow-hidden shadow-2xl h-full w-full">
-                    <img
-                      key={activeCoreValue}
-                      src={
-                        activeMinistryItems[activeCoreValue]?.imageUrl ||
-                        "https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800&auto=format&fit=crop"
-                      }
-                      alt={activeMinistryItems[activeCoreValue]?.title}
-                      className="h-full w-full object-cover aspect-[4/3] transition-opacity duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/20 to-transparent flex flex-col justify-start p-8 md:p-10 pointer-events-none">
-                      <div className="text-white text-left">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] md:text-xs font-semibold tracking-wider mb-2 border border-white/10 shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-gold)] animate-pulse" />
-                          CORE VALUE
-                        </span>
-                        <h3 className="font-serif text-2xl md:text-3xl font-medium tracking-tight mb-2 drop-shadow-md">
-                          {activeMinistryItems[activeCoreValue]?.title}
-                        </h3>
-                        <p className="text-white/85 text-xs md:text-sm font-light max-w-xs md:max-w-md leading-relaxed drop-shadow-md whitespace-pre-line">
-                          {activeMinistryItems[activeCoreValue]?.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: List */}
-                <div className="flex flex-col justify-center">
-                  <div className="flex items-center gap-2 text-[var(--color-brand-sage)] font-medium mb-4">
-                    <Leaf className="w-5 h-5" />
-                    <span className="text-sm">영신교회의 핵심 가치</span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-serif mb-4 text-[var(--color-brand-brown)] leading-tight">
-                    따뜻한 환대와 깊이 있는 영적 성장
-                  </h2>
-                  <p className="text-sm text-[var(--color-brand-brown)]/80 leading-relaxed italic mb-6">
-                    "세상의 차가운 그늘 아래 있는 이들에게 하나님의 따뜻한 빛을
-                    전합니다."
-                  </p>
-                  <div className="grid grid-cols-1 gap-3">
-                    {activeMinistryItems.map((item: any, idx: number) => {
-                      const isActive = activeCoreValue === idx;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setActiveCoreValue(idx)}
-                          className={`flex gap-4 py-4 px-5 text-left rounded-3xl transition-all duration-300 border cursor-pointer outline-none ${
-                            isActive
-                              ? "bg-[var(--color-brand-sage)] border-[var(--color-brand-sage)] text-white shadow-lg scale-[1.02]"
-                              : "bg-white border-transparent hover:border-[var(--color-brand-gold)]/30 shadow-sm hover:shadow-md text-[var(--color-brand-brown)] hover:scale-[1.01]"
-                          }`}
-                        >
-                          <div>
-                            <h4
-                              className={`font-serif text-base mb-1 ${isActive ? "text-white" : "text-[var(--color-brand-brown)]"}`}
-                            >
-                              {item.title}
-                            </h4>
-                            <p
-                              className={`text-xs leading-relaxed whitespace-pre-line ${isActive ? "text-white/80" : "text-[var(--color-brand-brown)]/70"}`}
-                            >
-                              {item.description}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* 5. 가나안쉼터 */}
-        <section
-          id="가나안쉼터"
-          className="pt-14 pb-20 md:py-20 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 z-0">
-            {canaanData?.backgroundImageUrl && (
-              <img
-                src={canaanData.backgroundImageUrl}
-                alt="Canaan"
-                className="w-full h-full object-cover opacity-30"
-              />
-            )}
-          </div>
-          <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-brand-gold)]/10 text-[var(--color-brand-sage)] rounded-full text-sm font-medium mb-6">
-              <Wind className="w-4 h-4" />
-              <span>당신의 쉼을 위한 공간</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[var(--color-brand-brown)] mb-6 leading-tight whitespace-pre-line">
-              {canaanData?.title ||
-                "언제나 찾아오셔도 좋습니다.\n당신의 영혼이 잠시 머물 수 있는 곳이기를."}
-            </h2>
-            {canaanData?.description && (
-              <p className="hidden sm:block text-base text-[var(--color-brand-brown)]/70 mb-10 leading-relaxed max-w-2xl mx-auto whitespace-pre-line">
-                {canaanData.description}
-              </p>
-            )}
-            <div className="grid md:grid-cols-2 gap-6 text-left">
-              <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-[var(--color-brand-gold)]/20 hover:border-[var(--color-brand-sage)] transition-all group">
-                <h3 className="font-serif text-xl mb-3 group-hover:text-[var(--color-brand-sage)] transition-colors">
-                  {canaanData?.button1Text || "Digital Prayer Room"}
-                </h3>
-                <p className="text-sm text-[var(--color-brand-brown)]/70 mb-4 font-light">
-                  익명으로 기도를 부탁하시거나, 마음의 짐을 털어놓으세요. 저희가
-                  함께 마음을 모으겠습니다.
-                </p>
-                <button
-                  onClick={() => {
-                    setIsPrayerModalOpen(true);
-                    setIsSubmitted(false);
-                  }}
-                  className="text-[var(--color-brand-sage)] flex items-center gap-2 font-medium text-sm hover:underline cursor-pointer"
-                >
-                  기명/무기명 기도요청 <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-[var(--color-brand-gold)]/20 hover:border-[var(--color-brand-sage)] transition-all group">
-                <h3 className="font-serif text-xl mb-3 group-hover:text-[var(--color-brand-sage)] transition-colors">
-                  {canaanData?.button2Text || "Open Conversation"}
-                </h3>
-                <p className="text-sm text-[var(--color-brand-brown)]/70 mb-4 font-light">
-                  신앙에 대한 의문이나 삶의 고민들, 교적과 상관없이 언제든
-                  따뜻한 대화가 가능합니다.
-                </p>
-                <a
-                  href={
-                    canaanData?.button2Link || "/canaan/online-consultation"
-                  }
-                  className="text-[var(--color-brand-sage)] flex items-center gap-2 font-medium text-sm hover:underline"
-                >
-                  대화 신청하기 <ChevronRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. FaithJourney — 예수님은 누구신가요? */}
-        <FaithJourney />
-
-        {/* 7. 다음세대 */}
-        {activeNextGenItems.length > 0 && (
-          <section
-            id="다음세대"
-            className="pt-10 pb-6 md:pt-20 md:pb-8 bg-[var(--color-brand-cream)]/40 relative overflow-hidden border-t border-[var(--color-brand-gold)]/10"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-brand-sage)]/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-[var(--color-brand-gold)]/5 rounded-full blur-3xl" />
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 md:mb-8">
-                <div className="text-left">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-sage)]/10 text-[var(--color-brand-sage)] rounded-full text-xs font-semibold tracking-wide mb-3">
-                    <Heart className="w-3.5 h-3.5" />
-                    <span>영신교회 다음세대</span>
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-serif text-[var(--color-brand-brown)] leading-tight">
-                    아이들의 꿈이 자라고, 믿음이 깊어지는 품
-                  </h2>
-                </div>
-                <div className="flex gap-2.5 mt-4 md:mt-0">
-                  <button
-                    onClick={() =>
-                      setNextGenIndex(prev =>
-                        prev <= 0
-                          ? maxNextGenIndex(activeNextGenItems.length)
-                          : prev - 1
-                      )
-                    }
-                    className="w-11 h-11 rounded-full border border-[var(--color-brand-gold)]/30 hover:border-[var(--color-brand-sage)] bg-white flex items-center justify-center text-[var(--color-brand-brown)] hover:text-[var(--color-brand-sage)] transition-all shadow-sm cursor-pointer"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      setNextGenIndex(prev =>
-                        prev >= maxNextGenIndex(activeNextGenItems.length)
-                          ? 0
-                          : prev + 1
-                      )
-                    }
-                    className="w-11 h-11 rounded-full bg-[var(--color-brand-sage)] flex items-center justify-center text-white hover:bg-[var(--color-brand-brown)] transition-all shadow-md cursor-pointer"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden pt-2 pb-4 -mx-3 px-3">
-                <div
-                  className="flex transition-transform duration-500 ease-out"
-                  style={{
-                    transform: `translateX(-${nextGenIndex * (100 / visibleCount)}%)`,
-                  }}
-                >
-                  {activeNextGenItems.map((item: any, idx: number) => (
-                    <div
-                      key={item.id}
-                      className="w-full sm:w-1/2 lg:w-1/3 shrink-0 p-3"
-                    >
-                      <button
-                        onClick={() => {
-                          window.location.hash = `#nextgen/${idx}`;
-                        }}
-                        className="w-full text-left rounded-[2rem] overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[var(--color-brand-gold)]/30 flex flex-col h-full group cursor-pointer outline-none"
-                      >
-                        <div className="relative aspect-[4/3] md:aspect-[16/10] w-full overflow-hidden">
-                          {item.imageUrl && (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          )}
-                        </div>
-                        <div className="p-6 flex-1 flex flex-col justify-between">
-                          <div>
-                            <h3 className="font-serif text-lg text-[var(--color-brand-brown)] mb-1 md:mb-2 group-hover:text-[var(--color-brand-sage)] transition-colors">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs text-[var(--color-brand-brown)]/75 leading-relaxed font-light mb-4 line-clamp-2 hidden md:block whitespace-pre-line">
-                              {item.description}
-                            </p>
-                          </div>
-                          <div className="pt-2 md:pt-4 border-t border-[var(--color-brand-gold)]/10 space-y-1.5">
-                            {item.targetAge && (
-                              <div className="flex items-center gap-2 text-[11px] text-[var(--color-brand-brown)]/65">
-                                <span className="font-semibold text-[var(--color-brand-sage)] shrink-0 bg-[var(--color-brand-sage)]/10 px-1.5 py-0.5 rounded">
-                                  대상
-                                </span>
-                                <span className="truncate">
-                                  {item.targetAge}
-                                </span>
-                              </div>
-                            )}
-                            {item.worshipTime && (
-                              <div className="flex items-center gap-2 text-[11px] text-[var(--color-brand-brown)]/65">
-                                <span className="font-semibold text-[var(--color-brand-gold)]/90 shrink-0 bg-[var(--color-brand-gold)]/10 px-1.5 py-0.5 rounded">
-                                  시간
-                                </span>
-                                <span className="truncate">
-                                  {item.worshipTime}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* 7. 예배안내 + 오시는길 */}
-        <section
-          id="예배안내"
-          className="pt-10 pb-12 md:pt-24 md:pb-14 bg-[var(--color-brand-brown)] text-[var(--color-brand-cream)] relative overflow-hidden"
-        >
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-6 md:mb-10">
-              <h2 className="text-4xl md:text-5xl font-serif mb-2">
-                예배 시간 및 장소
-              </h2>
-              <p className="text-[var(--color-brand-gold)]/80 font-light tracking-widest uppercase text-xs">
-                Worship Schedule
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-stretch">
-              {/* Left: directions card */}
-              <div className="md:col-span-3 order-2 md:order-1 bg-white p-6 md:p-8 lg:p-10 rounded-[2.5rem] text-[var(--color-brand-brown)] shadow-2xl flex flex-col justify-between">
-                <div>
-                  <h3 className="font-serif text-xl lg:text-2xl mb-4 text-[var(--color-brand-brown)] text-left">
-                    찾아오시는 길
-                  </h3>
-                  <div className="space-y-3 mb-6 text-left">
-                    <div className="flex items-start gap-2.5 text-[var(--color-brand-brown)]/85 text-sm lg:text-base leading-relaxed">
-                      <MapPin className="w-5 h-5 text-[var(--color-brand-sage)] shrink-0 mt-1" />
-                      <span className="flex items-center flex-wrap gap-2">
-                        <span>주소: {churchAddress}</span>
-                        <button
-                          onClick={handleCopyAddress}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-[var(--color-brand-cream)] hover:bg-[var(--color-brand-sage)] hover:text-white text-[var(--color-brand-brown)]/80 transition-all border border-[var(--color-brand-gold)]/20 active:scale-95 cursor-pointer shrink-0"
-                        >
-                          {copied ? (
-                            <>
-                              <Check className="w-3 h-3 text-[var(--color-brand-sage)]" />
-                              <span className="text-[11px]">복사완료</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3" />
-                              <span className="text-[11px]">복사</span>
-                            </>
-                          )}
-                        </button>
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-2.5 text-[var(--color-brand-brown)]/85 text-sm lg:text-base leading-relaxed">
-                      <Phone className="w-5 h-5 text-[var(--color-brand-sage)] shrink-0 mt-1" />
-                      <span>연락처: 02-123-4567</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full aspect-[4/3] md:flex-1 md:aspect-auto md:min-h-[160px] bg-gray-100 rounded-[2rem] overflow-hidden border border-[var(--color-brand-gold)]/10 shadow-inner">
-                  <iframe
-                    src={mapEmbedUrl}
-                    className="w-full h-full border-0"
-                    allowFullScreen
-                    loading="lazy"
-                    title="영신교회 지도"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              </div>
-
-              {/* Right: worship schedule */}
-              <div className="md:col-span-2 order-1 md:order-2 grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-2 md:self-center">
-                {(activeWorshipSchedule.length > 0
-                  ? activeWorshipSchedule
-                  : [
-                      {
-                        id: 1,
-                        name: "주일 1부 예배",
-                        time: "09:30",
-                        location: "본당 2층",
-                      },
-                      {
-                        id: 2,
-                        name: "주일 2부 예배",
-                        time: "11:30",
-                        location: "본당 2층",
-                      },
-                      {
-                        id: 3,
-                        name: "주일 청년부 예배",
-                        time: "14:30",
-                        location: "본당 2층",
-                      },
-                      {
-                        id: 4,
-                        name: "수요 성경 대학",
-                        time: "19:30",
-                        location: "본당 2층",
-                      },
-                      {
-                        id: 5,
-                        name: "금요 기도회",
-                        time: "20:30",
-                        location: "본당 2층",
-                      },
-                    ]
-                ).map((item: any, idx: number) => (
-                  <div
-                    key={item.id ?? idx}
-                    className={`bg-white/5 backdrop-blur-sm px-4 py-3 md:py-2.5 lg:py-4 rounded-xl md:rounded-2xl border border-white/10 hover:bg-white/15 transition-all flex flex-row items-center justify-between ${idx === 4 ? "hidden md:flex" : "flex"}`}
-                  >
-                    <div className="flex flex-col text-left">
-                      <div className="text-[var(--color-brand-gold)]/70 text-xs uppercase tracking-widest font-semibold leading-none mb-1">
-                        {item.name}
-                      </div>
-                      {item.location && (
-                        <div className="flex items-center gap-1 text-white/40 text-[10px] leading-none">
-                          <MapPin className="w-3 h-3 text-[var(--color-brand-gold)]/40 shrink-0" />
-                          <span>{item.location}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-lg md:text-base lg:text-2xl font-mono tracking-tight text-[var(--color-brand-gold)] font-light leading-none whitespace-nowrap ml-3">
-                      {item.time}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <HomeSections
+          onPlayVideo={(v) => setActiveVideo(v)}
+          onPrayerRequest={() => {
+            setIsPrayerModalOpen(true);
+          }}
+        />
       </main>
 
-      {/* Footer */}
-      <footer className="py-16 bg-[var(--color-brand-cream)] border-t border-[var(--color-brand-gold)]/20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex flex-col items-center justify-center mb-8">
-            <span className="font-serif text-2xl md:text-3xl font-semibold tracking-tight text-[var(--color-brand-brown)] mb-1">
-              영신교회
-            </span>
-            <p className="text-xs md:text-sm text-[var(--color-brand-gold)] font-medium tracking-wider">
-              하나님을 기쁘시게 사람을 행복하게
-            </p>
-          </div>
-          <p className="text-sm md:text-base text-[var(--color-brand-brown)]/50 mb-8 max-w-xl mx-auto leading-relaxed">
-            영신교회는 하나님을 향한 바른 예배와 이웃을 향한 사랑의 실천을
-            추구하는 믿음의 공동체입니다.
-          </p>
-          <div className="flex justify-center gap-5 mb-10">
-            {[
-              { name: "Instagram", icon: <Instagram className="w-5 h-5" /> },
-              { name: "YouTube", icon: <Youtube className="w-5 h-5" /> },
-              { name: "Facebook", icon: <Facebook className="w-5 h-5" /> },
-              { name: "Kakao", icon: <MessageSquare className="w-5 h-5" /> },
-            ].map(s => (
-              <a
-                key={s.name}
-                href="#"
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-[var(--color-brand-gold)]/10 text-[var(--color-brand-brown)]/60 hover:bg-[var(--color-brand-sage)] hover:text-white transition-all duration-300"
-                aria-label={s.name}
-              >
-                {s.icon}
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <FontSizePicker />
-          </div>
-          <div className="flex items-center justify-center gap-6 text-xs text-[var(--color-brand-brown)]/40 font-medium">
-            <Link
-              href="/privacy"
-              className="hover:text-[var(--color-brand-brown)] transition-colors"
-            >
-              개인정보처리방침
-            </Link>
-            <Link
-              href="/admin"
-              className="hover:text-[var(--color-brand-brown)] transition-colors"
-            >
-              관리자 로그인
-            </Link>
-          </div>
-          <p className="text-[10px] uppercase tracking-tighter text-[var(--color-brand-brown)]/30 mt-6">
-            © 2026 YOUNGSHIN CHURCH. ALL RIGHTS RESERVED.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Popup Modal */}
       {popup && (

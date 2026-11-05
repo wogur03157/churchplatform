@@ -988,7 +988,7 @@ export class MockHomeWorshipController {
 export class MockPublicHomeController {
   @Get("home-data")
   getHomeData() {
-    const activeSlides = HERO_SLIDES.filter((s: any) => s.status === "active");
+    const activeSlides = HERO_SLIDES.filter((s: any) => s.status === "visible" || s.status === "active");
     const activeSiteConfig = SITE_CONFIG;
     const activePopups = POPUPS.filter((p: any) => {
       const now = new Date();

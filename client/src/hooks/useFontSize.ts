@@ -22,7 +22,7 @@ function applyFontSize(level: FontSizeLevel) {
 
 export function useFontSize() {
   const [level, setLevel] = useState<FontSizeLevel>(() => {
-    return (localStorage.getItem(STORAGE_KEY) as FontSizeLevel) ?? "medium";
+    return (localStorage.getItem(STORAGE_KEY) as FontSizeLevel) ?? "small";
   });
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function useFontSize() {
 
   // 초기 적용
   useEffect(() => {
-    const saved = (localStorage.getItem(STORAGE_KEY) as FontSizeLevel) ?? "medium";
+    const saved = (localStorage.getItem(STORAGE_KEY) as FontSizeLevel) ?? "small";
     applyFontSize(saved);
   }, []);
 
