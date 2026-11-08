@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { useCRUD } from "@/hooks/useCRUD";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Video as VideoIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { Video, VideoCategory } from "@shared/entities";
+import { compareSermonVideos } from "@shared/sermon-order";
 
 type VideoType = "upload" | "youtube" | "vimeo" | "url";
 
@@ -78,6 +79,7 @@ export default function AdminVideos() {
     queryKey: ["videos"],
     queryFn: () => api.get<Video[]>("/videos"),
   });
+  const sortedVideos = useMemo(() => [...(videos ?? [])].sort(compareSermonVideos), [videos]);
 
   const [fetchingInfo, setFetchingInfo] = useState(false);
 
@@ -218,6 +220,7 @@ export default function AdminVideos() {
       </div>
       <div>
         <Label htmlFor="displayOrder">표시 순서</Label>
+        <p className="text-xs text-muted-foreground mb-1">0이면 설교 날짜 최신순입니다. 1 이상을 넣으면 그 숫자 순서로 목록 앞에 둡니다.</p>
         <Input id="displayOrder" type="number" value={form.displayOrder} onChange={(e) => setField("displayOrder", parseInt(e.target.value) || 0)} />
       </div>
       <div className="flex items-center space-x-2">
@@ -258,9 +261,9 @@ export default function AdminVideos() {
 
       {isLoading ? (
         <div className="text-center py-12"><p className="text-muted-foreground">로딩 중...</p></div>
-      ) : videos && videos.length > 0 ? (
+      ) : sortedVideos.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2">
-          {videos.map((video) => {
+          {sortedVideos.map((video) => {
             const embedUrl = getVideoEmbedUrl(video);
             return (
               <Card key={video.id} className="elegant-shadow overflow-hidden">
@@ -285,7 +288,9 @@ export default function AdminVideos() {
                         )}
                       </CardTitle>
                       <CardDescription className="text-xs flex items-center gap-2">
-                        {video.videoType.toUpperCase()} · 순서: {video.displayOrder}
+                        {video.videoType.toUpperCase()}
+                        {video.sermonDate ? ` · ${String(video.sermonDate).slice(0, 10)}` : ""}
+                        {video.displayOrder ? ` · 순서 ${video.displayOrder}` : ""}
                         {video.category && <Badge variant="outline" className="text-xs">{video.category}</Badge>}
                       </CardDescription>
                     </div>

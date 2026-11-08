@@ -1,4 +1,5 @@
-﻿import { Toaster } from "@/components/ui/sonner";
+﻿import { useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
@@ -50,6 +51,12 @@ const ADMIN_ENABLED = import.meta.env.VITE_PUBLIC_READONLY !== "true";
 
 function Router() {
   const [location] = useLocation();
+  useEffect(() => {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    const frame = requestAnimationFrame(() => window.scrollTo(0, 0));
+    return () => cancelAnimationFrame(frame);
+  }, [location]);
   if (!ADMIN_ENABLED && /^\/(admin|super-admin)(\/|$)/.test(location)) {
     return <NotFound />;
   }

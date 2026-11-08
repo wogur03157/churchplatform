@@ -5,6 +5,7 @@
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Repository } from "typeorm";
+import { compareSermonVideos } from "@shared/sermon-order";
 import { ContentCategory } from "../content-pages/entities/content-category.entity";
 import { Image } from "../images/entities/image.entity";
 import { VideoCategory } from "../video-categories/entities/video-category.entity";
@@ -98,10 +99,8 @@ export class MediaService {
       query.andWhere("category.slug = :categorySlug", { categorySlug });
     }
 
-    const rows = await query
-      .orderBy("media.displayOrder", "ASC")
-      .addOrderBy("media.createdAt", "DESC")
-      .getMany();
+    const rows = await query.getMany();
+    rows.sort(compareSermonVideos);
 
     return rows.map((row) => this.toVideoDto(row));
   }

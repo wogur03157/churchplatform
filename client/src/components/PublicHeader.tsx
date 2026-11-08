@@ -219,7 +219,7 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps 
                           <button
                             type="button"
                             onClick={() => go(item.href)}
-                            className="text-left text-sm lg:text-base font-semibold text-brand-brown/95 hover:text-brand-sage transition-colors leading-normal"
+                            className="text-left text-sm lg:text-base font-semibold text-brand-brown/80 hover:text-brand-brown hover:font-bold hover:bg-brand-gold/25 rounded-md px-1.5 -mx-1.5 py-0.5 transition-colors leading-normal"
                           >
                             {item.name}
                           </button>
@@ -230,7 +230,7 @@ export default function PublicHeader({ transparent = false }: PublicHeaderProps 
                                   <button
                                     type="button"
                                     onClick={() => go(sub.href)}
-                                    className="text-left text-sm text-brand-brown/80 hover:text-brand-sage transition-colors block leading-tight font-normal"
+                                    className="text-left text-sm text-brand-brown/70 hover:text-brand-brown hover:font-semibold hover:bg-brand-gold/20 rounded-md px-1.5 -mx-1.5 py-0.5 transition-colors block leading-tight"
                                   >
                                     • {sub.name}
                                   </button>

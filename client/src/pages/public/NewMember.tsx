@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
@@ -31,8 +31,17 @@ function Lines({ lines }: { lines: string[] }) {
 
 export default function NewMember() {
   const [bookSlideIndex, setBookSlideIndex] = useState(0);
-  const bookVisibleCount = 3;
+  const [windowWidth, setWindowWidth] = useState(() => (typeof window === "undefined" ? 1280 : window.innerWidth));
+  useEffect(() => {
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const bookVisibleCount = windowWidth < 640 ? 1 : windowWidth < 1024 ? 2 : 3;
   const maxBookSlideIndex = Math.max(0, books.items.length - bookVisibleCount);
+  useEffect(() => {
+    setBookSlideIndex((previous) => Math.min(previous, maxBookSlideIndex));
+  }, [maxBookSlideIndex]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const formRef = useRef<HTMLElement>(null);
@@ -146,7 +155,6 @@ export default function NewMember() {
                     <span className="text-xs font-bold text-brand-sage tracking-[0.15em]">STEP {index + 1}</span>
                     <h3 className="first-visit-step-title font-serif text-xl font-bold text-brand-brown mt-1 mb-2 md:mt-2 md:mb-3">{step.title}</h3>
                     <p className="first-visit-step-description text-base text-brand-brown/65 leading-relaxed min-h-0 md:min-h-[4.125rem]">{step.body}</p>
-                    <p className="first-visit-step-meta mt-3 pt-2 md:mt-5 md:pt-4 text-xs font-medium text-brand-brown/55 border-t border-brand-gold/15">{step.meta}</p>
                   </div>
                 </motion.article>
               ))}
@@ -177,7 +185,6 @@ export default function NewMember() {
                     <span className="text-xs font-bold text-brand-sage tracking-[0.15em]">STEP {index + 1}</span>
                     <h3 className="first-visit-step-title font-serif text-xl font-bold text-brand-brown mt-1 mb-2 md:mt-2 md:mb-3">{step.title}</h3>
                     <p className="first-visit-step-description text-base text-brand-brown/65 leading-relaxed min-h-0 md:min-h-[4.125rem]">{step.body}</p>
-                    <p className="first-visit-step-meta mt-3 pt-2 md:mt-5 md:pt-4 text-xs font-medium text-brand-brown/55">{step.meta}</p>
                   </div>
                 </motion.article>
               ))}

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common";
+import { compareSermonVideos } from "@shared/sermon-order";
 import {
   ANNOUNCEMENTS, IMAGES, VIDEOS, FLOATING_MESSAGES, LAYOUT_SETTINGS,
   POPUPS, CHURCHES, FEATURES, ALL_FEATURE_KEYS, ADMINS, VIDEO_CATEGORIES,
@@ -94,7 +95,7 @@ export class MockVideosController {
         ? result.filter((v) => !["sunday", "wednesday", "friday"].includes(v.category))
         : result.filter((v) => v.category === category);
     }
-    return result;
+    return result.sort(compareSermonVideos);
   }
 
   @Get(":id")

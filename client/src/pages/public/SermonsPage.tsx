@@ -6,6 +6,7 @@ import PublicPageLayout from "@/components/PublicPageLayout";
 import SermonCard, { type SermonItem } from "@/components/SermonCard";
 import { api } from "@/lib/api";
 import type { Video } from "@shared/entities";
+import { compareSermonVideos } from "@shared/sermon-order";
 
 export type SermonTab = "주일_금요" | "수요_특별";
 
@@ -127,16 +128,7 @@ export default function SermonsPage({ initialTab = "주일_금요" }: { initialT
     queryFn: () => api.get<Video[]>("/videos?publishedOnly=true"),
   });
 
-  const sorted = useMemo(
-    () =>
-      [...videos].sort((a, b) => {
-        const da = a.sermonDate ? String(a.sermonDate) : String(a.createdAt);
-        const db = b.sermonDate ? String(b.sermonDate) : String(b.createdAt);
-        if (da !== db) return da < db ? 1 : -1;
-        return a.displayOrder - b.displayOrder;
-      }),
-    [videos],
-  );
+  const sorted = useMemo(() => [...videos].sort(compareSermonVideos), [videos]);
 
   const sundayFriday = useMemo(
     () => sorted.filter((v) => TAB_CATEGORIES["주일_금요"].includes(v.category ?? "")).map(toSermon),

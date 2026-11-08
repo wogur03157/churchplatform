@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { Video } from "@shared/entities";
@@ -8,6 +9,7 @@ import { Wind, ArrowRight, Calendar, ChevronDown, ChevronLeft, ChevronRight, Chu
 import IconLogo from "@/components/IconLogo";
 import SermonCard, { type SermonItem } from "@/components/SermonCard";
 import { nextGenItems } from "@/data/nextGen";
+import { DEPARTMENT_SLUGS, NEIGHBOR_LOVE_SLUGS } from "@/content/subpages";
 
 export type HomeSermons = { sunday: SermonItem[]; friday: SermonItem[]; wednesday: SermonItem[]; special: SermonItem[] };
 
@@ -81,6 +83,7 @@ export default function HomeSections({
   onPlayVideo: (v: { title: string; embedUrl: string }) => void;
   onPrayerRequest: () => void;
 }) {
+  const [, navigate] = useLocation();
   // DB: 공개 영상 중 가장 최근 주일/금요 설교
   const { data: videos = [] } = useQuery({
     queryKey: ["videos", "public-sermons"],
@@ -107,7 +110,6 @@ export default function HomeSections({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  const [selectedQuickLink, setSelectedQuickLink] = useState<number | null>(null);
   const [activeCoreValue, setActiveCoreValue] = useState(0);
   const [selectedNextGen, setSelectedNextGen] = useState<number | null>(0);
   const [nextGenIndex, setNextGenIndex] = useState(0);
@@ -119,7 +121,17 @@ export default function HomeSections({
   const hasDragged = useRef(false);
   const handleNextGenSlide = () => setNextGenIndex((prev) => (prev >= maxNextGenIndex ? 0 : prev + 1));
   const handlePrevGenSlide = () => setNextGenIndex((prev) => (prev <= 0 ? maxNextGenIndex : prev - 1));
-  const coreValueRoutes = ["#이웃사랑/2", "#이웃사랑/1", "#이웃사랑/0"];
+  const coreValueRoutes = [
+    `/ministry/neighbor-love#${NEIGHBOR_LOVE_SLUGS[2]}`,
+    `/ministry/neighbor-love#${NEIGHBOR_LOVE_SLUGS[1]}`,
+    `/ministry/neighbor-love#${NEIGHBOR_LOVE_SLUGS[0]}`,
+  ];
+  const quickLinks = [
+    { title: "예배안내", desc: "예배시간과 다양한 예배를 안내합니다.", icon: <Church className="w-12 h-12" />, color: "text-brand-gold", bgClass: "bg-brand-gold/6 hover:bg-brand-brown/20", href: "/church/worship" },
+    { title: "오시는길", desc: "영신교회로 오시는 길을 상세히 안내합니다.", icon: <MapPin className="w-12 h-12" />, color: "text-brand-gold", bgClass: "bg-brand-sage/6 hover:bg-brand-brown/20", href: "/church/directions" },
+    { title: "새가족안내", desc: "영신교회의 새가족이 되신 것을 환영합니다.", icon: <UserPlus className="w-12 h-12" />, color: "text-brand-gold", bgClass: "bg-brand-cream/80 hover:bg-brand-brown/20", href: "/community/new-member" },
+    { title: "온라인예배", desc: "언제 어디서나 함께 드리는 온라인 예배입니다.", icon: <MonitorPlay className="w-12 h-12" />, color: "text-brand-brown", bgClass: "bg-brand-brown/5 hover:bg-brand-brown/20", href: "/sermons/sunday" },
+  ];
   const coreValues=[
     {
       title: "행복한대학",
@@ -156,40 +168,7 @@ export default function HomeSections({
           <section className={`main-quick-links relative z-20 px-6 pt-[var(--section-space)] pb-[clamp(2.5rem,4vw,3.125rem)] bg-brand-cream transition-all duration-700 ease-out ${isScrolled? '-mt-24 sm:-mt-16 lg:-mt-24':'-mt-16'
             } md:-mt-16 lg:-mt-24`}>
             <div className="max-w-[var(--content-max)] mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-8">
-              {[
-                {
-                  title: "예배안내",
-                  desc: "예배시간과 다양한 예배를 안내합니다.",
-                  icon: <Church className="w-12 h-12" />,
-                  color: "text-brand-gold",
-                  bgClass: "bg-brand-gold/6 hover:bg-brand-brown/20",
-                  hash: "#예배안내"
-                },
-                {
-                  title: "오시는길",
-                  desc: "영신교회로 오시는 길을 상세히 안내합니다.",
-                  icon: <MapPin className="w-12 h-12" />,
-                  color: "text-brand-gold",
-                  bgClass: "bg-brand-sage/6 hover:bg-brand-brown/20",
-                  hash: "#오시는길"
-                },
-                {
-                  title: "새가족안내",
-                  desc: "영신교회의 새가족이 되신 것을 환영합니다.",
-                  icon: <UserPlus className="w-12 h-12" />,
-                  color: "text-brand-gold",
-                  bgClass: "bg-brand-cream/80 hover:bg-brand-brown/20",
-                  hash: "#새가족안내"
-                },
-                {
-                  title: "온라인예배",
-                  desc: "언제 어디서나 함께 드리는 온라인 예배입니다.",
-                  icon: <MonitorPlay className="w-12 h-12" />,
-                  color: "text-brand-brown",
-                  bgClass: "bg-brand-brown/5 hover:bg-brand-brown/20",
-                  hash: "#설교말씀/주일금요"
-                }
-              ].map((item,idx) => (
+              {quickLinks.map((item,idx) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0,y: 20 }}
@@ -198,14 +177,7 @@ export default function HomeSections({
                   transition={{ delay: idx*0.1 }}
                   whileHover={{ y: -8 }}
                   whileTap={{ y: -8 }}
-                  onClick={() => {
-                    if(window.matchMedia('(min-width: 768px) and (max-width: 1023px), (min-width: 1024px) and (max-width: 1366px) and (pointer: coarse)').matches) {
-                      setSelectedQuickLink(idx);
-                    } else {
-                      window.location.hash=item.hash;
-                    }
-                  }}
-                  data-selected={selectedQuickLink===idx}
+                  onClick={() => navigate(item.href)}
                   className={`quick-link-card ${item.bgClass} p-4 md:p-5 lg:p-8 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-between text-center group transition-all border border-brand-gold/10 min-h-[10rem] sm:min-h-[10.5rem] md:min-h-[9.875rem] lg:min-h-[15rem] cursor-pointer`}
                 >
                   <div className="flex flex-col items-center gap-1 sm:gap-2 flex-1 w-full">
@@ -224,7 +196,7 @@ export default function HomeSections({
                   </div>
 
                   <div className="mt-2 sm:mt-4 md:mt-2 lg:mt-4">
-                    <a href={item.hash} aria-label={item.title+' 페이지로 이동'} onClick={(event) => event.stopPropagation()} className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-brand-gold rounded-full flex items-center justify-center text-white shadow-lg transition-all group-hover:bg-brand-sage group-hover:shadow-brand-sage/20 group-hover:scale-110 group-active:bg-brand-sage group-active:shadow-brand-sage/20 group-active:scale-110">
+                    <a href={item.href} aria-label={item.title+' 페이지로 이동'} onClick={(event) => { event.preventDefault(); event.stopPropagation(); navigate(item.href); }} className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-brand-gold rounded-full flex items-center justify-center text-white shadow-lg transition-all group-hover:bg-brand-sage group-hover:shadow-brand-sage/20 group-hover:scale-110 group-active:bg-brand-sage group-active:shadow-brand-sage/20 group-active:scale-110">
                       <ArrowRight className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                     </a>
                   </div>
@@ -283,13 +255,13 @@ export default function HomeSections({
                   <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand-sage/10 rounded-full blur-3xl"></div>
                   <div
                     className="relative z-10 rounded-[2rem] overflow-hidden shadow-2xl h-full w-full group hover:shadow-brand-sage/20 hover:shadow-2xl transition-all duration-300 cursor-pointer"
-                    onClick={() => { window.location.hash=coreValueRoutes[activeCoreValue]; }}
+                    onClick={() => navigate(coreValueRoutes[activeCoreValue])}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if(e.key==='Enter'||e.key===' ') {
                         e.preventDefault();
-                        window.location.hash=coreValueRoutes[activeCoreValue];
+                        navigate(coreValueRoutes[activeCoreValue]);
                       }
                     }}
                   >
@@ -326,6 +298,7 @@ export default function HomeSections({
 
                       <a
                         href={coreValueRoutes[activeCoreValue]}
+                        onClick={(event) => { event.preventDefault(); event.stopPropagation(); navigate(coreValueRoutes[activeCoreValue]); }}
                         className="absolute bottom-6 right-6 z-20 flex h-12 w-12 items-center justify-center rounded-full border border-white/50 bg-white/15 backdrop-blur-sm text-white shadow-lg transition-all hover:scale-105 hover:bg-white/25"
                         aria-label={`${coreValues[activeCoreValue].title} 서브페이지로 이동`}
                       >
@@ -415,7 +388,7 @@ export default function HomeSections({
                     <h3 className="font-serif text-sm md:text-xl mb-3 group-hover:text-brand-sage transition-colors">예수님은 누구이신가</h3>
                     <p className="text-xs md:text-lg text-brand-brown/70 mb-4 font-light">예수님이 누구신지, 그분이 우리에게 어떤 의미인지 쉽고 따뜻하게 알아볼 수 있습니다.</p>
                     <button
-                      onClick={() => { window.location.href='#우리가믿는예수님'; }}
+                      onClick={() => navigate("/jesus")}
                       className="text-brand-sage flex items-center gap-2 font-medium text-2xs md:text-sm cursor-pointer"
                     >
                       더 알아보기 <ChevronRight className="w-4 h-4" />
@@ -496,7 +469,7 @@ export default function HomeSections({
                               return;
                             }
                             setSelectedNextGen(idx);
-                            window.location.href=`#nextgen/${idx}`;
+                            navigate(`/community/departments#${DEPARTMENT_SLUGS[idx]}`);
                           }}
                           className={`w-full text-left rounded-[2rem] overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 border-2 flex flex-col h-full group ${isSelected
                               ? "border-brand-sage ring-4 ring-brand-sage/10"
@@ -619,7 +592,7 @@ export default function HomeSections({
                     { type: "주일 2부 예배",time: "11:30",place: "교회 2층 본당" },
                     { type: "청년부 예배",time: "14:00",place: "교회 2층 본당" },
                     { type: "금요 기도회",time: "20:30",place: "교회 2층 본당" },
-                    { type: "수요 성경 대학",time: "19:30",place: "교회 2층 본당" }
+                    { type: "수요 성경대학",time: "19:30",place: "교회 2층 본당" }
                   ].map((item,idx) => (
                     <motion.div
                       key={idx}
@@ -637,7 +610,7 @@ export default function HomeSections({
                             {item.type==="주일 1부 예배"? "1부예배":
                               item.type==="주일 2부 예배"? "2부예배":
                                 item.type===" 예배"? "청년부":
-                                  item.type==="수요 성경 대학"? "성경대학":item.type}
+                                  item.type==="수요 성경대학"? "수요 성경대학":item.type}
                           </span>
                         </div>
                         {/* Right: Place & Time side by side */}
@@ -667,7 +640,7 @@ export default function HomeSections({
                               item.type==="주일 2부 예배"? "2부예배":
                                 item.type==="주일 청년부 예배"? "청년부":
                                   item.type==="금요 기도회"? "금요기도":
-                                    item.type==="수요 성경 대학"? "성경대학":item.type}
+                                    item.type==="수요 성경대학"? "수요 성경대학":item.type}
                           </div>
                         </div>
                         <div className="text-right flex items-center shrink-0">
