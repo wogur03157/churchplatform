@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, ChevronLeft, Clock, Heart, Users } from "lucide-react";
 import PublicPageLayout from "@/components/PublicPageLayout";
 import { useHashSlug } from "@/hooks/useHashSlug";
@@ -126,8 +124,7 @@ export default function Departments() {
 
             {/* Right Column: Introduction, schedule, calendar */}
             <div className="md:col-span-7 space-y-6">
-              <AnimatePresence mode="wait">
-                <motion.div key={dept.slug} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+              <div className="space-y-6">
                   {/* Ministry Introduction Card */}
                   <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-brand-gold/15 shadow-sm text-left">
                     <div className="flex items-center gap-3 mb-4">
@@ -166,8 +163,7 @@ export default function Departments() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              </AnimatePresence>
+              </div>
             </div>
           </div>
 

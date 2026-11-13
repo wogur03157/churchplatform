@@ -18,7 +18,7 @@ export const aboutContent: AboutContent = {
     signature: { prefix: "영신교회 담임목사", name: "김상호", suffix: "드림" },
   },
   staff: [
-    { name: "조은찬 목사", role: "부목사", dept: "행정/1,3교구", img: "/images/staff/cho-eunchan.jpg", link: "/community/small-church" },
+    { name: "조은찬 목사", role: "부목사", dept: "행정/1,3교구", img: "/images/staff/cho-eunchan.jpg", link: "/community/departments#young-adult" },
     { name: "김호준 목사", role: "부목사", dept: "초등부/행복한대학/2,4교구", img: "/images/staff/kim-hojun.jpg", link: "/community/departments#elementary" },
     { name: "김성호 목사", role: "협동목사", dept: "교육총괄/뮤직아카데미", img: "/images/staff/kim-sungho.jpg", link: "/ministry/neighbor-love#music-academy" },
     { name: "손창성 전도사", role: "교육전도사", dept: "중고등부/미디어", img: "/images/staff/son-changsung.jpg", link: "/community/departments#youth" },
